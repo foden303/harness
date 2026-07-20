@@ -1,0 +1,346 @@
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor directories and files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+*.code-workspace
+docs/design/
+# Environment variables
+.env
+.env.*
+!.env.example
+env.local
+
+# Local development
+.claude/*
+!.claude/rules/
+!.claude/output-styles/
+!.claude/memory/
+.claude/memory/*
+!.claude/memory/archive/
+.claude/memory/archive/*
+!.claude/memory/archive/Plans-*.md
+.agents/
+.private/
+.serena/
+.superset/
+# .mcp.json is included in distribution as the plugin MCP configuration
+.github/mlc_config.json
+
+# Memory observation context files (auto-generated)
+# Cursor writes the latest harness-mem context into these rule files.
+**/CLAUDE.md
+!harness-ui/CLAUDE.md
+
+# harness-ui local state (generated)
+harness-ui/.claude/
+harness-ui/dist/
+harness-ui/node_modules/
+harness-ui/.env.example
+harness-ui/CLAUDE.md
+
+# 2-Agent setup files (auto-generated)
+/AGENTS.md
+/CLAUDE.md
+/Plans.md
+/.harness-version
+/.orphaned_at
+
+# Cursor user-specific configuration
+# .cursor/hooks.json is a generated host-hook artifact (harness gen); keep it ignored.
+/.cursor/hooks.json
+/.cursor/hooks/
+/.cursor/mcp.json
+!/.cursor/mcp.json
+
+# Generated host-hook artifact (harness gen, Phase 91.3); converges on bin/harness hook pre-tool.
+/.codex/hooks.json
+/.cursor/commands/
+/.cursor/plans/
+/.cursor/skills/
+/.cursor/worktrees.json
+/.harness-worktrees/
+/.cursor/rules/harness-mem*.md
+/.cursor/rules/harness-mem*.mdc
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+/Plans.md.bak.*
+
+# Local build artifacts
+/go/bin/
+
+# Generated host-specific distribution packages
+/dist/
+
+# Go workspace checksum (environment-specific; go.work itself is tracked)
+go.work.sum
+
+# Secrets
+.credentials.json
+
+# Test sandbox (for plugin development)
+/test-sandbox/
+
+
+# Benchmarks - generated outputs only (scripts/tasks/docs are tracked)
+/benchmarks/results/
+/benchmarks/**/results/
+/benchmarks/test-project/
+/benchmarks/versions/
+/benchmarks/**/*.trace.jsonl
+/benchmarks/**/*.output.txt
+/benchmarks/**/*.debug.log
+
+# docs (local-only / not for distribution)
+docs/FIX_PLAN_*.md
+docs/INVESTIGATION_REPORT_*.md
+docs/*TOKEN_REPORT*.md
+docs/claude-code-bypass-permissions-guide.md
+docs/constitution.md
+docs/update-summary-*.md
+docs/notebooklm-*.yaml
+docs/notebooklm/
+docs/x-posts-*.md
+docs/social/harness-v3150-claude-2.1.86-codex-0.117-article.md
+docs/masao.md
+docs/MOSHI_REMOTE_SETUP.md
+
+# LSP (Language Server Protocol) configuration
+.lsp.json
+*lsp*config*.json
+
+# Archived skills (merged / deprecated)
+**/skills/_archived/
+
+# Development test skills
+skills/test-*/
+skills/zz-review-*/
+skills/zz-review-symlink
+opencode/skills/test-*/
+codex/.codex/skills/test-*/
+
+# Development skills (private)
+skills/claude-codex-upstream-update/
+skills/x-article/
+skills/x-announce/
+skills/x-promo/
+skills/x-release-harness/
+skills/harness-release-internal/
+opencode/skills/claude-codex-upstream-update/
+opencode/skills/x-article/
+opencode/skills/x-announce/
+opencode/skills/x-promo/
+opencode/skills/x-release-harness/
+opencode/skills/harness-release-internal/
+codex/.codex/skills/claude-codex-upstream-update/
+codex/.codex/skills/x-article/
+codex/.codex/skills/x-announce/
+codex/.codex/skills/x-promo/
+codex/.codex/skills/x-release-harness/
+codex/.codex/skills/harness-release-internal/
+
+# Harness UI / optional UI integration (distribution excluded)
+/harness-ui/
+/skills/harness-ui/
+/opencode/skills/harness-ui/
+/codex/.codex/skills/harness-ui/
+/scripts/harness-ui-register.sh
+/scripts/test-harness-ui-register.sh
+/templates/mcp/harness-ui.mcp.json.template
+/.claude/rules/harness-ui.md
+
+# Harness UI Archive (deprecated old implementation)
+/harness-ui-archive/
+
+# MCP Server (optional feature, installed separately)
+/mcp-server/
+.mcp.json
+
+# Harness Memory local bridge launchers
+/scripts/harness-mem
+/scripts/harness-memd
+/scripts/harness-mem-client.sh
+
+# Slide intermediate files
+docs/slides/
+docs/video/
+docs/images/slides/
+docs/presentation/1.png
+docs/presentation/2.png
+docs/presentation/3.png
+docs/presentation/4.png
+docs/presentation/5.png
+docs/presentation/6.png
+docs/presentation/7.png
+docs/presentation/8.png
+docs/presentation/9.png
+docs/presentation/10.png
+docs/presentation/11.png
+
+# Playwright MCP (for local testing)
+.playwright-mcp/
+
+# Firecrawl temporary data (local only)
+/.firecrawl/
+
+# Harness-mem temporary data (local only)
+/.harness-mem/
+
+# Diagnostic output (temporary files)
+/output/
+
+# Investigation / research documents (private)
+docs/research/*
+!docs/research/superpowers-cherrypick.md
+!docs/research/codex-app-smoke.md
+!docs/research/cursor-adapter-candidate.md
+!docs/research/zero-base-redesign-2026-06.md
+!docs/research/github-copilot-cli-adapter.md
+!docs/research/antigravity-cli-adapter.md
+!docs/research/phase-73-review-closeout.md
+!docs/research/phase-73-pr-closeout.md
+!docs/research/readme-superpowers-hermes-benchmark.md
+!docs/research/readme-visual-asset-manifest.md
+!docs/research/phase-75-readme-closeout.md
+!docs/research/applescript-decision-2026-06.md
+!docs/research/official-feature-inventory-2026-06.md
+docs/private/
+
+# Temporary image files
+docs/images/image*.webp
+
+# Migration script (temporary)
+scripts/migrate-usage-history.js
+.claude-plugin/CLAUDE.md
+
+# Local sandbox secrets
+scripts/sandbox-test/.env
+
+# Local benchmark scratch
+benchmarks/evals-v3/scripts/mcp-empty.json
+
+# Release announcement materials (local only)
+docs/releases/
+docs/notebooklm/work-full-slides-compact.yaml
+docs/notebooklm/work-full-slides-minimal.yaml
+
+# Remotion (video generation) - exclude the entire directory
+/remotion/
+.remotion/
+out/
+*.mp4
+*.webm
+*.gif
+
+# Core engine (v3) — TypeScript engine has been ported to Go. Exclude the whole directory
+/core/
+
+# Skills - node_modules and generated files
+**/skills/**/node_modules/
+**/skills/**/coverage/
+**/skills/**/.claude/state/
+**/skills/**/.claude/logs/
+**/skills/**/.claude/sessions/
+
+# Skills - temporary implementation docs
+**/skills/**/IMPLEMENTATION_*.md
+**/skills/**/TASK_*.md
+!codex/.codex/skills/**/IMPLEMENTATION_*.md
+!opencode/skills/**/IMPLEMENTATION_*.md
+
+# OpenCode (local-only)
+.opencode/
+
+# Benchmarks - local development data only
+/benchmarks/evals-*/
+/benchmarks/results/
+/benchmarks/test-project/
+/benchmarks/versions/
+/benchmarks/scripts/
+/benchmarks/tasks/
+/benchmarks/breezing-bench/results/
+/benchmarks/breezing-bench/agent-eval/results/
+/benchmarks/breezing-bench/agent-eval/node_modules/
+/benchmarks/breezing-bench/agent-eval/.env
+/benchmarks/breezing-codex-test/dist/
+/benchmarks/breezing-codex-test/node_modules/
+/benchmarks/breezing-codex-test/.claude/
+
+# MCP Server (local development only)
+/mcp-server/
+
+# Cache directory
+/.cache/
+
+# Experimental/unused code directories
+/app/
+/frontend/
+/src/
+
+# X post images (local only)
+/image/
+
+# README visual assets - development artifacts (not referenced in READMEs)
+/assets/harness-workflow.svg
+/assets/infographic-preview.html
+/assets/logo-candidates/
+/assets/readme-visuals/
+/assets/readme-visuals-en/preview.html
+/assets/readme-visuals-ja/preview.html
+/assets/.claude/
+/assets/_archive/
+/infographic-check.png
+/readme-visuals-all.png
+
+# VS Code workspace files
+*.code-workspace
+
+# Dev-only documentation (not for distribution)
+/docs/development-flow-guide.md
+/docs/implementation-guide.md
+/docs/agents-override.md
+/TEST_CURSOR_INTEGRATION.md
+
+# Lock files in subdirectories (not for distribution)
+**/package-lock.json
+
+# Absolute path remnants (accidentally created)
+/Users/
+
+# Keep unified memory MCP source file trackable
+!/mcp-server/
+/mcp-server/*
+!/mcp-server/src/
+/mcp-server/src/*
+!/mcp-server/src/tools/
+/mcp-server/src/tools/*
+!/mcp-server/src/tools/memory.ts
+
+# Go build artifacts and internal state
+go/.claude/
+go/harness
+# bin/harness-{darwin-arm64,darwin-amd64,linux-amd64} are TRACKED (v4.0.4+)
+# for marketplace distribution. Only the local-only build artifacts stay ignored:
+bin/harness.exe
+bin/harness-native
+
+# Hook output artifacts (broken directory names from JSON responses)
+{*}
+
+# codex CLI autogenerated environment files (may contain secrets)
+/.codex/

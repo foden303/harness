@@ -1,0 +1,23 @@
+{
+  "name": "harness",
+  "version": "1.0.0",
+  "description": "Claude harness - A harness for solo developers (Vibecoders) to handle full-cycle contract development.",
+  "author": {
+    "name": "Foden",
+    "url": "https://github.com/foden303"
+  },
+  "homepage": "https://github.com/foden303/harness",
+  "repository": "https://github.com/foden303/harness",
+  "license": "MIT",
+  "keywords": [
+    "claude-code",
+    "plugin",
+    "vibecoder",
+    "workflow",
+    "plan-work-review"
+  ],
+  "skills": [
+    "./skills/"
+  ],
+  "outputStyles": "./output-styles/"
+}

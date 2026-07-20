@@ -1,0 +1,23 @@
+[
+  {
+    "summary": "Last time we also chose Redis for rate limiting",
+    "decision": "redis",
+    "outcome": "Latency improved, operational cost increased",
+    "decided_at": "2026-05-01T10:00:00Z",
+    "mem_id": "obs-past-001"
+  },
+  {
+    "summary": "A case handled with DB optimization alone",
+    "decision": "db-opt",
+    "outcome": "Cost contained, but hit a limit at peak",
+    "decided_at": "2026-04-15T09:30:00Z",
+    "mem_id": "obs-past-002"
+  },
+  {
+    "summary": "A decision that adopted a hybrid configuration",
+    "decision": "hybrid",
+    "outcome": "Intermediate improvement, operations became more complex",
+    "decided_at": "2026-03-20T14:00:00Z",
+    "mem_id": "obs-past-003"
+  }
+]

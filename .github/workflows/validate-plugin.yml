@@ -1,0 +1,138 @@
+name: validate-plugin
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+# Cancel superseded PR runs but never cancel a main-branch run mid-flight,
+# because main runs feed into release readiness checks downstream.
+concurrency:
+  group: validate-plugin-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  actionlint:
+    name: actionlint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+          filter: blob:none
+
+      - name: Setup Go (harness composite)
+        uses: ./.github/actions/setup-go-harness
+
+      - name: Install actionlint via go install (version-pinned, immutable)
+        # Using `go install MODULE@VERSION` resolves to a content-addressed
+        # module proxy entry, providing the same supply-chain guarantees as
+        # SHA-pinned actions without depending on a mutable Docker tag.
+        run: go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+
+      - name: Run actionlint (workflow YAML lint)
+        run: |
+          "$(go env GOPATH)/bin/actionlint" -color
+
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+          # check-version-bump.sh needs `origin/$GITHUB_BASE_REF`, so we still
+          # fetch full history but skip blobs for a faster checkout.
+          fetch-depth: 0
+          filter: blob:none
+
+      - name: Check release metadata policy
+        run: |
+          bash ./scripts/ci/check-version-bump.sh
+
+      - name: Install command-line dependencies
+        run: sudo apt-get update && sudo apt-get install -y jq ripgrep shellcheck
+
+      - name: Setup Node.js for CLI smoke
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: '24'
+
+      - name: Install Codex CLI for adapter smoke
+        run: npm install -g @openai/codex@0.133.0
+
+      - name: Setup Go (harness composite)
+        uses: ./.github/actions/setup-go-harness
+
+      - name: Run ShellCheck high-risk subset
+        run: bash ./tests/test-shell-lint.sh
+
+      - name: Check i18n regression suite
+        run: |
+          bash ./scripts/i18n/check-translations.sh
+          bash ./tests/test-i18n-default-language.sh
+          bash ./tests/test-i18n-skill-frontmatter.sh
+          bash ./tests/test-i18n-locale-roundtrip.sh
+          bash ./tests/test-setup-language-rendering.sh
+
+      - name: Validate plugin structure
+        run: |
+          bash ./tests/validate-plugin.sh
+
+      - name: Audit breezing benchmark dependencies
+        run: |
+          bash ./tests/test-breezing-agent-eval-deps.sh
+
+      - name: Check consistency (templates/refs/version/hooks)
+        run: |
+          bash ./scripts/ci/check-consistency.sh
+
+      - name: Validate codex package (multi-agent migration guards)
+        run: |
+          bash ./tests/test-codex-package.sh
+
+      - name: Run Codex plugin adapter smoke
+        env:
+          HARNESS_CODEX_PLUGIN_SMOKE_REQUIRED: "1"
+        run: |
+          bash ./tests/test-codex-plugin-adapter.sh
+
+  test-go:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+          filter: blob:none
+
+      - name: Setup Go (harness composite)
+        uses: ./.github/actions/setup-go-harness
+
+      - name: Run Go format check
+        run: bash ./tests/test-format-lint.sh
+
+      - name: Build harness binary
+        working-directory: go
+        run: go build ./cmd/harness/
+
+      - name: Run Go tests
+        working-directory: go
+        run: go test ./...
+
+      - name: Run go vet
+        working-directory: go
+        run: go vet ./...

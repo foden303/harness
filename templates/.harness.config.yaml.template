@@ -1,0 +1,93 @@
+# .harness.config.yaml
+# harness settings file
+#
+# This file lets you customize Harness behavior.
+# If omitted, default values are used.
+
+# Language settings.
+# Distributed installs default to English. Set to "ja" for Japanese output
+# and Japanese setup templates.
+i18n:
+  language: en
+
+# Plans.md location.
+# Default: "." means the project root.
+# Example: ".claude/memory" keeps Plans.md next to SSOT memory files.
+plansDirectory: "."
+
+advisor:
+  # Call the advisor only when the executor needs help.
+  enabled: true
+  mode: on-demand
+  max_consults_per_task: 3
+  retry_threshold: 2
+  consult_before_user_escalation: true
+  claude_model: opus
+
+cleanup:
+  plans:
+    archive_after_days: 7
+    max_lines: 200
+    archive_max_items: 50
+    split_to_monthly: true
+
+  session_log:
+    archive_after_days: 30
+    max_lines: 500
+    archive_path: ".claude/memory/archive/sessions/"
+
+  claude_md:
+    max_lines: 100
+    warn_only: true
+
+  # - session_start: check at session start
+  # - manual: only when /cleanup runs
+  # - hook: check on PostToolUse hook
+  auto_run: hook
+
+# Commit guard: require /harness-review before git commit.
+# When enabled, git commit is blocked until review is completed.
+commit_guard: true
+
+# Safety settings.
+safety:
+  # main/master direct push policy.
+  # ask: confirm with the user before pushing (default)
+  # deny: block direct pushes
+  # allow: allow direct pushes without Harness confirmation
+  protected_branch_push: ask
+  # R03 protected path break-glass ask-list is supported only in harness.toml:
+  # [[safety.guardrail.protectedPathAskList]]
+  # path = ".env"
+  # reason = "customer deploy env update"
+  # This YAML template intentionally has no protectedPathAskList parser.
+
+# Context budget (estimated tooling overhead).
+context_budget:
+  enabled: true
+  max_enabled_mcps: 10
+  max_installed_plugins: 10
+
+# Optional quality automation pack (PostToolUse).
+quality_pack:
+  enabled: false
+  mode: warn         # warn | run
+  prettier: true
+  tsc: true
+  console_log: true
+
+# Review settings (commit judgment).
+review:
+  judgment:
+    # Output APPROVE / REQUEST CHANGES / REJECT verdict.
+    enabled: true
+    # Auto-fix on REQUEST CHANGES.
+    auto_fix: true
+    # Max retry count for the auto-fix loop.
+    max_retries: 3
+
+hooks:
+  enabled: true
+  post_tool_use:
+    - matcher: "Edit|Write"
+      script: "~/.claude/scripts/auto-cleanup-hook.sh"

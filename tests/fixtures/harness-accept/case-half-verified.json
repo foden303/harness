@@ -1,0 +1,44 @@
+{
+  "schema": "acceptance-context.v1",
+  "user_request": "Complete Plan Brief MVP in 5 tasks",
+  "user_request_hash": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+  "demo_artifacts": [
+    { "kind": "screenshot", "path": ".claude/state/views/plan-brief-2026-05-09T08-55-00.html" }
+  ],
+  "verified_criteria": [
+    { "name": "AC-1", "passed": true,  "evidence": "OK" },
+    { "name": "AC-2", "passed": true,  "evidence": "OK" },
+    { "name": "AC-3", "passed": true,  "evidence": "OK" },
+    { "name": "AC-4", "passed": false, "evidence": "" },
+    { "name": "AC-5", "passed": false, "evidence": "" }
+  ],
+  "unverified_caveats": [
+    "JSON Schema validator only runs in CI, unverified locally",
+    "e2e test fixture diverges from production"
+  ],
+  "past_issue_patterns": [],
+  "recommendation": "wait",
+  "recommendation_evidence": [
+    "verified 3 / 5 total (60%) -> within wait threshold (>= 0.5, < 0.8)",
+    "2 unverified caveats remain",
+    "2 criteria with evidence not provided (AC-4, AC-5)"
+  ],
+  "project": "harness",
+  "generated_at": "2026-05-09T18:31:00Z",
+  "verified_criteria_items": [
+    { "name": "AC-1", "status_label": "passed", "evidence": "OK", "evidence_warn": "" },
+    { "name": "AC-2", "status_label": "passed", "evidence": "OK", "evidence_warn": "" },
+    { "name": "AC-3", "status_label": "passed", "evidence": "OK", "evidence_warn": "" },
+    { "name": "AC-4", "status_label": "failed", "evidence": "",   "evidence_warn": "⚠ evidence not provided" },
+    { "name": "AC-5", "status_label": "failed", "evidence": "",   "evidence_warn": "⚠ evidence not provided" }
+  ],
+  "unverified_caveats_items": [
+    { "text": "JSON Schema validator only runs in CI, unverified locally" },
+    { "text": "e2e test fixture diverges from production" }
+  ],
+  "recommendation_evidence_items": [
+    { "text": "verified 3 / 5 total (60%) -> within wait threshold (>= 0.5, < 0.8)" },
+    { "text": "2 unverified caveats remain" },
+    { "text": "2 criteria with evidence not provided (AC-4, AC-5)" }
+  ]
+}

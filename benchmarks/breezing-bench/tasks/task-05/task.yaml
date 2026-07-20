@@ -1,0 +1,9 @@
+id: "task-05"
+name: "Error handling - API client"
+difficulty: "Hard"
+prompt: "Add retry, timeout, and error handling to api-client.ts. Implement it so that network errors are retried automatically, the timeout is configurable, 4xx errors are not retried, and 5xx errors are retried."
+hidden_test_count: 10
+setup_files:
+  - src/api-client.ts
+  - package.json
+  - tsconfig.json

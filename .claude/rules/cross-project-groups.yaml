@@ -1,0 +1,49 @@
+# cross-project-groups.yaml
+#
+# Purpose:
+#   Definition of target groups for cross-project search, introduced in
+#   Phase 65.3 (Cross-Project Group + 3-Layer Redaction).
+#   Opt-in via the --cross-project-group <name> flag from the
+#   harness-plan-brief / harness-accept / harness-progress skills.
+#
+# Schema: cross-project-group.v1
+#   {schema_version, groups: [{name, members[], description?}]}
+#
+# Default:
+#   groups: []  <- cross-project search disabled (explicit opt-in)
+#
+# Update Rules:
+#   1. groups are explicitly opt-in, default empty (so cross-project search
+#      does not run by accident)
+#   2. groups[].name must be unique within groups
+#   3. elements within groups[].members must be unique (no duplicates)
+#   4. an invalid schema causes scripts/load-cross-project-groups.sh to exit 1
+#   5. Full spec: docs/cross-project-groups-schema.md
+#
+# Cross-Project Search Flow (D43 Option alpha):
+#   client (skill) -> convert yaml to JSON via load-cross-project-groups.sh
+#   -> issue mcp__harness__harness_mem_search once for each member project
+#      (N-call required because MCP has no projects array)
+#   -> merge / dedupe / relevance_score sort the results client-side
+#   -> redact proper nouns with Layer 2a (dictionary, language-agnostic)
+#
+
+schema_version: cross-project-group.v1
+
+groups: []
+
+# ---- Configuration example (commented-out template) ----
+#
+# groups:
+#   - name: Personal Tools
+#     description: Personal tools. Code and learnings are searchable across projects.
+#     members:
+#       - my-cli
+#       - my-dotfiles
+#       - my-scripts
+#
+#   - name: Client-Sample
+#     description: General knowledge for client work. Proper nouns must be redacted via client-redaction.yaml.
+#     members:
+#       - sample-project-a
+#       - sample-project-b

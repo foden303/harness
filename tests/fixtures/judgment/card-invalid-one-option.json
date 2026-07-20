@@ -1,0 +1,14 @@
+{
+  "question": "Invalid card with only a single option",
+  "options": [
+    {
+      "id": "only",
+      "label": "The only choice",
+      "consequence": "Violates minItems 2"
+    }
+  ],
+  "recommendation": "only",
+  "confidence": "high",
+  "impact": "fixture only",
+  "diff_summary": "invalid fixture"
+}

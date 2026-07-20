@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://harness.local/schemas/bug-report.v1.json",
+  "title": "bug-report.v1",
+  "description": "Normalized bug report ingested by harness-bugfix from a JIRA issue (or Confluence page), plus the triage verdict produced by checking it against the current source code.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "source",
+    "source_ref",
+    "title",
+    "ingested_at"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "bug-report.v1"
+    },
+    "source": {
+      "type": "string",
+      "enum": ["jira", "confluence"]
+    },
+    "source_ref": {
+      "type": "string",
+      "minLength": 1,
+      "description": "JIRA bug issue key (e.g. BUG-123) or Confluence page URL/id."
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string"
+    },
+    "steps_to_reproduce": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "expected_behavior": {
+      "type": "string"
+    },
+    "actual_behavior": {
+      "type": "string"
+    },
+    "environment": {
+      "type": "string"
+    },
+    "labels": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "status": {
+      "type": "string"
+    },
+    "reporter_account_id": {
+      "type": "string",
+      "description": "The bug reporter (QA) account id — the default target for a not-a-bug / needs-info comment."
+    },
+    "ingested_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "mcp_available": {
+      "type": "boolean"
+    },
+    "triage": {
+      "type": "object",
+      "required": ["verdict"],
+      "additionalProperties": false,
+      "properties": {
+        "verdict": {
+          "type": "string",
+          "enum": ["bug", "not-a-bug", "needs-info"]
+        },
+        "evidence": {
+          "type": "string",
+          "description": "Why the verdict holds, referencing the current source code."
+        },
+        "code_refs": {
+          "type": "array",
+          "description": "file:line references in the current source that were inspected.",
+          "items": { "type": "string" }
+        },
+        "reproduced": {
+          "type": "boolean",
+          "description": "Whether the defect was reproduced (e.g. via a failing test)."
+        },
+        "open_questions": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "triaged_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}

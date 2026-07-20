@@ -1,0 +1,28 @@
+#!/bin/bash
+# posttooluse-clear-pending.sh
+# Clear pending-skills on PostToolUse/Skill
+#
+# Usage: auto-run from PostToolUse hook (Skill matcher)
+# Input: stdin JSON (Claude Code hooks)
+# Output: JSON (continue)
+
+set +e
+
+STATE_DIR=".claude/state"
+PENDING_DIR="${STATE_DIR}/pending-skills"
+
+# Skip if the pending directory does not exist
+[ ! -d "$PENDING_DIR" ] && { echo '{"continue":true}'; exit 0; }
+
+# Clear all pending files if any exist
+# (a Skill call = quality gate considered already run)
+PENDING_FILES=$(ls "$PENDING_DIR"/*.pending 2>/dev/null || true)
+
+if [ -n "$PENDING_FILES" ]; then
+  for f in $PENDING_FILES; do
+    rm -f "$f" 2>/dev/null || true
+  done
+fi
+
+echo '{"continue":true}'
+exit 0

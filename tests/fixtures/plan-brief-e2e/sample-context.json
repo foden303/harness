@@ -1,0 +1,62 @@
+{
+  "schema": "plan-brief-context.v1",
+  "user_request": "Please produce a progress-tracking HTML for the client",
+  "my_understanding": "I understand you want a skill that visualizes the counts of cc:WIP / cc:TODO / cc:done in Plans.md as a single HTML page.\n\nThe goal is an experience where a non-engineer client can grasp \"how far along are we now\" in 30 seconds.",
+  "options": [
+    {
+      "name": "Option A: grep Plans.md directly and render to HTML",
+      "summary": "Aggregate simply with shell + jq. Fast to implement but limited extensibility",
+      "pros": ["fast to implement", "few dependencies"],
+      "cons": ["gets complex if alert logic is bolted on later"]
+    },
+    {
+      "name": "Option B: add a new harness-progress skill via schema",
+      "summary": "Structured via schema progress-snapshot.v1, integrated with render-html.sh",
+      "pros": ["easy to extend", "easy to add alert / drift detect"],
+      "cons": ["heavier initial implementation than Option A"]
+    }
+  ],
+  "risks": [
+    {
+      "kind": "scope-creep",
+      "severity": "warn",
+      "description": "Risk of starting to edit files not listed in Plans.md",
+      "mitigation": "Detect via PostToolUse hook and show an alert"
+    }
+  ],
+  "acceptance_criteria": [
+    {
+      "id": "AC-1",
+      "description": "The snapshot HTML shows the correct percentages for a fixture Plans.md (including each status)",
+      "verifiable_by": "tests/test-harness-progress.sh"
+    }
+  ],
+  "confidence": 78,
+  "confidence_evidence": [
+    "8 of the last 10 similar skill projects reached cc:done (80%)",
+    "DoD numeric-requirement coverage 90% (4.5 of 5 DoDs are machine-verifiable)",
+    "6 related D / P entries (D22, D37, P5, P8, P12, P29)"
+  ],
+  "related_decisions": [
+    {
+      "id": "D22",
+      "title": "3-layer memory architecture",
+      "relevance": "Reference for a design that coexists with Layer 1 auto memory"
+    }
+  ],
+  "similar_past_plans": [
+    {
+      "archive_path": ".claude/memory/archive/Plans-2026-04-21-phase34-46.md",
+      "phase": "Phase 41 - Issue auto-trigger pipeline",
+      "outcome": "cc:done",
+      "relevance": "Same 4-stage structure of skill skeleton + scripts + tests + e2e"
+    }
+  ],
+  "project": "harness",
+  "generated_at": "2026-05-09T08:55:00Z",
+  "confidence_evidence_items": [
+    { "text": "8 of the last 10 similar skill projects reached cc:done (80%)" },
+    { "text": "DoD numeric-requirement coverage 90% (4.5 of 5 DoDs are machine-verifiable)" },
+    { "text": "6 related D / P entries (D22, D37, P5, P8, P12, P29)" }
+  ]
+}

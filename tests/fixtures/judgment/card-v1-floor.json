@@ -1,0 +1,20 @@
+{
+  "question": "Floor triggered: proceed with the egress change?",
+  "options": [
+    {
+      "id": "abort",
+      "label": "Abort the change",
+      "consequence": "Work stops but the floor violation is avoided"
+    },
+    {
+      "id": "proceed",
+      "label": "Proceed with the change",
+      "consequence": "Floor triggered, so this is a hard-stop target"
+    }
+  ],
+  "recommendation": "abort",
+  "confidence": "high",
+  "impact": "Affects external communication paths and the security boundary",
+  "diff_summary": "Outbound rule changes land in infra/egress/",
+  "impact_score": 100
+}

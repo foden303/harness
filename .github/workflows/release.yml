@@ -1,0 +1,124 @@
+name: auto-release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+# Never cancel an in-flight release. Tag-triggered runs are the source of
+# release artifacts; cancellation could leave a half-published release.
+concurrency:
+  group: auto-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          filter: blob:none
+
+      - name: Install command-line dependencies
+        run: sudo apt-get update && sudo apt-get install -y jq ripgrep
+
+      - name: Check if release already exists
+        id: check
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "✅ Release $TAG already exists (created by release-har). Skipping."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "⚠️ Release $TAG not found. Creating safety-net release."
+          fi
+
+      - name: Extract CHANGELOG entry
+        if: steps.check.outputs.exists == 'false'
+        id: changelog
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG#v}"
+
+          # Extract the section for this version from CHANGELOG.md
+          BODY=$(awk -v ver="$VERSION" '
+            /^## \[/ {
+              if (found) exit
+              if (index($0, "[" ver "]")) found=1
+              next
+            }
+            found { print }
+          ' CHANGELOG.md)
+
+          if [ -z "$BODY" ]; then
+            BODY="Release $TAG (auto-generated — no CHANGELOG entry found for this version)"
+          fi
+
+          # Write to file to preserve newlines
+          echo "$BODY" > /tmp/release-body.md
+
+      - name: Setup Go (harness composite)
+        uses: ./.github/actions/setup-go-harness
+
+      - name: Run release preflight
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: bash ./scripts/release-preflight.sh --check-adapters
+
+      - name: Build Go binaries
+        run: |
+          cd go && HARNESS_BUILD_OUTDIR=/tmp/harness-release-bin bash scripts/build-all.sh
+
+      - name: Create GitHub Release
+        if: steps.check.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+
+          gh release create "$TAG" \
+            --title "$TAG" \
+            --notes-file /tmp/release-body.md \
+            --verify-tag \
+            /tmp/harness-release-bin/harness-darwin-arm64 \
+            /tmp/harness-release-bin/harness-darwin-amd64 \
+            /tmp/harness-release-bin/harness-linux-amd64 \
+            /tmp/harness-release-bin/harness-windows-amd64.exe
+
+          echo "✅ Release created for $TAG with Go binaries"
+
+      - name: Upload Go binaries to existing release
+        if: steps.check.outputs.exists == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+
+          # Upload binaries only when missing. Never clobber an existing manual
+          # release asset; release-owned binaries may have stricter metadata
+          # verification than the safety-net workflow can prove.
+          existing_assets="$(gh release view "$TAG" --json assets --jq '.assets[].name')"
+          for bin in /tmp/harness-release-bin/harness-darwin-arm64 /tmp/harness-release-bin/harness-darwin-amd64 /tmp/harness-release-bin/harness-linux-amd64 /tmp/harness-release-bin/harness-windows-amd64.exe; do
+            name="$(basename "$bin")"
+            if printf '%s\n' "$existing_assets" | grep -Fxq "$name"; then
+              echo "asset already exists, skipping: $name"
+              continue
+            fi
+            gh release upload "$TAG" "$bin"
+          done
+
+          echo "✅ Go binaries uploaded to $TAG"

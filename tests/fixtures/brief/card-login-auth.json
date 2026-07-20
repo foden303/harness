@@ -1,0 +1,35 @@
+{
+  "goal": "Implement a login screen and authentication",
+  "subtasks": [
+    {
+      "id": "1",
+      "title": "Create the login UI component",
+      "dod": "An email/password input form and a submit button are displayed"
+    },
+    {
+      "id": "2",
+      "title": "Implement the authentication API endpoint",
+      "dod": "POST /auth/login returns a JWT for valid credentials"
+    },
+    {
+      "id": "3",
+      "title": "Session management and protected routes",
+      "dod": "Unauthenticated users cannot access protected pages"
+    },
+    {
+      "id": "4",
+      "title": "Add tests for the authentication flow",
+      "dod": "Login success/failure cases are covered by automated tests"
+    }
+  ],
+  "scope_files": [
+    "src/pages/login.tsx",
+    "src/auth/",
+    "tests/auth/"
+  ],
+  "risk_notes": [
+    "Check consistency with the existing user database schema",
+    "Match the password hashing method to the project standard"
+  ],
+  "confidence": "medium"
+}

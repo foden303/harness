@@ -1,0 +1,10 @@
+# Host capability descriptor. `harness gen` reads this to generate Claude Code's
+# native pre-action hook converging on `bin/harness hook pre-tool`.
+
+[claude]
+hook_event = "PreToolUse"
+hook_path  = ".claude-plugin/hooks.json"
+matcher    = "Write|Edit|MultiEdit|Bash|Read"
+deny       = "exit2"
+transport  = "stdin-json"
+model      = "opus"

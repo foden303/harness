@@ -1,0 +1,122 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://harness.local/schemas/flow-session.v1.json",
+  "title": "flow-session.v1",
+  "description": "Resumable state-machine cursor for a harness-flow run (requirement ingest -> verify -> BA loop -> plan -> work -> review -> confirm -> commit).",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "session_id",
+    "status",
+    "source",
+    "source_ref",
+    "created_at",
+    "updated_at"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "flow-session.v1"
+    },
+    "session_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ingesting",
+        "ingested",
+        "verifying",
+        "triaging",
+        "not-a-bug",
+        "awaiting-ba",
+        "planning",
+        "working",
+        "reviewing",
+        "awaiting-confirm",
+        "committing",
+        "awaiting-push",
+        "done",
+        "escalated"
+      ]
+    },
+    "source": {
+      "type": "string",
+      "enum": ["jira", "confluence"]
+    },
+    "source_ref": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source_refs": {
+      "type": "array",
+      "description": "All constituent refs when multiple links form one merged feature (primary is source_ref).",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "requirement_path": {
+      "type": "string"
+    },
+    "clarification": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "nonce": {
+          "type": "string"
+        },
+        "posted_comment_id": {
+          "type": "string"
+        },
+        "posted_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "bot_account_id": {
+          "type": "string"
+        },
+        "reply_comment_id": {
+          "type": "string"
+        },
+        "rounds": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "plans": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "commit_hashes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "rework_rounds": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "jira_transitioned": {
+      "type": "boolean"
+    },
+    "done_comment_id": {
+      "type": "string"
+    },
+    "mcp_health": {
+      "type": "string",
+      "enum": ["healthy", "not-configured", "unreachable"]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  }
+}

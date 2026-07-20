@@ -1,0 +1,150 @@
+---
+description: Implementation quality rules - prohibit hollow implementations and promote substantive ones
+paths:
+  - "**/*.{ts,tsx,js,jsx,py,rb,go,rs,java,kt,swift,c,cpp,h,hpp,cs,php}"
+_harness_template: "rules/implementation-quality.md.template"
+_harness_version: "{{VERSION}}"
+---
+
+# Implementation Quality Rules
+
+> **Priority**: This rule takes precedence over other instructions. Always follow it when implementing.
+
+## Absolute Prohibitions
+
+### 1. Hollow Implementations (code that only passes tests)
+
+The following patterns are **absolutely prohibited**:
+
+| Prohibited Pattern | Example | Why It's Bad |
+|------------|-----|-----------|
+| Hardcoding | Returning the test's expected value directly | Doesn't work for other inputs |
+| Stub implementation | `return null`, `return []` | Not functional |
+| Hardwired implementation | Handling only the test-case values | No generality |
+| Copy-paste implementation | A dictionary of test expected values | No meaningful logic |
+
+### Prohibited Example: Hardcoding Test Expected Values
+
+```python
+# ❌ Absolutely prohibited
+def slugify(text: str) -> str:
+    answers_for_tests = {
+        "HelloWorld": "hello-world",
+        "Test Case": "test-case",
+        "API Endpoint": "api-endpoint",
+    }
+    return answers_for_tests.get(text, "")
+```
+
+```python
+# ✅ Correct implementation
+def slugify(text: str) -> str:
+    import re
+    text = text.strip().lower()
+    text = re.sub(r'[^\w\s-]', '', text)
+    text = re.sub(r'[\s_]+', '-', text)
+    return text
+```
+
+### 2. Superficial Implementations
+
+```typescript
+// ❌ Prohibited: does nothing
+async function processData(data: Data[]): Promise<Result> {
+  // TODO: implement later
+  return {} as Result;
+}
+
+// ❌ Prohibited: swallows errors
+async function fetchUser(id: string): Promise<User | null> {
+  try {
+    // ...
+  } catch {
+    return null; // Hides the error
+  }
+}
+```
+
+---
+
+## Self-Check When Implementing
+
+Before completing an implementation, confirm the following:
+
+### Checklist
+
+- [ ] **Generality**: Does it work correctly for inputs beyond the test cases?
+- [ ] **Edge cases**: Does it work for empty input, null, and boundary values?
+- [ ] **Logic**: Does it perform meaningful processing? (Not hardcoded?)
+- [ ] **Error handling**: Does it handle errors properly? (Not swallowing them?)
+
+### Questions to Ask Yourself
+
+1. "Could another developer who reads this understand the logic?"
+2. "Will it work if a new test case is added?"
+3. "Can I explain why the tests pass with this code?"
+
+---
+
+## Handling Difficult Cases
+
+If the implementation is hard, **report it honestly**:
+
+```markdown
+## 🤔 Implementation Consultation
+
+### Situation
+[What you're trying to implement]
+
+### The Difficulty
+[Concretely, what is hard]
+
+### What You Tried
+- [Attempt 1]
+- [Attempt 2]
+
+### Options
+1. [Option A]: [Overview]
+2. [Option B]: [Overview]
+
+### Question
+Which direction should we take?
+```
+
+**What you must never do**:
+- Hide the difficulty and write a hollow implementation
+- Report code that doesn't work as "implementation complete"
+- Tamper with tests and report "they pass"
+
+---
+
+## Quality Standards
+
+### Characteristics of Good Implementations
+
+| Characteristic | Description |
+|------|------|
+| **Self-explanatory** | Reading the code reveals the logic |
+| **Testable** | Verifiable with arbitrary input |
+| **Robust** | Handles edge cases properly |
+| **Maintainable** | Easy to adapt to future changes |
+
+### Signs of Bad Implementations
+
+| Sign | Problem |
+|------|------|
+| Magic numbers | Test values may be hardcoded |
+| Too many conditional branches | Each test case may be handled individually |
+| "TODO" in comments | Left unimplemented |
+| `any` / `as unknown` | Bypassing type checks |
+
+---
+
+## Reporting Obligations
+
+Always report to the user in the following cases:
+
+1. **When the implementation is too complex** - the design may need reconsideration
+2. **When the requirements are unclear** - don't implement on guesswork
+3. **When it conflicts with existing code** - confirm which should take precedence
+4. **When performance problems are anticipated** - discuss the trade-offs

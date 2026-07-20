@@ -1,0 +1,41 @@
+{
+  "floor_policy": {
+    "version": "floor.policy.v1",
+    "categories": [
+      {
+        "id": "money-billing",
+        "name": "Money / Billing"
+      },
+      {
+        "id": "egress",
+        "name": "External Network Egress"
+      },
+      {
+        "id": "secret-read",
+        "name": "Secret / Credential Read"
+      },
+      {
+        "id": "prod-deploy",
+        "name": "Production Deploy"
+      },
+      {
+        "id": "worktree-escape",
+        "name": "Worktree Escape"
+      }
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit|Bash|Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/bin/bash -c 'valid_root(){ local r=\"${1:-}\"; [ -n \"$r\" ] && [ -x \"$r/bin/harness\" ] && [ -f \"$r/.claude-plugin/plugin.json\" ] && /usr/bin/grep -q \"\\\"name\\\"[[:space:]]*:[[:space:]]*\\\"harness\\\"\" \"$r/.claude-plugin/plugin.json\"; }; root=\"${CLAUDE_PLUGIN_ROOT:-}\"; if ! valid_root \"$root\"; then root=\"\"; for c in \"${CLAUDE_PROJECT_DIR:-}\" \"$PWD\" \"$HOME/.claude/plugins/marketplaces/harness-marketplace\" \"$HOME/.claude/plugins/cache/harness-marketplace/harness/\"*; do if valid_root \"$c\"; then root=\"$c\"; break; fi; done; fi; if ! valid_root \"$root\"; then echo \"[harness] plugin root not found; hook skipped\" >&2; exit 0; fi; exec \"$root/bin/harness\" \"$@\"' _ hook pre-tool",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

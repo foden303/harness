@@ -1,0 +1,48 @@
+---
+_harness_template: "memory/patterns.md.template"
+_harness_version: "2.5.27"
+---
+
+# Patterns (SSOT)
+
+This file is the single source of truth (SSOT) for "reusable solutions (patterns)."
+Capture **problem → solution → applicability conditions** so you can quickly reproduce the same decision next time.
+
+## Index
+
+- (example) Validate inputs once, at the boundary #api #validation
+
+---
+
+## (short pattern name) #pattern #tag1 #tag2
+
+### Problem
+
+- (what situation causes trouble)
+
+### Solution
+
+- (how to solve it)
+
+### Applicability Conditions
+
+- (conditions where this pattern works)
+
+### Non-Applicability Conditions (when to avoid)
+
+- (conditions where it's better not to use this pattern)
+
+### Implementation Example (optional)
+
+```text
+(code / pseudocode / config example if needed)
+```
+
+### Caveats
+
+- (pitfalls, observation/logging, operational notes, etc.)
+
+### Related
+
+- decisions: (link if applicable)
+- reference links:

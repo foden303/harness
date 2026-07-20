@@ -1,0 +1,24 @@
+{
+  "schema": "acceptance-context.v1",
+  "user_request": "Case where Plan Brief was approved without defining any criteria",
+  "user_request_hash": "fedcba9876543210fedcba9876543210fedcba9876543210fedcba9876543210",
+  "demo_artifacts": [],
+  "verified_criteria": [],
+  "unverified_caveats": [
+    "No acceptance_criteria were defined at the Plan Brief stage, so a decision cannot be made"
+  ],
+  "past_issue_patterns": [],
+  "recommendation": "reject",
+  "recommendation_evidence": [
+    "verified_criteria total 0 -> undecidable, safe-side reject (total = 0)"
+  ],
+  "project": "harness",
+  "generated_at": "2026-05-09T18:33:00Z",
+  "verified_criteria_items": [],
+  "unverified_caveats_items": [
+    { "text": "No acceptance_criteria were defined at the Plan Brief stage, so a decision cannot be made" }
+  ],
+  "recommendation_evidence_items": [
+    { "text": "verified_criteria total 0 -> undecidable, safe-side reject (total = 0)" }
+  ]
+}

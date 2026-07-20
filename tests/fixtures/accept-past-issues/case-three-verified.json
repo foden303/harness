@@ -1,0 +1,28 @@
+{
+  "items": [
+    {
+      "source": "patterns.md",
+      "pattern_id": "P5",
+      "title": "Hook script template",
+      "summary": "Standard skeleton for a shell hook (set -euo pipefail + JSON output)",
+      "relevance_score": 0.92,
+      "verified_in_current_task": true
+    },
+    {
+      "source": "patterns.md",
+      "pattern_id": "P29",
+      "title": "dual hooks.json sync",
+      "summary": "Consistency between .claude-plugin/hooks.json and hooks/hooks.json (P29 convention)",
+      "relevance_score": 0.85,
+      "verified_in_current_task": true
+    },
+    {
+      "source": "acceptance-record",
+      "pattern_id": "AR-2026-04-21",
+      "title": "Phase 41 - Issue auto-trigger pipeline post-launch issue",
+      "summary": "A 4-stage structure of skill skeleton + scripts + tests + e2e, with 0 issues",
+      "relevance_score": 0.78,
+      "verified_in_current_task": true
+    }
+  ]
+}

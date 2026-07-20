@@ -1,0 +1,35 @@
+---
+_harness_template: "memory/session-log.md.template"
+_harness_version: "2.5.27"
+---
+
+# Session Log
+
+Per-session work log (mainly for local use).
+Promote important decisions to `.claude/memory/decisions.md` and reusable solutions to `.claude/memory/patterns.md`.
+
+## Index
+
+- {{DATE}} (session: {{SESSION_ID}}): (summary in one line)
+
+---
+
+## Session: {{DATE}} (session: {{SESSION_ID}})
+
+### What Was Done
+
+- (bullet points)
+
+### Key Decisions (promotion candidates)
+
+- (things to write into `decisions.md`)
+
+### Learned Patterns (promotion candidates)
+
+- (things to write into `patterns.md`)
+
+### Handoff for Next Time
+
+- (incomplete items / caveats)
+
+

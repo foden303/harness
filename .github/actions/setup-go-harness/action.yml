@@ -1,0 +1,11 @@
+name: 'Setup Go (harness)'
+description: 'Install Go using go/go.mod and enable module + build cache via setup-go.'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Go
+      uses: actions/setup-go@924ae3a1cded613372ab5595356fb5720e22ba16 # v6.5.0
+      with:
+        go-version-file: go/go.mod
+        cache-dependency-path: go/go.sum

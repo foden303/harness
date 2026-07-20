@@ -1,0 +1,161 @@
+---
+description: Skills Gate rule - prompts skill usage before editing code
+paths:
+  - "**/*.{ts,tsx,js,jsx,py,rb,go,rs,java,kt,swift,c,cpp,h,hpp,cs,php}"
+_harness_template: "rules/skills-gate.md.template"
+_harness_version: "{{VERSION}}"
+_harness_condition: "skills_gate.enabled"
+---
+
+# Skills Gate
+
+**Skills Gate** is enabled in this project.
+
+## Principle
+
+**Before editing code (Write/Edit), use the appropriate skill.**
+
+Skills provide guidelines that improve the quality of your work.
+
+---
+
+## When to Use Skills
+
+| Task | Skill | How to invoke |
+|------|-------|---------------|
+| Implement a feature | `impl` | Invoke "impl" with the Skill tool |
+| Review code | `harness-review` | Invoke "harness-review" with the Skill tool |
+| Build UI | `ui` | Invoke "ui" with the Skill tool |
+| Implement auth / payments | `auth` | Invoke "auth" with the Skill tool |
+| Configure deployment | `deploy` | Invoke "deploy" with the Skill tool |
+
+---
+
+## Why Use Skills
+
+### 1. Better Quality
+
+Skills include the checklists and best practices needed for the task.
+They prevent oversights and keep quality consistent.
+
+### 2. Efficient Work
+
+Skills provide the standard flow for a task.
+They make it clear where to start and what to verify.
+
+### 3. Accumulated Knowledge
+
+Through skills, you gain access to project-specific patterns and decisions.
+
+---
+
+## Exclusions (No Skill Required)
+
+The following files are outside the scope of Skills Gate:
+
+| Pattern | Reason |
+|---------|--------|
+| `*.md`, `*.txt` | Documentation |
+| `*.json` | Configuration files |
+| `.claude/*` | Harness internal files |
+| `docs/*`, `templates/*` | Documentation and templates |
+
+---
+
+## How It Works
+
+```
+Attempt to edit code
+    ↓
+Was a skill used in this session?
+    ├── YES → Pass (editing allowed)
+    └── NO  → Block (prompt to use a skill)
+```
+
+- **Using a skill even once** clears the gate for that session
+- Skill usage is tracked in `session-skills-used.json`
+
+---
+
+## When Blocked
+
+If you try to edit code without using a skill, the following message appears:
+
+```
+[Skills Gate] Use a skill before editing code.
+
+Available skills: impl, review, ui, ...
+
+Example: Invoke 'impl' or 'review' with the Skill tool
+```
+
+In this case, invoke the appropriate skill with the Skill tool, then try editing again.
+
+---
+
+## Choosing a Skill
+
+### When in Doubt, Use `impl`
+
+The `impl` skill provides general-purpose implementation guidance.
+If you are unsure what to use, invoke `impl` first.
+
+### Using Multiple Skills
+
+You can use multiple skills for a single task.
+Example: implementing a UI component → `impl` + `ui`
+
+---
+
+## Changing the Configuration
+
+Skills Gate is enabled/disabled via `.claude/state/skills-config.json`.
+
+Edit `.claude/state/skills-config.json` directly, or reconfigure with the `/setup` skill.
+
+```json
+// Disable (not recommended)
+{ "skills_gate_enabled": false }
+
+// Add skills
+{ "active_skills": ["impl", "auth"] }
+```
+
+---
+
+## Memory-Enhanced Skills (with Claude-mem integration)
+
+When Claude-mem is enabled, skills leverage past memories to improve quality.
+
+### Enhanced Skills
+
+| Skill | Enhancement |
+|-------|-------------|
+| `impl` | Automatically references past implementation patterns and gotchas |
+| `harness-review` | References similar past review findings |
+| `verify` | References past build-error solutions |
+| `session-init` | Displays guardrail-trigger history and work summaries |
+
+### Example
+
+```
+# When using the impl skill
+📚 Relevant past patterns:
+- API endpoint: adopted RESTful design pattern
+- Error handling: used a unified exception handler
+
+💡 Past gotchas:
+- CORS config: Allow-Origin header is required
+```
+
+### Without Claude-mem
+
+If Claude-mem is not configured, each skill works as usual.
+Memory-Enhanced features are automatically skipped.
+
+### Setup
+
+```bash
+# Enable Claude-mem integration
+/setup harness-mem
+```

@@ -1,0 +1,784 @@
+// harness is the Claude Code Harness v4 CLI.
+//
+// Phase 0 implements the hook subcommands:
+//
+//	harness hook pre-tool          — PreToolUse guardrail evaluation
+//	harness hook post-tool         — PostToolUse tampering/security checks
+//	harness hook permission        — PermissionRequest auto-approval
+//	harness hook session-start     — SessionStart env setup
+//	harness hook post-tool-failure — PostToolUseFailure counter & escalation
+//	harness hook post-compact      — PostCompact WIP context re-injection
+//	harness hook notification      — Notification event logging
+//	harness hook permission-denied — PermissionDenied event logging
+//	harness hook ask-user-question-normalize — PreToolUse AskUserQuestion answer bridge
+//	harness hook session-init      — SessionStart: session initialization + Plans.md summary
+//	harness hook session-cleanup   — SessionEnd: temp file cleanup
+//	harness hook session-monitor   — SessionStart: project state collection + session.json
+//	harness hook session-summary   — Stop: session summary to session-log.md
+//	harness hook ci-status         — PostToolUse: CI status check after push/PR
+//	harness hook subagent-start    — SubagentStart: track agent startup
+//	harness hook subagent-stop     — SubagentStop: track agent stop
+//	harness evidence collect       — Collect evidence (test results, build logs)
+//	harness sprint-contract       — Generate sprint-contract from Plans.md
+//	harness status                 — show status of all tracked agents
+//	harness version                — Print version
+//
+// Usage in hooks.json:
+//
+//	"command": "harness hook pre-tool"
+//
+// The binary reads JSON from stdin and writes JSON to stdout.
+package main
+
+import (
+	"fmt"
+	"io"
+	"os"
+	"strings"
+	"time"
+
+	"github.com/foden303/harness/go/internal/ci"
+	"github.com/foden303/harness/go/internal/event"
+	"github.com/foden303/harness/go/internal/guardrail"
+	"github.com/foden303/harness/go/internal/hook"
+	"github.com/foden303/harness/go/internal/hookcodec"
+	"github.com/foden303/harness/go/internal/hookhandler"
+	"github.com/foden303/harness/go/internal/lifecycle"
+	"github.com/foden303/harness/go/internal/policy"
+	"github.com/foden303/harness/go/internal/session"
+	"github.com/foden303/harness/go/internal/state"
+	"github.com/foden303/harness/go/pkg/hookproto"
+)
+
+// version is set at build time via -ldflags.
+var version = "dev"
+
+func main() {
+	if len(os.Args) < 2 {
+		usage()
+		os.Exit(1)
+	}
+
+	switch os.Args[1] {
+	case "hook":
+		if len(os.Args) < 3 {
+			fmt.Fprintln(os.Stderr, "Usage: harness hook <pre-tool|post-tool|permission>")
+			os.Exit(1)
+		}
+		runHook(os.Args[2], os.Args[3:])
+	case "policy":
+		runPolicy(os.Args[2:])
+	case "gen":
+		runGen(os.Args[2:])
+	case "work":
+		runWork(os.Args[2:])
+	case "plan":
+		runPlan(os.Args[2:])
+	case "plans":
+		runPlans(os.Args[2:])
+	case "review":
+		runReview(os.Args[2:])
+	case "release":
+		runRelease(os.Args[2:])
+	case "evidence":
+		if len(os.Args) < 3 {
+			fmt.Fprintln(os.Stderr, "Usage: harness evidence <collect>")
+			os.Exit(1)
+		}
+		runEvidence(os.Args[2:])
+	case "sprint-contract":
+		runSprintContract(os.Args[2:])
+	case "status":
+		runStatus(os.Args[2:])
+	case "init":
+		runInit(os.Args[2:])
+	case "sync":
+		runSync(os.Args[2:])
+	case "validate":
+		runValidate(os.Args[2:])
+	case "doctor":
+		runDoctor(os.Args[2:])
+	case "mem":
+		runMem(os.Args[2:])
+	case "self-audit":
+		runSelfAudit(os.Args[2:])
+	case "retired-alias":
+		runRetiredAlias(os.Args[2:])
+	case "mirror":
+		runMirror(os.Args[2:])
+	case "failure-codifier":
+		runFailureCodifier(os.Args[2:])
+	case "wt":
+		runWt(os.Args[2:])
+	case "pre-compact":
+		runPreCompact(os.Args[2:])
+	case "version":
+		fmt.Printf("%s (Hokage)\n", version)
+	case "--version", "-v":
+		fmt.Printf("%s (Hokage)\n", version)
+	case "help", "--help", "-h":
+		usage()
+	default:
+		fmt.Fprintf(os.Stderr, "Unknown command: %s\n", os.Args[1])
+		usage()
+		os.Exit(1)
+	}
+}
+
+func usage() {
+	fmt.Fprintln(os.Stderr, "Usage: harness <command>")
+	fmt.Fprintln(os.Stderr, "")
+	fmt.Fprintln(os.Stderr, "Commands:")
+	fmt.Fprintln(os.Stderr, "  hook pre-tool           Evaluate PreToolUse guardrails")
+	fmt.Fprintln(os.Stderr, "  hook post-tool          Evaluate PostToolUse checks")
+	fmt.Fprintln(os.Stderr, "  hook permission         Evaluate PermissionRequest")
+	fmt.Fprintln(os.Stderr, "  hook session-start      SessionStart env setup (writes CLAUDE_ENV_FILE)")
+	fmt.Fprintln(os.Stderr, "  hook post-tool-failure  PostToolUseFailure counter & escalation")
+	fmt.Fprintln(os.Stderr, "  hook post-compact       PostCompact WIP context re-injection")
+	fmt.Fprintln(os.Stderr, "  hook notification       Notification event logging")
+	fmt.Fprintln(os.Stderr, "  hook permission-denied  PermissionDenied event logging + Worker retry")
+	fmt.Fprintln(os.Stderr, "  hook ask-user-question-normalize  PreToolUse AskUserQuestion answer bridge")
+	fmt.Fprintln(os.Stderr, "  hook session-init       SessionStart: session initialization + Plans.md summary")
+	fmt.Fprintln(os.Stderr, "  hook session-cleanup    SessionEnd: temp file cleanup")
+	fmt.Fprintln(os.Stderr, "  hook session-monitor    SessionStart: project state collection + session.json")
+	fmt.Fprintln(os.Stderr, "  hook session-summary    Stop: session summary to session-log.md")
+	fmt.Fprintln(os.Stderr, "  hook ci-status          PostToolUse: CI status check after push/PR")
+	fmt.Fprintln(os.Stderr, "  hook subagent-start     SubagentStart: track agent lifecycle start")
+	fmt.Fprintln(os.Stderr, "  hook subagent-stop      SubagentStop: track agent lifecycle stop")
+	fmt.Fprintln(os.Stderr, "  evidence collect        Collect evidence (test results, build logs) from stdin")
+	fmt.Fprintln(os.Stderr, "    --label <label>       Evidence label (default: general)")
+	fmt.Fprintln(os.Stderr, "    --file <path>         Read content from file instead of stdin")
+	fmt.Fprintln(os.Stderr, "  sprint-contract <task-id> [plans-file] [output-file]  Generate sprint-contract JSON")
+	fmt.Fprintln(os.Stderr, "  status                  Show all tracked agent states")
+	fmt.Fprintln(os.Stderr, "  init [root]             Create harness.toml template in project root")
+	fmt.Fprintln(os.Stderr, "  sync [root]             Generate CC files from harness.toml")
+	fmt.Fprintln(os.Stderr, "  validate [skills|agents|all] [root]  Validate SKILL.md / agent frontmatter")
+	fmt.Fprintln(os.Stderr, "  plans check-deps [Plans.md]  Verify done tasks only depend on closed tasks")
+	fmt.Fprintln(os.Stderr, "  doctor [--migration] [--migration-report] [root]  Health check plus migration status/report")
+	fmt.Fprintln(os.Stderr, "  mem status|setup|update|doctor|off|purge|health  Manage harness-mem companion")
+	fmt.Fprintln(os.Stderr, "  self-audit hooks --file <path>  Audit settings.local.json for injected command hooks")
+	fmt.Fprintln(os.Stderr, "  self-audit baseline --settings <path> --baseline <path>  Verify deny entries did not regress")
+	fmt.Fprintln(os.Stderr, "  retired-alias scan [root]  Scan repo for retired alias residue (exit 1 if hits)")
+	fmt.Fprintln(os.Stderr, "  failure-codifier propose --dry-run  Emit failure-rule.v1 proposals (human-approval gated)")
+	fmt.Fprintln(os.Stderr, "  mirror status|verify [--json] [root]  Report skills/ mirror drift (mirror-state.v1 JSON with --json or verify)")
+	fmt.Fprintln(os.Stderr, "  wt fingerprint capture --output <path>  Snapshot sensitive $HOME paths")
+	fmt.Fprintln(os.Stderr, "  wt fingerprint diff --before <p> --after <p>  Detect worktree-escape (exit 2 on change)")
+	fmt.Fprintln(os.Stderr, "  pre-compact             Evaluate whether PreCompact should be blocked")
+	fmt.Fprintln(os.Stderr, "  gen [hooks] [--check] [root]  Generate per-host hooks.json from hosts.toml (--check vs golden)")
+	fmt.Fprintln(os.Stderr, "  work <taskID>           Emit the work prompt + task context (host executes; no LLM call)")
+	fmt.Fprintln(os.Stderr, "  plan                    Emit the plan prompt for the host to execute")
+	fmt.Fprintln(os.Stderr, "  review <taskID>         Emit the review prompt + task context for the host to execute")
+	fmt.Fprintln(os.Stderr, "  release                 Emit the release prompt for the host to execute")
+	fmt.Fprintln(os.Stderr, "  version                 Print version")
+}
+
+// runEvidence runs the evidence subcommand.
+func runEvidence(args []string) {
+	if len(args) == 0 {
+		fmt.Fprintln(os.Stderr, "Usage: harness evidence <collect>")
+		os.Exit(1)
+	}
+
+	switch args[0] {
+	case "collect":
+		runEvidenceCollect(args[1:])
+	default:
+		fmt.Fprintf(os.Stderr, "Unknown evidence subcommand: %s\n", args[0])
+		os.Exit(1)
+	}
+}
+
+// runEvidenceCollect runs the evidence collect subcommand.
+// It reads content from stdin and saves it to .claude/state/evidence/{label}/.
+func runEvidenceCollect(args []string) {
+	var label string
+	var contentFile string
+
+	for i := 0; i < len(args); i++ {
+		switch args[i] {
+		case "--label":
+			if i+1 < len(args) {
+				i++
+				label = args[i]
+			}
+		case "--file":
+			if i+1 < len(args) {
+				i++
+				contentFile = args[i]
+			}
+		}
+	}
+
+	c := &ci.EvidenceCollector{}
+	opts := ci.CollectOptions{
+		Label:       label,
+		ContentFile: contentFile,
+	}
+
+	if contentFile != "" {
+		// When collecting from a file
+		result := c.Collect(opts)
+		if result.Error != "" {
+			fmt.Fprintln(os.Stderr, "evidence collect error:", result.Error)
+			os.Exit(1)
+		}
+		fmt.Println(result.SavedPath)
+		return
+	}
+
+	// When collecting from stdin
+	if err := c.CollectFromStdin(os.Stdin, os.Stdout, opts); err != nil {
+		fmt.Fprintln(os.Stderr, "evidence collect error:", err)
+		os.Exit(1)
+	}
+}
+
+func runHook(hookType string, args []string) {
+	// pre-tool is the only hook type that accepts a per-host flag
+	// (`harness hook pre-tool --host claude`). It runs the stdin codec so the
+	// policy engine adjudicates the normalized input. With no --host (the default)
+	// the behavior is byte-for-byte identical to the legacy path.
+	if hookType == "pre-tool" {
+		runPreToolHosted(parseHostFlag(args))
+		return
+	}
+
+	switch hookType {
+	// --- event handlers (no tool_name validation) ---
+	case "session-start":
+		h := &event.SessionEnvHandler{}
+		if err := h.Handle(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "session-start handler error: %v\n", err)
+		}
+	case "post-tool-failure":
+		h := &event.PostToolFailureHandler{}
+		if err := h.Handle(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "post-tool-failure handler error: %v\n", err)
+		}
+	case "post-compact":
+		h := &event.PostCompactHandler{}
+		if err := h.Handle(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "post-compact handler error: %v\n", err)
+		}
+	case "notification":
+		h := &event.NotificationHandler{}
+		if err := h.Handle(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "notification handler error: %v\n", err)
+		}
+	case "permission-denied":
+		h := &event.PermissionDeniedHandler{}
+		if err := h.Handle(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "permission-denied handler error: %v\n", err)
+		}
+	// --- CI handlers ---
+	case "ci-status":
+		h := &ci.CIStatusHandler{}
+		if err := h.Handle(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "ci-status handler error: %v\n", err)
+		}
+	// --- subagent lifecycle handlers ---
+	case "subagent-start":
+		runSubagentStart()
+	case "subagent-stop":
+		runSubagentStop()
+	// --- session handlers ---
+	case "session-init":
+		h := &session.InitHandler{}
+		if err := h.Handle(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "session-init handler error: %v\n", err)
+		}
+	case "session-cleanup":
+		h := &session.CleanupHandler{}
+		if err := h.Handle(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "session-cleanup handler error: %v\n", err)
+		}
+	case "session-monitor":
+		h := &session.MonitorHandler{}
+		if err := h.Handle(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "session-monitor handler error: %v\n", err)
+		}
+	case "session-summary":
+		h := &session.SummaryHandler{}
+		if err := h.Handle(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "session-summary handler error: %v\n", err)
+		}
+	// --- hookhandler (Phase 37) ---
+	case "session-register":
+		if err := hookhandler.HandleSessionRegister(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "session-register handler error: %v\n", err)
+		}
+	case "session-unregister":
+		if err := hookhandler.HandleSessionUnregister(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "session-unregister handler error: %v\n", err)
+		}
+	case "pre-tool-use-file-lease":
+		if err := hookhandler.HandlePreToolUseFileLease(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "pre-tool-use-file-lease handler error: %v\n", err)
+		}
+	case "post-tool-use-file-lease":
+		if err := hookhandler.HandlePostToolUseFileLease(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "post-tool-use-file-lease handler error: %v\n", err)
+		}
+	case "browser-guide":
+		if err := hookhandler.HandleBrowserGuide(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "browser-guide handler error: %v\n", err)
+		}
+	case "ask-user-question-normalize":
+		if err := hookhandler.HandleAskUserQuestionNormalize(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "ask-user-question-normalize handler error: %v\n", err)
+		}
+	case "memory-bridge":
+		if err := hookhandler.HandleMemoryBridge(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "memory-bridge handler error: %v\n", err)
+		}
+	case "worktree-create":
+		if err := hookhandler.HandleWorktreeCreate(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "worktree-create handler error: %v\n", err)
+		}
+	case "worktree-remove":
+		h := &hookhandler.WorktreeRemoveHandler{}
+		if err := h.Handle(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "worktree-remove handler error: %v\n", err)
+		}
+	case "commit-cleanup":
+		h := &hookhandler.CommitCleanupHandler{}
+		if err := h.Handle(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "commit-cleanup handler error: %v\n", err)
+		}
+	case "clear-pending":
+		h := &hookhandler.ClearPendingHandler{}
+		if err := h.Handle(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "clear-pending handler error: %v\n", err)
+		}
+	case "config-change":
+		if err := hookhandler.HandleConfigChange(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "config-change handler error: %v\n", err)
+		}
+	case "instructions-loaded":
+		if err := hookhandler.HandleInstructionsLoaded(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "instructions-loaded handler error: %v\n", err)
+		}
+	case "setup-init":
+		if err := hookhandler.HandleSetupHookInit(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "setup-init handler error: %v\n", err)
+		}
+	case "setup-maintenance":
+		if err := hookhandler.HandleSetupHookMaintenance(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "setup-maintenance handler error: %v\n", err)
+		}
+	case "runtime-reactive":
+		if err := hookhandler.HandleRuntimeReactive(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "runtime-reactive handler error: %v\n", err)
+		}
+	case "teammate-idle":
+		if err := hookhandler.HandleTeammateIdle(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "teammate-idle handler error: %v\n", err)
+		}
+	case "track-command":
+		h := &hookhandler.TrackCommandHandler{}
+		if err := h.Handle(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "track-command handler error: %v\n", err)
+		}
+	case "breezing-signal":
+		h := &hookhandler.BreezingSignalInjectorHandler{}
+		if err := h.Handle(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "breezing-signal handler error: %v\n", err)
+		}
+	case "ci-check":
+		h := &hookhandler.CIStatusCheckerHandler{}
+		if err := h.Handle(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "ci-check handler error: %v\n", err)
+		}
+	case "usage-tracker":
+		h := &hookhandler.UsageTrackerHandler{}
+		if err := h.Handle(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "usage-tracker handler error: %v\n", err)
+		}
+	case "todo-sync":
+		h := &hookhandler.TodoSyncHandler{}
+		if err := h.Handle(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "todo-sync handler error: %v\n", err)
+		}
+	case "auto-cleanup":
+		h := &hookhandler.AutoCleanupHandler{}
+		if err := h.Handle(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "auto-cleanup handler error: %v\n", err)
+		}
+	case "track-changes":
+		if err := hookhandler.HandleTrackChanges(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "track-changes handler error: %v\n", err)
+		}
+	case "plans-watcher":
+		if err := hookhandler.HandlePlansWatcher(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "plans-watcher handler error: %v\n", err)
+		}
+	case "tdd-check":
+		if err := hookhandler.HandleTDDOrderCheck(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "tdd-check handler error: %v\n", err)
+		}
+	case "skill-mirror-drift":
+		if err := hookhandler.HandleSkillMirrorDrift(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "skill-mirror-drift handler error: %v\n", err)
+		}
+	case "elicitation":
+		h := &hookhandler.ElicitationHandler{}
+		if err := h.Handle(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "elicitation handler error: %v\n", err)
+		}
+	case "elicitation-result":
+		h := &hookhandler.ElicitationResultHandler{}
+		if err := h.Handle(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "elicitation-result handler error: %v\n", err)
+		}
+	case "stop-evaluator":
+		h := &hookhandler.StopSessionEvaluatorHandler{}
+		if err := h.Handle(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "stop-evaluator handler error: %v\n", err)
+		}
+	case "stop-failure":
+		h := &hookhandler.StopFailureHandler{}
+		if err := h.Handle(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "stop-failure handler error: %v\n", err)
+		}
+	case "notification-ext":
+		if err := hookhandler.HandleNotification(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "notification-ext handler error: %v\n", err)
+		}
+	case "permission-denied-ext":
+		if err := hookhandler.HandlePermissionDenied(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "permission-denied-ext handler error: %v\n", err)
+		}
+	case "quality-pack":
+		if err := hookhandler.HandlePostToolUseQualityPack(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "quality-pack handler error: %v\n", err)
+		}
+	case "inject-policy":
+		h := &hookhandler.UserPromptInjectPolicyHandler{}
+		if err := h.Handle(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "inject-policy handler error: %v\n", err)
+		}
+	case "fix-proposal":
+		h := &hookhandler.FixProposalInjectorHandler{}
+		if err := h.Handle(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "fix-proposal handler error: %v\n", err)
+		}
+	case "log-toolname":
+		h := &hookhandler.PostToolUseLogToolNameHandler{}
+		if err := h.Handle(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "log-toolname handler error: %v\n", err)
+		}
+	case "auto-test":
+		if err := hookhandler.HandleAutoTestRunner(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "auto-test handler error: %v\n", err)
+		}
+	case "task-completed-ext":
+		if err := hookhandler.HandleTaskCompleted(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "task-completed-ext handler error: %v\n", err)
+		}
+	case "pre-compact-save":
+		h := &hookhandler.PreCompactSave{}
+		if err := h.Handle(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "pre-compact-save handler error: %v\n", err)
+		}
+	case "emit-trace":
+		h := &hookhandler.EmitAgentTrace{}
+		if err := h.Handle(os.Stdin, os.Stdout); err != nil {
+			fmt.Fprintf(os.Stderr, "emit-trace handler error: %v\n", err)
+		}
+	default:
+		// guard-fastpath handlers require tool_name validation
+		input, err := hook.ReadInput(os.Stdin)
+		if err != nil {
+			// Empty input or parse error → safe approve
+			result := hook.SafeResult(err)
+			hook.WriteResult(os.Stdout, result)
+			return
+		}
+		runGuardHook(hookType, input)
+	}
+}
+
+func runGuardHook(hookType string, input hookproto.HookInput) {
+	switch hookType {
+	// pre-tool is intercepted earlier in runHook (runPreToolHosted) so it can run
+	// the per-host stdin codec; it never reaches here.
+	case "post-tool":
+		runPostTool(input)
+	case "permission":
+		runPermission(input)
+	default:
+		fmt.Fprintf(os.Stderr, "Unknown hook type: %s\n", hookType)
+		// Safe fallback
+		hook.WriteResult(os.Stdout, hook.SafeResult(fmt.Errorf("unknown hook type: %s", hookType)))
+	}
+}
+
+// parseHostFlag extracts the optional `--host <name>` argument that may follow
+// the hook type (`harness hook pre-tool --host claude`). An empty string means
+// no host was supplied (the default). Both `--host claude` and `--host=claude`
+// are accepted; unrecognized args are ignored so the hook stays fail-open.
+func parseHostFlag(args []string) string {
+	for i := 0; i < len(args); i++ {
+		a := args[i]
+		if a == "--host" {
+			if i+1 < len(args) {
+				return args[i+1]
+			}
+			return ""
+		}
+		if strings.HasPrefix(a, "--host=") {
+			return strings.TrimPrefix(a, "--host=")
+		}
+	}
+	return ""
+}
+
+// runPreToolHosted runs the PreToolUse guardrail through the stdin codec.
+//
+// Flow: read raw stdin → hookcodec.Normalize (tolerate field-name aliases) →
+// guardrail.EvaluatePreTool → policy.FormatPreToolResult (UNCHANGED engine). On a
+// deny decision it writes the Claude deny JSON (hookcodec.DenyOutput) and exits 2
+// — the universal hard-block code. Allow/ask preserve the canonical PreToolUse
+// hookSpecificOutput so the no-flag path stays byte-for-byte compatible with the
+// pre-91.4 behavior.
+func runPreToolHosted(hostFlag string) {
+	// Chain-integrity precondition (Phase 91.6 FLOOR). The PreToolUse guard is
+	// itself a gate; if its deny surface has been weakened relative to the
+	// build-time baseline, refuse to adjudicate rather than fail open. This is
+	// the one case where the hook does NOT fall back to a safe approve: a
+	// compromised chain quietly approving writes is the exact failure mode the
+	// self-audit exists to stop, so it exits non-zero (3) before touching stdin.
+	// The intact-surface path below is byte-for-byte unchanged.
+	if auditErr := policy.VerifyDenySurface(); auditErr != nil {
+		fmt.Fprintf(os.Stderr, "pre-tool guard: refusing to adjudicate — %v\n", auditErr)
+		os.Exit(3)
+	}
+
+	raw, err := io.ReadAll(os.Stdin)
+	if err != nil {
+		// Cannot read stdin → safe approve (fail-open), exit 0.
+		hook.WriteResult(os.Stdout, hook.SafeResult(err))
+		return
+	}
+
+	input, host, normErr := hookcodec.Normalize(raw, hostFlag)
+	if normErr != nil {
+		// Empty input or unparseable / no tool action → safe approve, exit 0.
+		hook.WriteResult(os.Stdout, hook.SafeResult(normErr))
+		return
+	}
+
+	result := guardrail.EvaluatePreTool(input)
+	output, exitCode := policy.FormatPreToolResult(result)
+
+	if result.Decision == hookproto.DecisionDeny {
+		// Host-appropriate deny envelope (Claude default == legacy bytes).
+		denyJSON, denyErr := hookcodec.DenyOutput(host, result.Reason)
+		if denyErr != nil {
+			// Unknown host: fall back to the policy engine's canonical output so
+			// the deny is still expressed, then exit 2.
+			if output != nil {
+				hook.WriteJSON(os.Stdout, output)
+			}
+			os.Exit(exitCode)
+		}
+		os.Stdout.Write(denyJSON)
+		os.Stdout.Write([]byte("\n"))
+		os.Exit(exitCode)
+	}
+
+	// allow / ask: keep the canonical PreToolUse output (unchanged for Claude
+	// and harmless for the other hosts, which only act on exit codes / deny).
+	if output != nil {
+		hook.WriteJSON(os.Stdout, output)
+	}
+	os.Exit(exitCode)
+}
+
+func runPostTool(input hookproto.HookInput) {
+	result := policy.EvaluatePostTool(input)
+
+	// PostToolUse: if there's a systemMessage, wrap in hookSpecificOutput
+	if result.SystemMessage != "" {
+		out := hookproto.PostToolOutput{
+			HookSpecificOutput: hookproto.PostToolHookSpecific{
+				HookEventName:     "PostToolUse",
+				AdditionalContext: result.SystemMessage,
+			},
+		}
+		hook.WriteJSON(os.Stdout, out)
+		return
+	}
+
+	// No output for pure approve
+}
+
+func runPermission(input hookproto.HookInput) {
+	_, permOutput := policy.EvaluatePermission(input)
+
+	if permOutput != nil {
+		hook.WriteJSON(os.Stdout, permOutput)
+		return
+	}
+
+	// No output = pass through to user prompt
+}
+
+// openTracker opens and returns an AgentTracker backed by the SQLite store.
+// If opening the DB fails, it falls back to an in-memory tracker (store=nil).
+func openTracker() (*lifecycle.AgentTracker, func()) {
+	dbPath := state.ResolveStatePath("")
+	store, err := state.NewHarnessStore(dbPath)
+	if err != nil {
+		// The hook can continue even without a usable DB (in-memory only)
+		return lifecycle.NewAgentTracker(nil), func() {}
+	}
+	tracker := lifecycle.NewAgentTracker(store)
+	return tracker, func() { store.Close() }
+}
+
+// runSubagentStart processes the SubagentStart hook.
+// It reads HookInput from stdin and registers the agent with AgentTracker.
+func runSubagentStart() {
+	input, err := hook.ReadInput(os.Stdin)
+	if err != nil {
+		// Ignore input parse errors and pass through (hook safety principle)
+		return
+	}
+
+	tracker, cleanup := openTracker()
+	defer cleanup()
+
+	if err := tracker.HandleStart(input); err != nil {
+		fmt.Fprintf(os.Stderr, "subagent-start handler error: %v\n", err)
+	}
+	// SubagentStart needs no output (pass-through hook)
+}
+
+// runSubagentStop processes the SubagentStop hook.
+// It reads HookInput from stdin and records the agent's stop in AgentTracker.
+func runSubagentStop() {
+	input, err := hook.ReadInput(os.Stdin)
+	if err != nil {
+		return
+	}
+
+	tracker, cleanup := openTracker()
+	defer cleanup()
+
+	if err := tracker.HandleStop(input); err != nil {
+		fmt.Fprintf(os.Stderr, "subagent-stop handler error: %v\n", err)
+	}
+	if err := persistReviewerResultBackstop(input); err != nil {
+		fmt.Fprintf(os.Stderr, "subagent-stop reviewer persist error: %v\n", err)
+	}
+	// SubagentStop needs no output (pass-through hook)
+}
+
+// runStatus displays the status table of all tracked agents.
+// If the SQLite store is available, it displays the persisted records.
+func runStatus(_ []string) {
+	dbPath := state.ResolveStatePath("")
+	store, err := state.NewHarnessStore(dbPath)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "status: DB open error: %v\n", err)
+		fmt.Println("Tracked Agents: (DB unavailable)")
+		return
+	}
+	defer store.Close()
+
+	records, err := store.ListAgentStates(false)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "status: list error: %v\n", err)
+		return
+	}
+
+	printStatusTable(records)
+}
+
+// printStatusTable displays the agent status table on stdout.
+func printStatusTable(records []state.AgentStateRecord) {
+	if len(records) == 0 {
+		fmt.Println("Tracked Agents: (none)")
+		return
+	}
+
+	fmt.Println("Tracked Agents:")
+	fmt.Printf("%-12s  %-12s  %-10s  %-8s  %s\n",
+		"Agent ID", "Type", "State", "Duration", "Recovery")
+	fmt.Printf("%-12s  %-12s  %-10s  %-8s  %s\n",
+		"------------", "------------", "----------", "--------", "--------")
+
+	var active, failed, completed int
+	for _, rec := range records {
+		dur := formatDuration(rec)
+		recovery := formatRecovery(rec)
+		shortID := rec.AgentID
+		if len(shortID) > 12 {
+			shortID = shortID[:7] + "..."
+		}
+		fmt.Printf("%-12s  %-12s  %-10s  %-8s  %s\n",
+			shortID, rec.AgentType, rec.State, dur, recovery)
+
+		switch rec.State {
+		case "RUNNING", "SPAWNING", "REVIEWING", "APPROVED", "RECOVERING":
+			active++
+		case "FAILED", "ABORTED", "STALE":
+			failed++
+		default:
+			completed++
+		}
+	}
+
+	fmt.Printf("\nTotal: %d active, %d failed, %d completed\n", active, failed, completed)
+}
+
+// formatDuration builds an elapsed-time string from an AgentStateRecord.
+// If stopped_at is present, it measures up to that time; otherwise it returns the difference from the current time.
+func formatDuration(rec state.AgentStateRecord) string {
+	startStr := rec.StartedAt
+	if startStr == "" {
+		return "-"
+	}
+
+	start, err := time.Parse(time.RFC3339, startStr)
+	if err != nil {
+		return "-"
+	}
+
+	var end time.Time
+	if rec.StoppedAt != nil {
+		end, err = time.Parse(time.RFC3339, *rec.StoppedAt)
+		if err != nil {
+			end = time.Now()
+		}
+	} else {
+		end = time.Now()
+	}
+
+	d := end.Sub(start)
+	if d < 0 {
+		d = 0
+	}
+
+	h := int(d.Hours())
+	m := int(d.Minutes()) % 60
+	s := int(d.Seconds()) % 60
+
+	if h > 0 {
+		return fmt.Sprintf("%dh%02dm", h, m)
+	}
+	if m > 0 {
+		return fmt.Sprintf("%dm%02ds", m, s)
+	}
+	return fmt.Sprintf("%ds", s)
+}
+
+// formatRecovery returns the recovery attempt count in "N/3" format.
+// It returns "-" when there are no recovery attempts.
+func formatRecovery(rec state.AgentStateRecord) string {
+	if rec.RecoveryAttempts == 0 {
+		return "-"
+	}
+	return fmt.Sprintf("%d/3", rec.RecoveryAttempts)
+}

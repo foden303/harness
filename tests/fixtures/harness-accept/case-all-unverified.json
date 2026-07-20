@@ -1,0 +1,38 @@
+{
+  "schema": "acceptance-context.v1",
+  "user_request": "Complete Plan Brief MVP in 5 tasks",
+  "user_request_hash": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+  "demo_artifacts": [],
+  "verified_criteria": [
+    { "name": "AC-1", "passed": false, "evidence": "" },
+    { "name": "AC-2", "passed": false, "evidence": "" },
+    { "name": "AC-3", "passed": false, "evidence": "" },
+    { "name": "AC-4", "passed": false, "evidence": "" },
+    { "name": "AC-5", "passed": false, "evidence": "" }
+  ],
+  "unverified_caveats": [
+    "Implementation not started; all criteria unverified"
+  ],
+  "past_issue_patterns": [],
+  "recommendation": "reject",
+  "recommendation_evidence": [
+    "verified 0 / 5 total (0%) -> below reject threshold (< 0.5)",
+    "evidence not provided for all criteria"
+  ],
+  "project": "harness",
+  "generated_at": "2026-05-09T18:32:00Z",
+  "verified_criteria_items": [
+    { "name": "AC-1", "status_label": "failed", "evidence": "", "evidence_warn": "⚠ evidence not provided" },
+    { "name": "AC-2", "status_label": "failed", "evidence": "", "evidence_warn": "⚠ evidence not provided" },
+    { "name": "AC-3", "status_label": "failed", "evidence": "", "evidence_warn": "⚠ evidence not provided" },
+    { "name": "AC-4", "status_label": "failed", "evidence": "", "evidence_warn": "⚠ evidence not provided" },
+    { "name": "AC-5", "status_label": "failed", "evidence": "", "evidence_warn": "⚠ evidence not provided" }
+  ],
+  "unverified_caveats_items": [
+    { "text": "Implementation not started; all criteria unverified" }
+  ],
+  "recommendation_evidence_items": [
+    { "text": "verified 0 / 5 total (0%) -> below reject threshold (< 0.5)" },
+    { "text": "evidence not provided for all criteria" }
+  ]
+}

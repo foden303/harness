@@ -1,0 +1,156 @@
+# tdd-paths.yaml
+#
+# Purpose:
+#   Phase 68 - SSOT for the per-language src<->test file mapping used by TDD
+#   enforcement. Referenced by scripts/detect-test-framework.sh and
+#   scripts/hook-handlers/tdd-enforce.sh (Phase B implementation); it is the
+#   basis by which the R14 guardrail rule decides "does a corresponding test
+#   file exist when a src file is written".
+#
+# Schema: tdd-paths.v1
+#   {
+#     schema_version: "tdd-paths.v1",
+#     languages: {
+#       <lang>: {
+#         src_patterns: [glob...],
+#         test_patterns: [glob...],
+#         framework_detect_files: [path...],
+#         framework_command_default: "...",
+#         src_to_test_map: [{from: "...", to: ["..."]}]
+#       }
+#     },
+#     overrides: [{glob, framework}]  # optional, for polyglot monorepos
+#   }
+#
+# Default:
+#   Provides a basic mapping for the 4 languages node / go / python / rust.
+#   Writes in unregistered languages do not trigger a test requirement
+#   (false-detection prevention).
+#
+# Update Rules:
+#   1. languages key is unique per language identifier (node / go / python / rust / ...)
+#   2. src_patterns are globs (bash extglob / Go filepath.Match compatible)
+#   3. test_patterns are mutually exclusive with src (test files are not R14 targets)
+#   4. src_to_test_map[].from is a pattern containing placeholders {name} / {dir}
+#   5. src_to_test_map[].to has one or more candidates (the first that exists is used)
+#   6. the first hit in framework_detect_files determines framework_command_default
+#   7. an invalid schema causes scripts/detect-test-framework.sh to exit 1
+#   8. Full spec: docs/TDD_ENFORCEMENT.md (planned for Phase B.3)
+#
+# Priority patterns for avoiding false positives (aligned with the R14 gate):
+#   - a Write to a test file itself is always approved (excluded at gate 5)
+#   - a Write to a path with no sprint-contract.json is always approved (gate 6 not met)
+#   - a path tied to a contract with tdd_required != true is always approved (gate 6 not met)
+#   - when tdd.enforce.level != "max", this file is never referenced (short-circuited at gate 1)
+#
+
+schema_version: tdd-paths.v1
+
+languages:
+  node:
+    src_patterns:
+      - "src/**/*.ts"
+      - "src/**/*.tsx"
+      - "src/**/*.js"
+      - "src/**/*.jsx"
+      - "src/**/*.mjs"
+      - "app/**/*.ts"
+      - "app/**/*.tsx"
+      - "lib/**/*.ts"
+      - "lib/**/*.js"
+      - "mcp-server/src/**/*.ts"
+      - "harness-ui/src/**/*.ts"
+      - "harness-ui/src/**/*.tsx"
+    test_patterns:
+      - "**/*.test.ts"
+      - "**/*.test.tsx"
+      - "**/*.test.js"
+      - "**/*.test.jsx"
+      - "**/*.test.mjs"
+      - "**/*.spec.ts"
+      - "**/*.spec.tsx"
+      - "**/*.spec.js"
+      - "**/__tests__/**"
+      - "tests/**"
+    framework_detect_files:
+      - "vitest.config.ts"
+      - "vitest.config.js"
+      - "vitest.config.mjs"
+      - "jest.config.js"
+      - "jest.config.ts"
+      - "jest.config.mjs"
+      - "package.json"
+    framework_command_default: "npm test"
+    src_to_test_map:
+      - from: "src/{name}.ts"
+        to:
+          - "tests/{name}.test.ts"
+          - "src/{name}.test.ts"
+          - "src/__tests__/{name}.test.ts"
+      - from: "src/{name}.tsx"
+        to:
+          - "tests/{name}.test.tsx"
+          - "src/{name}.test.tsx"
+      - from: "src/{name}.js"
+        to:
+          - "tests/{name}.test.js"
+          - "src/{name}.test.js"
+      - from: "mcp-server/src/{name}.ts"
+        to:
+          - "mcp-server/tests/unit/{name}.test.ts"
+          - "mcp-server/tests/{name}.test.ts"
+
+  go:
+    src_patterns:
+      - "**/*.go"
+    test_patterns:
+      - "**/*_test.go"
+    framework_detect_files:
+      - "go.mod"
+    framework_command_default: "go test ./..."
+    src_to_test_map:
+      - from: "{dir}/{name}.go"
+        to:
+          - "{dir}/{name}_test.go"
+
+  python:
+    src_patterns:
+      - "src/**/*.py"
+    test_patterns:
+      - "tests/**/test_*.py"
+      - "tests/**/*_test.py"
+      - "**/test_*.py"
+    framework_detect_files:
+      - "pyproject.toml"
+      - "pytest.ini"
+      - "setup.cfg"
+    framework_command_default: "pytest"
+    src_to_test_map:
+      - from: "src/{name}.py"
+        to:
+          - "tests/test_{name}.py"
+          - "tests/{name}_test.py"
+
+  rust:
+    src_patterns:
+      - "src/**/*.rs"
+    test_patterns:
+      - "tests/**/*.rs"
+      - "src/**/*_test.rs"
+    framework_detect_files:
+      - "Cargo.toml"
+    framework_command_default: "cargo test"
+    src_to_test_map:
+      - from: "src/{name}.rs"
+        to:
+          - "tests/{name}_test.rs"
+          - "src/{name}_test.rs"
+
+# ---- per-glob framework override (for future expansion; currently empty array) ----
+#
+# When a polyglot monorepo needs an override like "go at the root but vitest
+# under node/web", add it to overrides[]. R14 uses the framework matching the
+# most specific overrides[].glob, and falls back to the languages scan result
+# if there is none.
+#
+overrides: []

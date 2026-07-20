@@ -1,0 +1,38 @@
+{
+  "goal": "Add rate limiting to the API and verify it with tests",
+  "subtasks": [
+    {
+      "id": "1",
+      "title": "Design the rate-limiting middleware",
+      "dod": "The per-IP/per-user limit policy is documented"
+    },
+    {
+      "id": "2",
+      "title": "Implement the rate-limiting middleware",
+      "dod": "Requests over the limit return 429"
+    },
+    {
+      "id": "3",
+      "title": "Config values and header output",
+      "dod": "Retry-After and X-RateLimit-* headers are returned"
+    },
+    {
+      "id": "4",
+      "title": "Unit tests for rate limiting",
+      "dod": "Request behavior around the threshold is verified by tests"
+    },
+    {
+      "id": "5",
+      "title": "Add integration tests",
+      "dod": "Rate limiting is active on the main API endpoints"
+    }
+  ],
+  "scope_files": [
+    "src/middleware/rate-limit.ts",
+    "tests/middleware/rate-limit.test.ts"
+  ],
+  "risk_notes": [
+    "Without a shared cache, limits may diverge across instances"
+  ],
+  "confidence": "high"
+}

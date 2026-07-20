@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "orchestration-scorecard.v1",
+  "title": "Orchestration Scorecard (v1)",
+  "description": "Merged view of the current session's backend mix (from the ledger) and lifetime totals (from the accumulator), produced by scripts/orchestration-scorecard.sh. Claude is the host runtime and is never counted as a delegation; the headline figures are worker delegation counts. See spec.md 'Orchestration Visibility Contract'.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "session_id", "observed", "session", "lifetime", "note"],
+  "properties": {
+    "version": { "type": "integer", "const": 1 },
+    "session_id": { "type": "string" },
+    "observed": {
+      "type": "boolean",
+      "description": "False when no counted delegation exists in either scope; surfaces degrade to 'no delegations observed'."
+    },
+    "session": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["worker", "claude", "non_claude_delegations", "backends_engaged"],
+      "properties": {
+        "worker": { "$ref": "#/definitions/backendSlot" },
+        "claude": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status"],
+          "properties": {
+            "status": { "type": "string", "const": "host", "description": "Claude is the host runtime; its work is not delegation-counted." }
+          }
+        },
+        "non_claude_delegations": { "type": "integer", "minimum": 0, "description": "worker counted delegations this session." },
+        "backends_engaged": { "type": "integer", "minimum": 1, "maximum": 2, "description": "Distinct backends active this session, including the Claude host (1) plus worker when used." }
+      }
+    },
+    "lifetime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["worker", "non_claude_delegations"],
+      "properties": {
+        "worker": { "type": "object", "required": ["count"], "additionalProperties": false, "properties": { "count": { "type": "integer", "minimum": 0 } } },
+        "non_claude_delegations": { "type": "integer", "minimum": 0, "description": "Cumulative worker delegations across rolled-up sessions." }
+      }
+    },
+    "note": { "type": "string", "description": "One-line reading aid for the figures." }
+  },
+  "definitions": {
+    "backendSlot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["count", "status"],
+      "properties": {
+        "count": { "type": "integer", "minimum": 0 },
+        "status": {
+          "type": "string",
+          "enum": ["used", "available", "not-configured"],
+          "description": "used = count>0; available = configured but unused this session; not-configured = backend binary absent (neutral, not a failure)."
+        }
+      }
+    }
+  }
+}

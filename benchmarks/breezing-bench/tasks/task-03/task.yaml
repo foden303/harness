@@ -1,0 +1,10 @@
+id: "task-03"
+name: "Refactor - Split a God Object"
+difficulty: "Medium-Hard"
+prompt: "The UserService class in user-service.ts has too many responsibilities. Split it into three modules: authentication, profile, and notifications. Make sure all existing tests still pass."
+hidden_test_count: 12
+setup_files:
+  - src/user-service.ts
+  - src/user-service.test.ts
+  - package.json
+  - tsconfig.json

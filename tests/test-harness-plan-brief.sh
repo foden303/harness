@@ -1,0 +1,301 @@
+#!/bin/bash
+# tests/test-harness-plan-brief.sh
+# Phase 65.1.2 - mechanical verification of the harness-plan-brief skill
+#
+# Verification aspects:
+#   1. SKILL.md exists and its frontmatter complies with skill-editing.md conventions
+#   2. SKILL.md instructs calling `mcp__harness__harness_mem_search` with project enforcement
+#   3. SKILL.md prohibits cross-project search (requires `strict_project: true`)
+#   4. The JSON Schema parses as a valid JSON Schema
+#   5. The fixture is valid under a JSON Schema validator (prefer Python jsonschema → structural jq fallback)
+#   6. render-html.sh can render plan-brief.html.template normally
+#   7. plan-brief-open.sh skips with BROWSER=true and outputs only the path to stdout
+#   8. plan-brief-open.sh returns exit 2 for a nonexistent path
+
+set -euo pipefail
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT_DIR"
+
+SKILL_PATH="$ROOT_DIR/skills/harness-plan-brief/SKILL.md"
+SCHEMA_PATH="$ROOT_DIR/skills/harness-plan-brief/schemas/plan-brief-context.v1.schema.json"
+TEMPLATE_PATH="$ROOT_DIR/templates/html/plan-brief.html.template"
+RENDER_SCRIPT="$ROOT_DIR/scripts/render-html.sh"
+OPEN_SCRIPT="$ROOT_DIR/scripts/plan-brief-open.sh"
+FIXTURE_PATH="$ROOT_DIR/tests/fixtures/plan-brief-e2e/sample-context.json"
+
+PASS=0
+FAIL=0
+FAIL_MESSAGES=()
+
+pass() {
+  PASS=$((PASS + 1))
+  echo "✓ $1"
+}
+
+fail() {
+  FAIL=$((FAIL + 1))
+  FAIL_MESSAGES+=("$1")
+  echo "✗ $1" >&2
+}
+
+# ---- 1. SKILL.md frontmatter ----
+
+if [[ ! -f "$SKILL_PATH" ]]; then
+  fail "SKILL.md not found: $SKILL_PATH"
+else
+  pass "SKILL.md exists"
+
+  # frontmatter line range (between two `---` markers at top)
+  FM_END_LINE="$(awk '/^---$/{c++; if(c==2 && NR>1){print NR; exit}}' "$SKILL_PATH")"
+  if [[ -z "$FM_END_LINE" ]]; then
+    fail "SKILL.md frontmatter has no closing '---' marker"
+  else
+    FM_CONTENT="$(sed -n "1,${FM_END_LINE}p" "$SKILL_PATH")"
+    for required in "name: harness-plan-brief" "user-invocable: true" "argument-hint:" "allowed-tools:" "description:"; do
+      if grep -Fq -- "$required" <<< "$FM_CONTENT"; then
+        pass "SKILL.md frontmatter has '$required'"
+      else
+        fail "SKILL.md frontmatter missing '$required'"
+      fi
+    done
+  fi
+fi
+
+# ---- 2. project enforcement instructions ----
+
+if [[ -f "$SKILL_PATH" ]]; then
+  if grep -qE 'mcp__harness__harness_mem_search' "$SKILL_PATH"; then
+    pass "SKILL.md references mcp__harness__harness_mem_search"
+  else
+    fail "SKILL.md does not reference mcp__harness__harness_mem_search (DoD b)"
+  fi
+
+  if grep -qE 'project: *<?PROJECT|project: *<current|basename.+git rev-parse' "$SKILL_PATH"; then
+    pass "SKILL.md instructs project parameter enforcement"
+  else
+    fail "SKILL.md does not instruct project parameter enforcement (DoD b)"
+  fi
+
+  if grep -qE 'strict_project:[[:space:]]*true' "$SKILL_PATH"; then
+    pass "SKILL.md instructs strict_project: true"
+  else
+    fail "SKILL.md does not instruct strict_project: true (DoD c)"
+  fi
+fi
+
+  if grep -Fq "plan_readiness" "$SKILL_PATH" && \
+     grep -Fq "DoD clarity" "$SKILL_PATH" && \
+     grep -Fq "dependency resolution rate" "$SKILL_PATH" && \
+     grep -Fq 'Always generate at least one `options` / `risks` / `acceptance_criteria` entry' "$SKILL_PATH"; then
+    pass "SKILL.md documents plan_readiness and non-empty Plan Brief sections (Phase 105.3)"
+  else
+    fail "SKILL.md missing plan_readiness / non-empty generation instructions (Phase 105.3)"
+  fi
+
+# ---- 3. NO cross-project search ----
+
+if [[ -f "$SKILL_PATH" ]]; then
+  # Confirm no affirmative cross-project instruction is written.
+  # The word "cross-project" itself is OK if used in a prohibiting context.
+  # Detection rule: affirmative expressions like "call cross-project search" /
+  # "run cross-project search" are NG. "do not call / do not run / prohibit cross-project search" is OK.
+  if grep -qE 'cross-project' "$SKILL_PATH"; then
+    if grep -qiE 'cross-project[^.]*(do not|never|prohibit|opt-in|Phase 65.3)' "$SKILL_PATH"; then
+      pass "SKILL.md mentions cross-project only in restricted context"
+    else
+      fail "SKILL.md mentions cross-project without explicit prohibition (DoD c)"
+    fi
+  else
+    pass "SKILL.md does not mention cross-project at all"
+  fi
+fi
+
+# ---- 4. JSON Schema parse ----
+
+if [[ ! -f "$SCHEMA_PATH" ]]; then
+  fail "JSON Schema not found: $SCHEMA_PATH"
+else
+  if jq -e '.' "$SCHEMA_PATH" >/dev/null 2>&1; then
+    pass "JSON Schema is parseable"
+  else
+    fail "JSON Schema is not valid JSON"
+  fi
+
+  # Required top-level fields per Plans.md spec
+  for req in "user_request" "my_understanding" "options" "risks" "acceptance_criteria" "confidence" "related_decisions" "similar_past_plans"; do
+    if jq -e --arg k "$req" '.required | index($k)' "$SCHEMA_PATH" >/dev/null 2>&1; then
+      pass "Schema requires field '$req'"
+    else
+      fail "Schema missing required field '$req' (Plans.md spec)"
+    fi
+  done
+
+  if jq -e '.properties.confidence.type == "integer" and .properties.confidence.minimum == 0 and .properties.confidence.maximum == 100' "$SCHEMA_PATH" >/dev/null 2>&1; then
+    pass "Schema confidence is integer 0-100"
+  else
+    fail "Schema confidence does not enforce integer 0-100"
+  fi
+fi
+
+# ---- 5. fixture validates against schema ----
+
+if [[ ! -f "$FIXTURE_PATH" ]]; then
+  fail "Fixture not found: $FIXTURE_PATH"
+else
+  if jq -e '.' "$FIXTURE_PATH" >/dev/null 2>&1; then
+    pass "Fixture is valid JSON"
+  else
+    fail "Fixture is not valid JSON"
+  fi
+
+  # Try Python jsonschema (preferred), fall back to structural jq check
+  validated=0
+  if command -v python3 >/dev/null 2>&1; then
+    if python3 -c "
+import json, sys
+try:
+    import jsonschema
+except ImportError:
+    sys.exit(2)
+with open('$SCHEMA_PATH') as f: schema = json.load(f)
+with open('$FIXTURE_PATH') as f: data  = json.load(f)
+try:
+    jsonschema.validate(data, schema)
+    print('PYTHON_JSONSCHEMA_OK')
+except jsonschema.ValidationError as e:
+    print(f'PYTHON_JSONSCHEMA_FAIL: {e.message}')
+    sys.exit(1)
+" 2>/dev/null | grep -q "PYTHON_JSONSCHEMA_OK"; then
+      pass "Fixture validates against schema (Python jsonschema)"
+      validated=1
+    fi
+  fi
+
+  if [[ "$validated" -eq 0 ]]; then
+    # Structural jq fallback
+    schema_ok=1
+    for req in "user_request" "my_understanding" "options" "risks" "acceptance_criteria" "confidence" "related_decisions" "similar_past_plans" "project" "generated_at"; do
+      if ! jq -e --arg k "$req" 'has($k)' "$FIXTURE_PATH" >/dev/null 2>&1; then
+        schema_ok=0
+        fail "Fixture missing required field '$req' (structural fallback)"
+      fi
+    done
+    if jq -e '.confidence | (type == "number" and . >= 0 and . <= 100)' "$FIXTURE_PATH" >/dev/null 2>&1; then
+      :
+    else
+      schema_ok=0
+      fail "Fixture confidence not in 0-100 range"
+    fi
+    if jq -e '.schema == "plan-brief-context.v1"' "$FIXTURE_PATH" >/dev/null 2>&1; then
+      :
+    else
+      schema_ok=0
+      fail "Fixture schema field is not 'plan-brief-context.v1'"
+    fi
+    if [[ "$schema_ok" -eq 1 ]]; then
+      pass "Fixture passes structural validation (jq fallback; install python3 jsonschema for full validation)"
+    fi
+  fi
+fi
+
+# ---- 6. render-html.sh generates HTML from template ----
+
+if [[ ! -x "$RENDER_SCRIPT" ]]; then
+  fail "render-html.sh not executable: $RENDER_SCRIPT"
+elif [[ ! -f "$TEMPLATE_PATH" ]]; then
+  fail "Template not found: $TEMPLATE_PATH"
+else
+  TMP_OUT="$(mktemp /tmp/plan-brief-test-XXXXXX.html)"
+  trap 'rm -f "$TMP_OUT"' EXIT
+  if bash "$RENDER_SCRIPT" --template plan-brief --data "$FIXTURE_PATH" --out "$TMP_OUT" 2>/dev/null; then
+    pass "render-html.sh succeeds with plan-brief template + fixture"
+
+    # Sanity: output contains expected fixture values
+    if grep -q "Please produce a progress-tracking HTML for the client" "$TMP_OUT"; then
+      pass "Rendered HTML contains user_request"
+    else
+      fail "Rendered HTML missing user_request"
+    fi
+
+    if grep -q "Option A: grep Plans.md directly and render to HTML" "$TMP_OUT"; then
+      pass "Rendered HTML iterates options[]"
+    else
+      fail "Rendered HTML did not iterate options[]"
+    fi
+
+    if grep -q "scope-creep" "$TMP_OUT"; then
+      pass "Rendered HTML iterates risks[]"
+    else
+      fail "Rendered HTML did not iterate risks[]"
+    fi
+
+    if grep -q "78" "$TMP_OUT"; then
+      pass "Rendered HTML shows confidence value"
+    else
+      fail "Rendered HTML missing confidence value"
+    fi
+
+    # Untemplated tags should be fully resolved
+    if grep -qE '\{\{[a-zA-Z]' "$TMP_OUT"; then
+      fail "Rendered HTML still contains unresolved {{...}} tags"
+    else
+      pass "All {{...}} tags resolved in rendered HTML"
+    fi
+  else
+    fail "render-html.sh failed for plan-brief template"
+  fi
+fi
+
+# ---- 7. plan-brief-open.sh BROWSER=true skip ----
+
+if [[ ! -x "$OPEN_SCRIPT" ]]; then
+  fail "plan-brief-open.sh not executable: $OPEN_SCRIPT"
+else
+  TMP_HTML="$(mktemp /tmp/plan-brief-open-test-XXXXXX.html)"
+  echo "<html></html>" > "$TMP_HTML"
+
+  OPEN_OUT="$(BROWSER=true bash "$OPEN_SCRIPT" "$TMP_HTML" 2>/dev/null || true)"
+  if [[ "$OPEN_OUT" == "$TMP_HTML" || "$OPEN_OUT" == "$(cd "$(dirname "$TMP_HTML")" && pwd)/$(basename "$TMP_HTML")" ]]; then
+    pass "plan-brief-open.sh skips open with BROWSER=true and outputs path"
+  else
+    fail "plan-brief-open.sh BROWSER=true output unexpected: '$OPEN_OUT'"
+  fi
+
+  # PLAN_BRIEF_NO_OPEN=1 should also skip
+  OPEN_OUT2="$(PLAN_BRIEF_NO_OPEN=1 bash "$OPEN_SCRIPT" "$TMP_HTML" 2>/dev/null || true)"
+  if [[ "$OPEN_OUT2" == "$TMP_HTML" || "$OPEN_OUT2" == "$(cd "$(dirname "$TMP_HTML")" && pwd)/$(basename "$TMP_HTML")" ]]; then
+    pass "plan-brief-open.sh skips open with PLAN_BRIEF_NO_OPEN=1"
+  else
+    fail "plan-brief-open.sh PLAN_BRIEF_NO_OPEN=1 output unexpected: '$OPEN_OUT2'"
+  fi
+
+  rm -f "$TMP_HTML"
+
+  # ---- 8. plan-brief-open.sh missing file ----
+  set +e
+  bash "$OPEN_SCRIPT" /nonexistent/never-exists.html >/dev/null 2>&1
+  exit_code=$?
+  set -e
+  if [[ "$exit_code" -eq 2 ]]; then
+    pass "plan-brief-open.sh exits 2 on missing file"
+  else
+    fail "plan-brief-open.sh did not exit 2 on missing file (got $exit_code)"
+  fi
+fi
+
+# ---- Summary ----
+
+echo ""
+echo "============================================"
+echo "PASS=$PASS FAIL=$FAIL"
+if [[ "$FAIL" -gt 0 ]]; then
+  echo ""
+  echo "FAIL details:" >&2
+  for msg in "${FAIL_MESSAGES[@]}"; do
+    echo "  - $msg" >&2
+  done
+  exit 1
+fi
+echo "All assertions passed."
+exit 0

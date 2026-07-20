@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://harness.local/schemas/progress-snapshot.v1.schema.json",
+  "title": "progress-snapshot.v1",
+  "description": "Progress snapshot structure for the Progress Tracker (Phase 65.4). The harness-progress skill assembles it from Plans.md and the state file.",
+  "type": "object",
+  "required": [
+    "schema",
+    "project",
+    "current_task",
+    "progress_pct",
+    "todo_tasks",
+    "wip_tasks",
+    "done_tasks",
+    "elapsed_minutes",
+    "estimated_total_minutes",
+    "cost_so_far_usd",
+    "cost_estimate_usd",
+    "alerts",
+    "generated_at"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "type": "string",
+      "const": "progress-snapshot.v1"
+    },
+    "project": {
+      "type": "string",
+      "description": "Project name (basename of git repo)"
+    },
+    "current_task": {
+      "type": "string",
+      "description": "One-line summary of the in-progress task (the first cc:WIP item). Empty string when there is no WIP"
+    },
+    "progress_pct": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Completion rate (cc:done ÷ total tasks × 100, rounded)"
+    },
+    "todo_tasks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["number", "title"],
+        "additionalProperties": false,
+        "properties": {
+          "number": {"type": "string"},
+          "title": {"type": "string"}
+        }
+      }
+    },
+    "wip_tasks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["number", "title"],
+        "additionalProperties": false,
+        "properties": {
+          "number": {"type": "string"},
+          "title": {"type": "string"}
+        }
+      }
+    },
+    "done_tasks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["number", "title", "commit"],
+        "additionalProperties": false,
+        "properties": {
+          "number": {"type": "string"},
+          "title": {"type": "string"},
+          "commit": {"type": "string", "description": "The hash part of cc:done [hash] (7 chars)"}
+        }
+      }
+    },
+    "elapsed_minutes": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Elapsed minutes since session start (read from the state file, 0 if absent)"
+    },
+    "estimated_total_minutes": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Estimated total minutes until all tasks complete (read from the state file, 0 if absent)"
+    },
+    "cost_so_far_usd": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Estimated cost so far this session in USD (read from the state file, 0 if absent)"
+    },
+    "cost_estimate_usd": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Estimated cost until all tasks complete in USD (read from the state file, 0 if absent)"
+    },
+    "alerts": {
+      "type": "array",
+      "description": "Alerts from drift detection (populated in Phase 65.4.3; an empty array in this cycle)",
+      "items": {"type": "object"}
+    },
+    "generated_at": {
+      "type": "string",
+      "description": "ISO8601 UTC timestamp"
+    },
+    "_done_recent_items": {
+      "type": "array",
+      "description": "Derived helper for render-html.sh: the most recent 5 done tasks",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "number": {"type": "string"},
+          "title": {"type": "string"},
+          "commit": {"type": "string"}
+        }
+      }
+    },
+    "_todo_count": {"type": "integer"},
+    "_wip_count": {"type": "integer"},
+    "_done_count": {"type": "integer"}
+  }
+}

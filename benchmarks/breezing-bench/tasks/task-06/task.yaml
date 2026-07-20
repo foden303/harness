@@ -1,0 +1,9 @@
+id: "task-06"
+name: "Type-safety refactor - Eliminate any"
+difficulty: "Hard"
+prompt: "Eliminate all uses of any in data-processor.ts and add proper type definitions. Make sure tsc --noEmit passes, and do not change the existing logic."
+hidden_test_count: 10
+setup_files:
+  - src/data-processor.ts
+  - package.json
+  - tsconfig.json

@@ -1,0 +1,213 @@
+package guardrail
+
+import (
+	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
+
+	"github.com/foden303/harness/go/internal/policy"
+	"github.com/foden303/harness/go/internal/runtimefloor"
+	"github.com/foden303/harness/go/internal/state"
+	"github.com/foden303/harness/go/pkg/config"
+	"github.com/foden303/harness/go/pkg/hookproto"
+)
+
+const (
+	tddEnforceLevelOff     = config.TDDEnforceLevelOff
+	tddEnforceLevelCentral = config.TDDEnforceLevelCentral
+	tddEnforceLevelMax     = config.TDDEnforceLevelMax
+)
+
+type tddRuntimeConfig struct {
+	Level               string
+	HookEnabled         bool
+	BypassAuditRequired bool
+}
+
+// isTruthy checks if an env var value is truthy ("1", "true", "yes").
+func isTruthy(value string) bool {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "1", "true", "yes", "on":
+		return true
+	default:
+		return false
+	}
+}
+
+func normalizeTddEnforceLevel(value string) string {
+	switch strings.ToLower(strings.Trim(strings.TrimSpace(value), `"'`)) {
+	case tddEnforceLevelCentral:
+		return tddEnforceLevelCentral
+	case tddEnforceLevelMax:
+		return tddEnforceLevelMax
+	default:
+		return tddEnforceLevelOff
+	}
+}
+
+func readTddRuntimeConfigFromHarnessTOML(path string) (tddRuntimeConfig, bool) {
+	runtime := tddRuntimeConfig{Level: tddEnforceLevelOff}
+	cfg, err := config.ParseFile(path)
+	if err != nil {
+		return runtime, false
+	}
+	if !cfg.TDD.Enforce.Enabled {
+		return runtime, true
+	}
+
+	runtime.Level = normalizeTddEnforceLevel(cfg.TDD.Enforce.Level)
+	runtime.HookEnabled = cfg.TDD.Enforce.HookEnabled
+	runtime.BypassAuditRequired = cfg.TDD.Enforce.BypassAuditRequired
+	return runtime, true
+}
+
+func resolveTddRuntimeConfig(input hookproto.HookInput, projectRoot string) tddRuntimeConfig {
+	cfg := tddRuntimeConfig{Level: tddEnforceLevelOff}
+	candidates := []string{filepath.Join(projectRoot, "harness.toml")}
+	if input.PluginRoot != "" && input.PluginRoot != projectRoot {
+		candidates = append(candidates, filepath.Join(input.PluginRoot, "harness.toml"))
+	}
+
+	for _, path := range candidates {
+		if loaded, ok := readTddRuntimeConfigFromHarnessTOML(path); ok {
+			cfg = loaded
+			break
+		}
+	}
+
+	envTddEnabled := os.Getenv("HARNESS_TDD_ENFORCE_ENABLED")
+	if value := os.Getenv("HARNESS_TDD_ENFORCE_LEVEL"); value != "" {
+		cfg.Level = normalizeTddEnforceLevel(value)
+	}
+	if value := os.Getenv("HARNESS_TDD_HOOK_ENABLED"); value != "" {
+		cfg.HookEnabled = isTruthy(value)
+	}
+	if value := os.Getenv("HARNESS_TDD_BYPASS_AUDIT_REQUIRED"); value != "" {
+		cfg.BypassAuditRequired = isTruthy(value)
+	}
+	if envTddEnabled != "" && !isTruthy(envTddEnabled) {
+		cfg.Level = tddEnforceLevelOff
+		cfg.HookEnabled = false
+	}
+
+	if cfg.Level == tddEnforceLevelOff {
+		cfg.HookEnabled = false
+	}
+
+	return cfg
+}
+
+// BuildContext constructs a RuleContext from a HookInput and environment variables.
+// Priority:
+//  1. Environment variables (explicit overrides)
+//  2. SQLite state DB (session-level state: codex_mode, work_mode)
+//  3. Defaults (false / empty)
+//
+// The SQLite lookup is best-effort: any DB error is silently ignored so that
+// the hook fast-path remains available even when the DB is unreachable.
+func BuildContext(input hookproto.HookInput) hookproto.RuleContext {
+	projectRoot := input.CWD
+	if projectRoot == "" {
+		projectRoot = os.Getenv("HARNESS_PROJECT_ROOT")
+	}
+	if projectRoot == "" {
+		projectRoot = os.Getenv("PROJECT_ROOT")
+	}
+	if projectRoot == "" {
+		projectRoot, _ = os.Getwd()
+	}
+
+	// Environment-variable-based values (explicit overrides)
+	workMode := isTruthy(os.Getenv("HARNESS_WORK_MODE")) ||
+		isTruthy(os.Getenv("ULTRAWORK_MODE"))
+	codexMode := isTruthy(os.Getenv("HARNESS_CODEX_MODE"))
+	breezingRole := os.Getenv("HARNESS_BREEZING_ROLE")
+	tddRuntime := resolveTddRuntimeConfig(input, projectRoot)
+	tddBypass := isTruthy(os.Getenv("HARNESS_TDD_BYPASS"))
+	tddBypassReason := strings.TrimSpace(os.Getenv("HARNESS_TDD_BYPASS_REASON"))
+
+	// Fill in work_states from SQLite (only when a session ID is present).
+	// Per the hook fast-path constraint (SPEC.md §12), I/O errors are ignored.
+	if input.SessionID != "" && !workMode && !codexMode {
+		dbPath := state.ResolveStatePath(projectRoot)
+		if ws, err := loadWorkStateFromDB(dbPath, input.SessionID); err == nil && ws != nil {
+			if ws.CodexMode {
+				codexMode = true
+			}
+			if ws.WorkMode {
+				workMode = true
+			}
+		}
+	}
+
+	return hookproto.RuleContext{
+		Input:                     input,
+		ProjectRoot:               projectRoot,
+		WorkMode:                  workMode,
+		CodexMode:                 codexMode,
+		BreezingRole:              breezingRole,
+		ProtectedBranchPushPolicy: resolveProtectedBranchPushPolicy(input, projectRoot),
+		ProtectedPathAskList:      resolveProtectedPathAskList(input, projectRoot),
+		TddEnforceLevel:           tddRuntime.Level,
+		TddHookEnabled:            tddRuntime.HookEnabled,
+		TddBypass:                 tddBypass,
+		TddBypassReason:           tddBypassReason,
+		TddBypassReasonRequired:   tddBypass && (tddRuntime.BypassAuditRequired || tddBypassReason == ""),
+	}
+}
+
+// loadWorkStateFromDB fetches work_state from the given DB path.
+// If the DB does not exist or cannot be read, it returns (nil, nil) (errors are
+// not propagated). This prevents the hooks fast-path from stalling on
+// filesystem issues.
+func loadWorkStateFromDB(dbPath, sessionID string) (*state.WorkState, error) {
+	// Don't open the DB file if it doesn't exist (avoids a slow start)
+	if _, err := os.Stat(dbPath); os.IsNotExist(err) {
+		return nil, nil
+	}
+
+	store, err := state.NewHarnessStore(dbPath)
+	if err != nil {
+		return nil, nil //nolint:nilerr // best-effort: don't propagate DB errors
+	}
+	defer store.Close()
+
+	ws, err := store.GetWorkState(sessionID)
+	if err != nil {
+		return nil, nil //nolint:nilerr // best-effort
+	}
+
+	return ws, nil
+}
+
+// EvaluatePreTool is the PreToolUse hook entry point.
+// It runs the runtime action hard floor first, then evaluates guard rules.
+func EvaluatePreTool(input hookproto.HookInput) hookproto.HookResult {
+	if input.ToolName == "Bash" {
+		if command, ok := input.ToolInput["command"].(string); ok {
+			worktreeRoot := input.CWD
+			if worktreeRoot == "" {
+				worktreeRoot = os.Getenv("HARNESS_PROJECT_ROOT")
+			}
+			if worktreeRoot == "" {
+				worktreeRoot = os.Getenv("PROJECT_ROOT")
+			}
+			if decision := runtimefloor.CheckCommand(command, runtimefloor.Context{
+				WorktreeRoot: worktreeRoot,
+			}); decision.Stopped {
+				return hookproto.HookResult{
+					Decision: hookproto.DecisionDeny,
+					Reason: fmt.Sprintf(
+						"RUNTIME_FLOOR:%s: %s",
+						decision.Category,
+						decision.Reason,
+					),
+				}
+			}
+		}
+	}
+
+	ctx := BuildContext(input)
+	return policy.EvaluateRules(ctx)
+}

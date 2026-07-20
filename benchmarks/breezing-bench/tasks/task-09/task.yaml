@@ -1,0 +1,9 @@
+id: "task-09"
+name: "Data Transformation - CSV Parser"
+difficulty: "Hard"
+prompt: "Implement a CSV parser following the interface in types.ts. Properly implement header row handling, quoted values, and error handling."
+hidden_test_count: 12
+setup_files:
+  - src/types.ts
+  - package.json
+  - tsconfig.json

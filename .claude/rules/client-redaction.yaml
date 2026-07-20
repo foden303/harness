@@ -1,0 +1,87 @@
+# client-redaction.yaml
+#
+# Purpose:
+#   Phase 65.3.2 - SSOT for Layer 2a dictionary-based proper-noun redaction.
+#   Dictionary definition for replacing proper nouns such as client names,
+#   person names, and domains with [Client_*] / [Person_*] / [Domain_*]
+#   in text retrieved from harness-mem.
+#
+# Schema: client-redaction.v1
+#   PiiRule compatible (D43 decision 3): to preserve an upgrade path toward
+#   future npm packaging, field names (rule_id / replace_with) are kept
+#   compatible with the PiiRule[] schema in the mem-side
+#   mcp-server/src/pii/pii-filter.ts.
+#
+# Default:
+#   clients: [], people: [], domains: []  (all redaction disabled)
+#
+# Update Rules:
+#   1. opt-in default: an empty dict does nothing (prevents false redaction)
+#   2. rule_id must be unique (unique across clients/people/domains)
+#   3. name is a literal string match (not regex; proper-noun dict)
+#   4. aliases are synonyms/abbreviations (optional)
+#   5. replace_with is the post-redaction token (e.g. "[Client_A]")
+#   6. Full spec: docs/cross-project-groups-schema.md (sibling doc)
+#
+# Field compatibility (mapping to PiiRule, D43 decision 3):
+#   client-redaction.v1 (this SSOT)  <->  pii-filter.ts PiiRule
+#   ----------------------------------------------------------
+#   rule_id        <->  rule_id          (exact match)
+#   name           <->  pattern          (literal vs regex difference)
+#   aliases[]      <->  (absent in PiiRule; unique to this SSOT)
+#   replace_with   <->  replace_with     (exact match)
+#
+#   When npm packaging in the future, a schema converter can convert both ways.
+#
+# Double-substitution guard (D43 decision 4):
+#   Text that already contains sentinel marks such as `[REDACTED_*]`,
+#   `[Entity]`, `[Client_*]`, `[Person_*]`, `[Domain_*]` is excluded from
+#   redaction. Prevents collision with the server-side
+#   event-recorder.ts:redactContent.
+#
+#   Confirmed in harness-mem S110-006 closure (commit 8b34ecb):
+#   the server-side [REDACTED_*] format uses uppercase EMAIL / KEY / SECRET / HEX.
+#   The client-side sentinel regex is [A-Za-z0-9_]+ and handles both upper and
+#   lower case, so the existing implementation has no issue.
+#
+# Handling of envelope signals (harness-mem S110-006 defensive note):
+#   memory-server/src/inject/envelope.ts:94-101 validateProseContainsSignals
+#   requires each value in signals[] to substring-match in the prose. Including
+#   PII / proper nouns in signals would break the envelope invariant because
+#   Layer 2 redacts them, so **include only structural labels (project names /
+#   source identifiers, etc.) in signals, and write PII / proper nouns in the
+#   prose** — recommended in line with the mem-side SoT (envelope contract).
+#   This dict targets only the prose side.
+#
+
+schema_version: client-redaction.v1
+
+clients: []
+people: []
+domains: []
+
+# ---- Configuration example (commented-out template) ----
+#
+# clients:
+#   - rule_id: client-001
+#     name: NoraiCorp
+#     aliases:
+#       - Norai Corp
+#       - Norai Inc.
+#     replace_with: "[Client_A]"
+#
+#   - rule_id: client-002
+#     name: YorozuPro
+#     replace_with: "[Client_B]"
+#
+# people:
+#   - rule_id: person-001
+#     name: Jonathan Blackwood
+#     aliases:
+#       - Blackwood
+#     replace_with: "[Person_A]"
+#
+# domains:
+#   - rule_id: domain-001
+#     name: example.com
+#     replace_with: "[Domain_A]"

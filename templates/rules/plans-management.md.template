@@ -1,0 +1,76 @@
+---
+description: Plans.md task management rules (applied only when editing Plans.md)
+paths:
+  - "**/Plans.md"
+_harness_template: "rules/plans-management.md.template"
+_harness_version: "2.5.27"
+---
+
+# Plans.md Management Rules
+
+## Task Description Format
+
+```markdown
+- [ ] Task description `marker`
+  - Subtask 1
+  - Subtask 2
+```
+
+## Marker Usage
+
+| Marker | Set by | Meaning |
+|---------|--------|------|
+| `pm:pending` | PM (human / PM Claude) | Task requested |
+| `cc:TODO` | Claude Code | Not started |
+| `cc:WIP` | Claude Code | In progress |
+| `cc:done` | Claude Code | Done |
+| `pm:confirmed` | PM (human / PM Claude) | Review complete |
+
+## Section Structure
+
+```markdown
+## 🔴 In-progress tasks
+(cc:WIP tasks)
+
+## 🟡 Not-started tasks
+(cc:TODO, pm:pending tasks)
+
+## 🟢 Completed tasks
+(cc:done, pm:confirmed tasks)
+
+## 📦 Archive
+(old completed tasks)
+```
+
+## Update Rules
+
+1. **Immediate update**: apply `cc:WIP` the moment a task starts and `cc:done` the moment it finishes
+2. **Record a summary**: on completion, append a summary of the work done
+3. **Record the date**: note the date in the completed section as `(YYYY-MM-DD)`
+4. **Archive**: move completed tasks older than 7 days to the 📦 Archive
+
+## Prohibitions
+
+- ❌ Changing others' markers without permission
+- ❌ Deleting in-progress tasks
+- ❌ Marking done without a summary
+
+---
+
+## Extended Notation (optional)
+
+For large projects, the following notation may be used **optionally**:
+
+```markdown
+- [ ] T001: Authentication feature `cc:TODO`
+- [ ] T002: User API `cc:TODO` depends:T001
+- [ ] T003: Product API `cc:TODO` [P]
+```
+
+| Notation | Meaning |
+|------|------|
+| `T001:` | Task ID (for dependency specification) |
+| `depends:ID` | Dependency task (comma-separated allowed) |
+| `[P]` | Parallelizable |
+
+**Backward compatibility**: works as before even without these.

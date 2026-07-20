@@ -1,0 +1,36 @@
+{
+  "items": [
+    {
+      "source": "patterns.md",
+      "pattern_id": "P5",
+      "title": "Hook script template",
+      "summary": "Standard skeleton for a shell hook",
+      "relevance_score": 0.92,
+      "verified_in_current_task": true
+    },
+    {
+      "source": "patterns.md",
+      "pattern_id": "P12",
+      "title": "Idempotent sync pattern",
+      "summary": "Idempotency pattern for harness sync",
+      "relevance_score": 0.80,
+      "verified_in_current_task": false
+    },
+    {
+      "source": "acceptance-record",
+      "pattern_id": "AR-2026-04-30",
+      "title": "Phase 50 - Active watching tests post-launch issue",
+      "summary": "Pinned via a test convention that no warning is emitted for a daemon that is not running",
+      "relevance_score": 0.75,
+      "verified_in_current_task": true
+    },
+    {
+      "source": "acceptance-record",
+      "pattern_id": "AR-2026-05-01",
+      "title": "Phase 51 - Unrelated item (low relevance)",
+      "summary": "The 4th item expected to be trimmed",
+      "relevance_score": 0.40,
+      "verified_in_current_task": false
+    }
+  ]
+}

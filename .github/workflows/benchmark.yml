@@ -1,0 +1,193 @@
+name: benchmark
+
+on:
+  workflow_dispatch:
+    inputs:
+      tasks:
+        description: "Tasks to run (comma-separated, or 'all')"
+        required: false
+        default: "all"
+        type: string
+      trials:
+        description: "Number of trials for each task"
+        required: false
+        default: "3"
+        type: string
+      mode:
+        description: "execution mode: 'both' (with and without plugin), 'with-plugin', or 'no-plugin'"
+        required: false
+        default: "both"
+        type: choice
+        options:
+          - both
+          - with-plugin
+          - no-plugin
+
+permissions:
+  contents: read
+
+concurrency:
+  group: benchmark-${{ github.repository }}
+  cancel-in-progress: false
+
+env:
+  SUITE_TASKS: "plan-feature,impl-utility,impl-test,impl-refactor,review-security,review-quality,multi-file-refactor,skill-routing"
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    env:
+      INPUT_TASKS: ${{ inputs.tasks }}
+      INPUT_TRIALS: ${{ inputs.trials }}
+      INPUT_MODE: ${{ inputs.mode }}
+
+    steps:
+      - name: Validate API Key
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "::error::ANTHROPIC_API_KEY is not set. Please configure the secret in repository settings."
+            echo ""
+            echo "To fix this:"
+            echo "1. Go to Settings → Secrets and variables → Actions"
+            echo "2. Add a new repository secret named 'ANTHROPIC_API_KEY'"
+            echo "3. Set the value to your Anthropic API key"
+            exit 1
+          fi
+          echo "✅ ANTHROPIC_API_KEY is configured"
+
+      - name: Checkout
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          filter: blob:none
+
+      - name: Setup Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq bc
+
+      - name: Install Claude Code CLI
+        run: |
+          npm install -g @anthropic-ai/claude-code
+
+      - name: Determine tasks
+        id: tasks
+        run: |
+          if [ "$INPUT_TASKS" = "all" ]; then
+            echo "tasks=$SUITE_TASKS" >> "$GITHUB_OUTPUT"
+          else
+            echo "tasks=$INPUT_TASKS" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create results directory
+        run: |
+          mkdir -p benchmarks/results
+          mkdir -p benchmarks/test-project
+
+      - name: Setup test project
+        run: |
+          bash benchmarks/scripts/setup-test-project.sh
+
+      - name: Run benchmarks (with-plugin)
+        if: ${{ inputs.mode == 'both' || inputs.mode == 'with-plugin' }}
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          TASK_LIST: ${{ steps.tasks.outputs.tasks }}
+        run: |
+          IFS=',' read -ra TASKS <<< "$TASK_LIST"
+          for task in "${TASKS[@]}"; do
+            task=$(echo "$task" | xargs)  # trim whitespace
+            echo "=========================================="
+            echo "Running: $task (with-plugin)"
+            echo "=========================================="
+            echo "Iterations: $INPUT_TRIALS"
+            bash benchmarks/scripts/run-workflow-benchmark.sh \
+              --task "$task" \
+              --with-plugin \
+              --iterations "$INPUT_TRIALS" \
+              || echo "Warning: Benchmark failed for $task (with-plugin)"
+          done
+
+      - name: Run benchmarks (no-plugin)
+        if: ${{ inputs.mode == 'both' || inputs.mode == 'no-plugin' }}
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          TASK_LIST: ${{ steps.tasks.outputs.tasks }}
+        run: |
+          IFS=',' read -ra TASKS <<< "$TASK_LIST"
+          for task in "${TASKS[@]}"; do
+            task=$(echo "$task" | xargs)  # trim whitespace
+            echo "=========================================="
+            echo "Running: $task (no-plugin)"
+            echo "=========================================="
+            echo "Iterations: $INPUT_TRIALS"
+            bash benchmarks/scripts/run-workflow-benchmark.sh \
+              --task "$task" \
+              --iterations "$INPUT_TRIALS" \
+              || echo "Warning: Benchmark failed for $task (no-plugin)"
+          done
+
+      - name: Generate scorecard
+        run: |
+          bash benchmarks/scripts/generate-scorecard.sh --verbose
+
+      - name: Generate analysis report
+        run: |
+          bash benchmarks/scripts/analyze-results.sh || true
+
+      - name: Upload results artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: benchmark-results-${{ github.run_id }}
+          path: |
+            benchmarks/results/*.json
+            benchmarks/results/*.md
+            benchmarks/results/*.txt
+            benchmarks/results/*.trace.jsonl
+          retention-days: 90
+
+      - name: Upload scorecard artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: scorecard-${{ github.run_id }}
+          path: |
+            benchmarks/results/scorecard-*.json
+            benchmarks/results/scorecard-*.md
+          retention-days: 90
+
+      - name: Summary
+        run: |
+          # Pick the latest scorecard.md by mtime without parsing `ls` output.
+          SCORECARD_MD=""
+          while IFS= read -r -d '' candidate; do
+            if [ -z "$SCORECARD_MD" ] || [ "$candidate" -nt "$SCORECARD_MD" ]; then
+              SCORECARD_MD="$candidate"
+            fi
+          done < <(find benchmarks/results -maxdepth 1 -name 'scorecard-*.md' -print0 2>/dev/null)
+
+          {
+            echo "## Benchmark Results"
+            echo ""
+            if [ -n "$SCORECARD_MD" ] && [ -f "$SCORECARD_MD" ]; then
+              cat "$SCORECARD_MD"
+            else
+              echo "Scorecard was not generated."
+            fi
+            echo ""
+            echo "---"
+            echo ""
+            echo "### Artifacts"
+            echo ""
+            echo "- benchmark-results-${{ github.run_id }}: Full result（JSON, trace, output）"
+            echo "- scorecard-${{ github.run_id }}: Scorecard（JSON, Markdown）"
+          } >> "$GITHUB_STEP_SUMMARY"

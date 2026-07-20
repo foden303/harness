@@ -1,0 +1,46 @@
+---
+description: Basic rules for the 2-agent workflow
+alwaysApply: true
+_harness_template: "rules/workflow.md.template"
+_harness_version: "2.5.27"
+---
+
+# 2-Agent Workflow Rules
+
+This project adopts a two-role **PM ↔ Impl** workflow.
+The PM can be either a **human** or **PM Claude** (PM Claude is recommended for solo operation).
+
+## Role Split
+
+| Agent | Responsibilities |
+|-------------|------|
+| **PM (human / PM Claude)** | Planning, review, decision-making, and (if needed) production deployment |
+| **Impl (Claude Code / Impl Claude)** | Implementation, testing, commits, and (if needed) staging |
+
+## Task Management
+
+- Tasks are managed centrally in `Plans.md`
+- Track status with markers:
+  - `pm:pending` → requested by PM
+  - `cc:WIP` → Claude Code in progress
+  - `cc:done` → Claude Code done
+  - `pm:confirmed` → PM review complete
+
+## Handoff Protocol
+
+### PM → Impl
+1. Record the task in Plans.md with a `pm:pending` marker
+2. **For PM Claude**: generate the request text with `/handoff-to-impl-claude`
+3. Paste it to Impl Claude (Claude Code)
+
+### Impl → PM
+1. Add the `cc:done` marker after finishing the work
+2. **For PM Claude**: generate the completion report with `/handoff-to-pm-claude`
+3. Paste it to the PM and request review (mark `pm:confirmed` after review)
+
+## Prohibitions
+
+- ❌ Publishing development files externally (CLAUDE.md, AGENTS.md, Plans.md)
+- ❌ Large-scale refactoring without an explicit request
+- ❌ Adding features without tests
+- ❌ Deploying directly to production (PM approval required)

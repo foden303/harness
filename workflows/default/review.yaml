@@ -1,0 +1,125 @@
+# /harness-review workflow definition (formerly: review)
+# Checks the quality of code that has been written
+
+phase: review
+description: "Phase that checks code quality and suggests improvements"
+
+steps:
+  # Step 1: Identify changed files
+  - id: identify-changes
+    skill: core-read-repo-context
+    input:
+      context_from:
+        - git_diff
+        - recent_commits
+    output:
+      variables:
+        - changed_files
+        - change_summary
+    mode: required
+
+  # Step 2: Security check
+  - id: security-check
+    skill: review-security
+    input:
+      files: "{{changed_files}}"
+      context_from:
+        - code_content
+    output:
+      variables:
+        - security_issues
+        - security_score
+    mode: required
+    parallel: true
+
+  # Step 3: Performance check
+  - id: performance-check
+    skill: review-performance
+    input:
+      files: "{{changed_files}}"
+      context_from:
+        - code_content
+    output:
+      variables:
+        - performance_issues
+        - performance_score
+    mode: required
+    parallel: true
+
+  # Step 4: Code quality check
+  - id: quality-check
+    skill: review-quality
+    input:
+      files: "{{changed_files}}"
+      context_from:
+        - code_content
+        - eslint_output
+    output:
+      variables:
+        - quality_issues
+        - quality_score
+    mode: required
+    parallel: true
+
+  # Step 5: Accessibility check (for Web)
+  - id: accessibility-check
+    skill: review-accessibility
+    condition: "tech_stack.includes('react') || tech_stack.includes('vue')"
+    input:
+      files: "{{changed_files}}"
+    output:
+      variables:
+        - a11y_issues
+        - a11y_score
+    mode: optional
+    parallel: true
+
+  # Step 6: Aggregate review results
+  - id: aggregate-results
+    skill: review-aggregate
+    input:
+      variables:
+        - security_issues
+        - performance_issues
+        - quality_issues
+        - a11y_issues
+    output:
+      variables:
+        - overall_grade
+        - improvement_suggestions
+    mode: required
+
+  # Step 7: Apply improvements (after user approval)
+  - id: apply-improvements
+    skill: review-apply-fixes
+    condition: "user_approved"
+    input:
+      variables:
+        - improvement_suggestions
+    output:
+      update_files: true
+    mode: optional
+
+# Output on success
+on_success:
+  message: |
+    📊 Code review results
+
+    **Overall grade**: {{overall_grade}}
+
+    | Aspect | Grade |
+    |------|------|
+    | Security | {{security_score}} |
+    | Performance | {{performance_score}} |
+    | Code quality | {{quality_score}} |
+
+    {{improvement_suggestions}}
+
+    Apply fixes automatically?
+
+# Output on error
+on_error:
+  message: |
+    ⚠️ An error occurred during review.
+
+    Please check manually.

@@ -1,0 +1,45 @@
+{
+  "goal": "Add chart display and filtering to the dashboard",
+  "subtasks": [
+    {
+      "id": "1",
+      "title": "Create the dashboard layout",
+      "dod": "Key-metric cards and the chart area display responsively"
+    },
+    {
+      "id": "2",
+      "title": "Implement the time-series chart component",
+      "dod": "A line chart of the selected metric is rendered"
+    },
+    {
+      "id": "3",
+      "title": "Implement the filter UI",
+      "dod": "Data can be narrowed by date range and category"
+    },
+    {
+      "id": "4",
+      "title": "Integrate the data-fetching API",
+      "dod": "Aggregated data matching the filter conditions is fetched"
+    },
+    {
+      "id": "5",
+      "title": "Empty-state and loading display",
+      "dod": "The UX for no-data and loading states displays as defined"
+    },
+    {
+      "id": "6",
+      "title": "Dashboard screen tests",
+      "dod": "It is tested that changing the filter updates the chart"
+    }
+  ],
+  "scope_files": [
+    "src/pages/dashboard.tsx",
+    "src/components/charts/",
+    "src/components/filters/"
+  ],
+  "risk_notes": [
+    "Watch query performance with large data volumes",
+    "Check the bundle-size increase from the chart library"
+  ],
+  "confidence": "medium"
+}

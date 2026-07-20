@@ -1,0 +1,170 @@
+# retired-aliases.v1.yaml — Retired alias registry (Phase 97)
+#
+# SSOT for exclusion-based migration residue scanning.
+# Schema: templates/schemas/retired-alias.v1.json
+# Scanner: bin/harness retired-alias scan
+
+version: 1
+
+entries:
+  - id: core-guardrails-path
+    kind: path
+    pattern: "core/src/guardrails"
+    removed_in: "v4.0.0"
+    reason: "Ported the TypeScript guardrail engine to Go-native (Hokage migration). Retired core/ along with the entire TS engine"
+    allowlist:
+      - "go/"
+      - "Plans.md"
+      - "docs/social/"
+      - "skills/claude-codex-upstream-update/"
+
+  - id: guardrails-rules-ts
+    kind: path
+    pattern: "core/src/guardrails/rules.ts"
+    removed_in: "v4.0.0"
+    reason: "TypeScript guardrail rules file; replaced by go/internal/guardrail/rules.go"
+    allowlist:
+      - "go/"
+
+  - id: ts-guardrail-engine-concept
+    kind: concept
+    pattern: "TypeScript guardrail engine"
+    removed_in: "v4.0.0"
+    reason: "TS→Go port completed in the Hokage migration. Any mention of the TS engine is old documentation"
+    allowlist:
+      - "docs/CLAUDE_CODE_COMPATIBILITY.md"
+      - "docs/github-harness-plugin-benchmark.md"
+      - "docs/MIGRATION-v4.md"
+      - "docs/social/"
+      - "docs/claims-audit.md"
+      - "docs/distribution-scope.md"
+      - "docs/private/"
+      - "docs/positioning-notes.md"
+      - "docs/release-copy-phase21.md"
+      - "Plans.md"
+
+  - id: skill-gogcli-ops
+    kind: path
+    pattern: "skills/gogcli-ops"
+    removed_in: "Phase 104.9"
+    reason: "Self-flagged as ambiguous in Phase 91.7; the reference audit (2026-07-05) confirmed zero functional references, so it was removed. The test fixture was swapped to agent-browser"
+    allowlist:
+      - "CHANGELOG.md"
+      - ".claude/memory/archive/"
+      - "Plans.md"
+      - "CLAUDE.md"
+      - "templates/registry/"
+
+  - id: skill-cc-cursor-cc
+    kind: path
+    pattern: "skills/cc-cursor-cc"
+    removed_in: "Phase 104.9"
+    reason: "Self-flagged as ambiguous in Phase 91.7; the reference audit (2026-07-05) confirmed zero references, so it was removed"
+    allowlist:
+      - "CHANGELOG.md"
+      - ".claude/memory/archive/"
+      - "Plans.md"
+      - "CLAUDE.md"
+      - "templates/registry/"
+
+  - id: skill-harness-orchestration
+    kind: path
+    pattern: "skills/harness-orchestration"
+    removed_in: "Phase 107"
+    reason: "The Jobs-perspective review (2026-07-07) judged it a vanity scorecard (bragging about backend usage volume); removed because it does not aid decision-making"
+    allowlist:
+      - "CHANGELOG.md"
+      - ".claude/memory/archive/"
+      - "Plans.md"
+      - "templates/registry/"
+      - "docs/reports/"
+
+  - id: skill-cursor-rescue
+    kind: path
+    pattern: "skills/cursor-rescue"
+    removed_in: "Phase 107"
+    reason: "The Jobs-perspective review judged making one backend's exception-recovery a top-level command excessive; consolidated into cursor-setup / docs and removed"
+    allowlist:
+      - "CHANGELOG.md"
+      - ".claude/memory/archive/"
+      - "Plans.md"
+      - "templates/registry/"
+      - "docs/reports/"
+
+  - id: skill-cursor-backends
+    kind: path
+    pattern: "skills/cursor-"
+    removed_in: "v5.1.0"
+    reason: "Fully removed the Cursor execution backend (moved to bi-tool: Claude + Codex only). Deleted the cursor-ask / cursor-do / cursor-review / cursor-setup skills"
+    allowlist:
+      - "CHANGELOG.md"
+      - ".claude/memory/archive/"
+      - "Plans.md"
+      - "templates/registry/"
+      - "docs/reports/"
+      - "docs/research/"
+
+  - id: script-cursor-companion
+    kind: path
+    pattern: "scripts/cursor-companion.sh"
+    removed_in: "v5.1.0"
+    reason: "Deleted the cursor-companion wrapper as part of removing the Cursor backend"
+    allowlist:
+      - "CHANGELOG.md"
+      - ".claude/memory/archive/"
+      - "Plans.md"
+      - "templates/registry/"
+      - "docs/reports/"
+      - "docs/research/"
+
+  - id: cursor-plugin-surface
+    kind: path
+    pattern: ".cursor-plugin"
+    removed_in: "v5.1.0"
+    reason: "Removed the Cursor host plugin surface (.cursor-plugin / .cursor)"
+    allowlist:
+      - "CHANGELOG.md"
+      - ".claude/memory/archive/"
+      - "Plans.md"
+      - "templates/registry/"
+      - "docs/reports/"
+      - "docs/research/"
+
+  - id: cursor-integration-doc
+    kind: path
+    pattern: "docs/CURSOR_INTEGRATION.md"
+    removed_in: "v5.1.0"
+    reason: "Deleted the integration documentation as part of removing the Cursor backend"
+    allowlist:
+      - "CHANGELOG.md"
+      - ".claude/memory/archive/"
+      - "Plans.md"
+      - "templates/registry/"
+      - "docs/reports/"
+      - "docs/research/"
+
+  - id: grok-plugin-surface
+    kind: path
+    pattern: ".grok-plugin"
+    removed_in: "v5.1.0"
+    reason: "Removed the Grok host plugin surface (.grok-plugin / .grok)"
+    allowlist:
+      - "CHANGELOG.md"
+      - ".claude/memory/archive/"
+      - "Plans.md"
+      - "templates/registry/"
+      - "docs/reports/"
+      - "docs/research/"
+
+  - id: script-setup-grok
+    kind: path
+    pattern: "scripts/setup-grok.sh"
+    removed_in: "v5.1.0"
+    reason: "Deleted the setup-grok script as part of removing the Grok backend"
+    allowlist:
+      - "CHANGELOG.md"
+      - ".claude/memory/archive/"
+      - "Plans.md"
+      - "templates/registry/"
+      - "docs/reports/"
+      - "docs/research/"

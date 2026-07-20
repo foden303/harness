@@ -1,0 +1,19 @@
+{
+  "decisions": [
+    { "id": "D22", "title": "3-layer memory architecture", "relevance": "Layer 1 coexistence design" },
+    { "id": "D37", "title": "Worker 3-layer defense", "relevance": "Reference for the contract layer" },
+    { "id": "D40", "title": "tri-state health", "relevance": "Reference for active watching tests" },
+    { "id": "D41", "title": "harness-mem managed-companion", "relevance": "Dependency boundary" }
+  ],
+  "patterns": [
+    { "id": "P5",  "title": "Hook script template", "relevance": "Template reuse" },
+    { "id": "P29", "title": "dual hooks.json sync", "relevance": "When adding a PostToolUse hook" }
+  ],
+  "plans_archive": [
+    { "phase": "Phase 41 - Issue auto-trigger pipeline",  "archive_path": ".claude/memory/archive/Plans-2026-04-21-phase34-46.md", "outcome": "cc:done", "relevance": "4-stage structure of skill skeleton + scripts + tests + e2e" },
+    { "phase": "Phase 50 - Active watching tests",         "archive_path": ".claude/memory/archive/Plans-2026-05-01-phase47-50.md", "outcome": "cc:done", "relevance": "Same-shape test policy" },
+    { "phase": "Phase 58 - Upstream snapshot integration", "archive_path": ".claude/memory/archive/Plans-2026-05-04-phase51-58.md", "outcome": "cc:done", "relevance": "snapshot pattern" },
+    { "phase": "Phase 60 - harness-mem migration",         "archive_path": ".claude/memory/archive/Plans-2026-05-06-phase59-61.md", "outcome": "cc:done", "relevance": "managed-companion" },
+    { "phase": "Phase 61 - elicitation handler",            "archive_path": ".claude/memory/archive/Plans-2026-05-06-phase59-61.md", "outcome": "cc:done", "relevance": "ledger pattern" }
+  ]
+}

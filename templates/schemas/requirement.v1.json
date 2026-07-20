@@ -1,0 +1,131 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://harness.local/schemas/requirement.v1.json",
+  "title": "requirement.v1",
+  "description": "Normalized requirement record ingested by harness-flow from a JIRA issue or Confluence page.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "source",
+    "source_ref",
+    "title",
+    "description",
+    "acceptance_criteria",
+    "ingested_at"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "requirement.v1"
+    },
+    "source": {
+      "type": "string",
+      "enum": ["jira", "confluence"]
+    },
+    "source_ref": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Primary JIRA issue key (e.g. PROJ-123) or Confluence page URL/id. For a merged multi-ticket feature this is the first ticket; the full set is in `sources`."
+    },
+    "sources": {
+      "type": "array",
+      "description": "When multiple links are passed as one feature, the constituent tickets/pages (for traceability). Absent for a single-source requirement.",
+      "items": {
+        "type": "object",
+        "required": ["source", "source_ref"],
+        "additionalProperties": false,
+        "properties": {
+          "source": { "type": "string", "enum": ["jira", "confluence"] },
+          "source_ref": { "type": "string", "minLength": 1 },
+          "title": { "type": "string" }
+        }
+      }
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": "string"
+    },
+    "acceptance_criteria": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "labels": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "issue_type": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "reporter_account_id": {
+      "type": "string"
+    },
+    "ingested_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "mcp_available": {
+      "type": "boolean"
+    },
+    "verification": {
+      "type": "object",
+      "required": ["verdict", "checks"],
+      "additionalProperties": false,
+      "properties": {
+        "verdict": {
+          "type": "string",
+          "enum": ["ok", "needs-clarification"]
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "pass"],
+            "additionalProperties": false,
+            "properties": {
+              "id": {
+                "type": "string",
+                "enum": [
+                  "goal-present",
+                  "acceptance-criteria-testable",
+                  "actionable-scope",
+                  "no-blocking-ambiguity",
+                  "constraints-stated",
+                  "unknowns-marked"
+                ]
+              },
+              "pass": {
+                "type": "boolean"
+              },
+              "note": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "open_questions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "verified_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}

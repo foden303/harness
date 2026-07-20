@@ -1,0 +1,101 @@
+# Sync Project Specs Reference
+
+**Run this after finishing work when you're unsure "is Plans.md actually updated?"**
+
+## When to Use
+
+| Situation | Command to Use |
+|-----------|----------------|
+| "How far along? What's next?" | `/sync-status` (use this first) |
+| "Worked on it but forgot if I updated Plans.md" | **This command** |
+| "Started from old template, format might be outdated" | **This command** |
+
+> Tip: Usually `/sync-status` is sufficient. Use this for "just in case" or "format migration".
+
+---
+
+## Purpose
+
+Aligns project specs/docs (e.g., `Plans.md`, `AGENTS.md`, `.claude/rules/*`) with latest harness operations (**PM ↔ Impl**, `pm:*` markers, handoff commands).
+
+## VibeCoder Phrases
+
+- "**Worked on it but unsure if Plans.md is updated**" → this command
+- "**Want to align old format files to latest**" → Unifies markers and descriptions
+- "**Keep manual changes, fix only needed parts**" → Preserves existing text, applies only diffs
+
+---
+
+## Sync Targets (Only Existing Files)
+
+- `Plans.md`
+- `AGENTS.md`
+- `CLAUDE.md` (only if has operation description)
+- `.claude/rules/workflow.md`
+- `.claude/rules/plans-management.md`
+
+---
+
+## Sync Content (Minimal Diff Policy)
+
+### 1. Marker Normalization
+
+- **Standard**: `pm:pending`, `pm:confirmed`
+
+### 2. State Transition Documentation
+
+```
+pm:pending → cc:WIP → cc:done → pm:confirmed
+```
+
+### 3. Handoff Routes Addition
+
+- PM→Impl: `/handoff-to-impl-claude` (for PM Claude)
+- Impl→PM: `/handoff-to-pm-claude`
+
+### 4. Notification File Description
+
+- `.claude/state/pm-notification.md`
+
+---
+
+## Execution Steps
+
+### Step 1: Collect Current State (Required)
+
+- Check target file existence and extract relevant sections
+- Tally `Plans.md` marker occurrences (pm/cc)
+
+### Step 2: Declare Change Policy (Required)
+
+Tell user:
+- Preserve existing text in principle (no destructive rewrites)
+- Additions/replacements limited to "minimum necessary for operation"
+- Changes shown as diffs, adjust if needed
+
+### Step 3: Sync (Apply Diffs)
+
+- **Plans.md**: Add `pm:*` to marker legend
+- **AGENTS.md**: Update roles to PM/Impl
+- **rules/*.md**: Use `pm:*` as the standard marker
+- **CLAUDE.md**: Add PM↔Impl routes if operation section exists
+
+### Step 4: Finish (Required)
+
+- Run `/sync-status` to verify markers
+- Use `/remember` to lock "project-specific operations" if needed
+
+---
+
+## Parallel Execution
+
+File reads can be parallelized:
+
+| Process | Parallel |
+|---------|----------|
+| Plans.md read | ✅ Independent |
+| AGENTS.md read | ✅ Independent |
+| CLAUDE.md read | ✅ Independent |
+| rules/*.md read | ✅ Independent |
+
+Updates run serially for consistency.

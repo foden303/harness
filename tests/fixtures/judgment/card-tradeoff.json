@@ -1,0 +1,19 @@
+{
+  "question": "Move rate limiting to a Redis cache, or handle it by optimizing DB queries?",
+  "options": [
+    {
+      "id": "redis",
+      "label": "Introduce a Redis cache",
+      "consequence": "Adds a new infrastructure dependency but scales more easily"
+    },
+    {
+      "id": "db-opt",
+      "label": "Optimize DB queries",
+      "consequence": "No additional infrastructure needed, but has a ceiling under high load"
+    }
+  ],
+  "recommendation": "redis",
+  "confidence": "medium",
+  "impact": "Affects API latency and operational cost",
+  "diff_summary": "Branching implementation lands in src/rate-limit/"
+}

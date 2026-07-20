@@ -1,0 +1,24 @@
+{
+  "question": "Can we interpret the DoD \"login succeeds\" as requiring E2E tests?",
+  "options": [
+    {
+      "id": "e2e-required",
+      "label": "Require E2E tests",
+      "consequence": "Implementation takes longer but the acceptance criteria become clear"
+    },
+    {
+      "id": "unit-only",
+      "label": "Unit tests alone are sufficient",
+      "consequence": "Finishes faster but leaves a UI regression risk"
+    },
+    {
+      "id": "hybrid",
+      "label": "A hybrid of unit tests plus smoke E2E",
+      "consequence": "Intermediate effort and coverage"
+    }
+  ],
+  "recommendation": "hybrid",
+  "confidence": "low",
+  "impact": "Affects the test strategy and the completion criteria",
+  "diff_summary": "The added scope of tests/auth/ and tests/e2e/ changes"
+}

@@ -1,0 +1,29 @@
+{
+  "question": "Which should we prioritize, introducing Redis or optimizing the DB?",
+  "options": [
+    {
+      "id": "redis",
+      "label": "Introduce a Redis cache",
+      "consequence": "Adds a new infrastructure dependency but scales more easily"
+    },
+    {
+      "id": "db-opt",
+      "label": "Optimize DB queries",
+      "consequence": "No additional infrastructure needed, but has a ceiling under high load"
+    }
+  ],
+  "recommendation": "redis",
+  "confidence": "medium",
+  "impact": "Affects API latency and operational cost",
+  "diff_summary": "Branching implementation lands in src/rate-limit/",
+  "impact_score": 45,
+  "similar_past_decisions": [
+    {
+      "summary": "Last time we also chose Redis for rate limiting",
+      "decision": "redis",
+      "outcome": "Latency improved, operational cost increased",
+      "decided_at": "2026-05-01T10:00:00Z",
+      "mem_id": "obs-abc123"
+    }
+  ]
+}

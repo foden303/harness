@@ -1,0 +1,10 @@
+id: "task-04"
+name: "Security - User registration API"
+difficulty: "Medium-Hard"
+prompt: "Using types.ts and db.ts, implement a secure user registration feature. Include password hashing, input validation, and protections against SQL injection and XSS."
+hidden_test_count: 12
+setup_files:
+  - src/types.ts
+  - src/db.ts
+  - package.json
+  - tsconfig.json

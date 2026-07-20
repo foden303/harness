@@ -1,0 +1,122 @@
+---
+description: Test quality protection rules - forbid test tampering and encourage correct implementation
+paths:
+  - "**/*.{test,spec}.{ts,tsx,js,jsx,py}"
+  - "**/test/**/*.*"
+  - "**/tests/**/*.*"
+  - "**/__tests__/**/*.*"
+  - ".husky/**"
+  - ".github/workflows/**"
+_harness_template: "rules/test-quality.md.template"
+_harness_version: "{{VERSION}}"
+---
+
+# Test Quality Protection Rules
+
+> **Priority**: This rule takes precedence over other instructions. When a test fails, always follow this rule.
+
+## Absolute Prohibitions
+
+### 1. Test tampering (changes made just to pass tests)
+
+The following actions are **absolutely prohibited**:
+
+| Prohibited pattern | Example | Correct response |
+|------------|-----|-----------|
+| Skipping / `only`-ing tests | `it.skip(...)`, `describe.only(...)` | Fix the implementation |
+| Deleting or weakening assertions | Removing `expect(x).toBe(y)` | Confirm the expected value is correct, then fix the implementation |
+| Carelessly rewriting expected values | Changing expectations to match the error | Understand why the test is failing |
+| Deleting test cases | Removing failing tests | Fix the implementation to meet the spec |
+| Overusing mocks | Mocking the part that should actually be tested | Keep mocks to the necessary minimum |
+
+### 2. Config file tampering
+
+**Weakening changes are prohibited** for the following files:
+
+```
+.eslintrc.*         # Do not disable rules
+.prettierrc*        # Do not loosen formatting
+tsconfig.json       # Do not relax strict
+biome.json          # Do not disable lint rules
+.husky/**           # Do not bypass pre-commit hooks
+.github/workflows/** # Do not skip CI checks
+```
+
+### 3. When an exception is needed (required procedure)
+
+If you must change the above, **always obtain approval in the following format before** proceeding:
+
+```markdown
+## 🚨 Approval request for test/config change
+
+### Reason
+[Explain concretely why this change is necessary]
+
+### Change details
+```diff
+[Show the diff of the change]
+```
+
+### Scope of impact
+- Affected tests: [count / names]
+- Affected features: [feature name]
+
+### Alternatives considered
+- [ ] Confirmed it cannot be solved by fixing the implementation
+- [ ] Considered other approaches
+
+### Approval
+Wait for the user's explicit approval
+```
+
+---
+
+## Response flow when a test fails
+
+```
+A test failed
+    ↓
+1. Understand why it is failing (read the logs)
+    ↓
+2. Decide whether the implementation is wrong or the test is wrong
+    ↓
+    ├── Implementation is wrong → fix the implementation ✅
+    │
+    └── The test might be wrong
+            ↓
+        Ask the user for confirmation (do not change it on your own)
+```
+
+---
+
+## Examples of correct test handling
+
+### ❌ Bad example (tampering)
+
+```typescript
+// Skipped the test because it failed
+it.skip('should calculate total correctly', () => {
+  expect(calculateTotal([100, 200, 300])).toBe(600);
+});
+```
+
+### ✅ Good example (fix the implementation)
+
+```typescript
+// The test is correct. Fixed the implementation
+function calculateTotal(prices: number[]): number {
+  // Fix: set the reduce initial value to 0
+  return prices.reduce((sum, price) => sum + price, 0);
+}
+```
+
+---
+
+## CI/CD Protection
+
+The following changes are **absolutely prohibited**:
+
+- Adding `continue-on-error: true`
+- Ignoring test failures with `if: always()`
+- Bypassing checks with the `--force` flag
+- Lowering the test coverage threshold
