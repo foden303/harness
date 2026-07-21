@@ -470,6 +470,12 @@ else
     fail_test "harness-flow contract test failed — run 'bash tests/test-flow-contracts.sh' for details"
 fi
 
+if bash "$PLUGIN_ROOT/tests/test-story-verify-contracts.sh" >/dev/null 2>&1; then
+    pass_test "harness-story-verify story-verification.v1 schema and the story-verify-record.sh / story-verify-batch.sh helpers work (test-story-verify-contracts.sh)"
+else
+    fail_test "harness-story-verify contract test failed — run 'bash tests/test-story-verify-contracts.sh' for details"
+fi
+
 if bash "$PLUGIN_ROOT/tests/test-flow-mcp-health.sh" >/dev/null 2>&1; then
     pass_test "harness-flow Atlassian MCP tri-state health probe (not-configured/unreachable/healthy) works (test-flow-mcp-health.sh)"
 else

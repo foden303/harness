@@ -6,6 +6,39 @@ Change history for harness.
 
 ## [Unreleased]
 
+### Added
+
+#### 1. `harness-story-verify` — check a BA's user stories before anyone builds them
+
+**Before**: The only way to find out that a ticket was under-specified was to
+start building it. `harness-flow` verifies a requirement, but it verifies the
+*one* thing you are about to implement, and it merges several links into a
+single feature. Checking a whole Epic for readiness meant opening every child
+ticket by hand, deciding what was missing, and writing the questions to the BA
+one comment at a time.
+
+**After**: `/harness-story-verify PROJ-100` expands the Epic to every child
+ticket, scores each one **independently** against a 12-gate user-story rubric
+(8 blocker gates, 4 advisory), and drafts the specific questions the BA needs to
+answer per ticket. A single ticket, a list of tickets, or a `--jql` result set
+works the same way.
+
+```
+PROJ-100 "Q3 payments" — 7 stories verified: 3 clear, 4 need clarification, 0 blocked.
+Ready to build now: PROJ-101, PROJ-103, PROJ-105
+Blocked on the BA:  PROJ-102, PROJ-104, PROJ-106, PROJ-107
+```
+
+Nothing reaches JIRA without your approval: the run is read-only until it shows
+you every drafted comment at once and you choose post-all / pick / edit / skip.
+Approved comments carry a tracking marker, and `--resume` matches the BA's
+replies, folds them back into the ticket, and re-runs the rubric — with a
+3-round cap before it escalates instead of guessing the missing criteria. Use
+`--report-only` for a pure read, `--html` for a shareable report.
+
+The skill stops at a verdict; it never plans, implements, or commits. Clear
+tickets hand off to `/harness-flow`.
+
 ## [1.0.0] - 2026-07-20
 
 ### Theme: the first published release — one host, one loop, every claim gated

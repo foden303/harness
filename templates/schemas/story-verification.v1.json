@@ -1,0 +1,108 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://harness.local/schemas/story-verification.v1.json",
+  "title": "story-verification.v1",
+  "description": "Per-ticket user-story quality verdict produced by harness-story-verify. One record per JIRA issue, independent of every other issue in the batch.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "issue_key",
+    "title",
+    "verdict",
+    "checks",
+    "verified_at"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "const": "story-verification.v1" },
+    "issue_key": { "type": "string", "minLength": 1 },
+    "issue_url": { "type": "string" },
+    "title": { "type": "string", "minLength": 1 },
+    "issue_type": { "type": "string" },
+    "status": { "type": "string" },
+    "parent_key": {
+      "type": "string",
+      "description": "Epic (or parent) key when this ticket was reached by expanding an Epic."
+    },
+    "reporter_account_id": {
+      "type": "string",
+      "description": "Usually the BA who wrote the story — the person the questions are addressed to."
+    },
+    "assignee_account_id": { "type": "string" },
+    "verdict": {
+      "type": "string",
+      "enum": ["clear", "needs-clarification", "blocked"],
+      "description": "clear = every blocker gate passes and there are no open questions. blocked = the ticket could not be read (permission/MCP), so no judgment was made."
+    },
+    "checks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "severity", "result"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "enum": [
+              "story-format",
+              "goal-value-clear",
+              "ac-present-testable",
+              "ac-covers-happy-path",
+              "edge-error-states",
+              "data-validation-rules",
+              "scope-boundaries",
+              "dependencies-identified",
+              "no-ambiguous-wording",
+              "design-reference",
+              "nonfunctional-stated",
+              "invest-sizing"
+            ]
+          },
+          "severity": { "type": "string", "enum": ["blocker", "advisory"] },
+          "result": {
+            "type": "string",
+            "enum": ["pass", "fail", "n-a"],
+            "description": "n-a requires a note stating why the gate does not apply to this ticket."
+          },
+          "note": { "type": "string" },
+          "evidence": {
+            "type": "string",
+            "description": "The quoted ticket text the judgment is based on (empty when the field is absent)."
+          }
+        }
+      }
+    },
+    "questions": {
+      "type": "array",
+      "description": "The exact questions that will be posted to the BA. Each one must trace back to a failing gate.",
+      "items": {
+        "type": "object",
+        "required": ["gate", "text"],
+        "additionalProperties": false,
+        "properties": {
+          "gate": { "type": "string", "minLength": 1 },
+          "text": { "type": "string", "minLength": 1 },
+          "why": {
+            "type": "string",
+            "description": "One line on what cannot be built or tested until this is answered."
+          }
+        }
+      }
+    },
+    "verified_at": { "type": "string", "format": "date-time" },
+    "clarification": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "nonce": { "type": "string" },
+        "posted_comment_id": { "type": "string" },
+        "posted_at": { "type": "string" },
+        "bot_account_id": { "type": "string" },
+        "rounds": { "type": "integer", "minimum": 0 },
+        "reply_comment_id": { "type": "string" },
+        "answered_at": { "type": "string" }
+      }
+    }
+  }
+}

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Story Verification: {{project}}</title>
+<style>
+  /* Claude Harness Brand palette */
+  :root {
+    --harness-bg:     #FAFAFA;
+    --harness-fg:     #0F0F0F;
+    --harness-muted:  #6B6B6B;
+    --harness-line:   #E5E5E5;
+    --harness-orange: #F58A4A;
+    --harness-green:  #4A9B5C;
+    --harness-amber:  #C99A2E;
+    --alert-crit-bg:  #FBE9E7;
+    --alert-crit-fg:  #B23B22;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--harness-bg);
+    color: var(--harness-fg);
+    font-family: "Inter", "Noto Sans JP", system-ui, sans-serif;
+    font-weight: 400;
+    line-height: 1.7;
+  }
+  main {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 48px 32px;
+  }
+  h1 {
+    font-size: 1.6em;
+    font-weight: 500;
+    margin: 0 0 8px;
+    letter-spacing: -0.01em;
+  }
+  .meta {
+    color: var(--harness-muted);
+    font-size: 0.9em;
+    margin-bottom: 32px;
+  }
+  .summary {
+    background: #fff;
+    border: 1px solid var(--harness-line);
+    border-radius: 6px;
+    padding: 24px 28px;
+    margin-bottom: 32px;
+  }
+  .pct-num {
+    font-size: 3.2em;
+    font-weight: 300;
+    color: var(--harness-orange);
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .pct-label {
+    color: var(--harness-muted);
+    font-size: 0.95em;
+    margin-top: 4px;
+  }
+  .progress-bar {
+    height: 6px;
+    background: var(--harness-line);
+    border-radius: 3px;
+    margin-top: 16px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--harness-orange);
+    width: {{clear_pct}}%;
+    transition: width 0.3s;
+  }
+  .counts {
+    display: flex;
+    gap: 32px;
+    margin-top: 16px;
+    font-size: 0.95em;
+  }
+  .counts span { color: var(--harness-muted); }
+  .counts strong { font-weight: 500; color: var(--harness-fg); margin-right: 4px; }
+  section { margin-bottom: 32px; }
+  h2 {
+    font-size: 1.0em;
+    font-weight: 500;
+    color: var(--harness-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin: 0 0 12px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border: 1px solid var(--harness-line);
+    border-radius: 4px;
+    font-size: 0.9em;
+  }
+  th {
+    text-align: left;
+    font-weight: 500;
+    font-size: 0.85em;
+    color: var(--harness-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--harness-line);
+    white-space: nowrap;
+  }
+  td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--harness-line);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  td.key a {
+    font-family: ui-monospace, "SF Mono", monospace;
+    font-size: 0.9em;
+    color: var(--harness-fg);
+    text-decoration: none;
+    border-bottom: 1px solid var(--harness-line);
+  }
+  td.type, td.num { color: var(--harness-muted); white-space: nowrap; }
+  td.gates {
+    font-family: ui-monospace, "SF Mono", monospace;
+    font-size: 0.8em;
+    color: var(--harness-muted);
+  }
+  /* The renderer cannot compose class names dynamically, so verdict_class
+     ("clear" / "unclear" / "blocked") supplies the suffix directly: it is
+     emitted as the second class value on the verdict badge AND as a
+     data-verdict attribute. The .v-clear / .v-unclear / .v-blocked aliases
+     below carry the same colours for callers that prefer the prefixed form. */
+  .verdict {
+    display: inline-block;
+    font-size: 0.8em;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 1px 8px;
+    border-radius: 2px;
+    white-space: nowrap;
+    color: #fff;
+    background: var(--harness-muted);
+  }
+  .verdict.clear,   .v-clear   { background: var(--harness-green); }
+  .verdict.unclear, .v-unclear { background: var(--harness-amber); }
+  .verdict.blocked, .v-blocked { background: var(--alert-crit-fg); }
+  ul.questions { list-style: none; margin: 0; padding: 0; }
+  ul.questions li {
+    background: #fff;
+    border-left: 3px solid var(--harness-amber);
+    border-radius: 0 4px 4px 0;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+  }
+  .q-head { display: flex; gap: 10px; align-items: baseline; margin-bottom: 4px; }
+  .q-key {
+    display: inline-block;
+    font-family: ui-monospace, "SF Mono", monospace;
+    font-size: 0.75em;
+    letter-spacing: 0.04em;
+    padding: 1px 8px;
+    border-radius: 2px;
+    background: var(--harness-orange);
+    color: #fff;
+  }
+  .q-gate {
+    font-family: ui-monospace, "SF Mono", monospace;
+    font-size: 0.8em;
+    color: var(--harness-muted);
+  }
+  .q-text { font-size: 0.95em; }
+  .q-why {
+    color: var(--harness-muted);
+    font-size: 0.85em;
+    margin-top: 4px;
+  }
+  footer {
+    margin-top: 48px;
+    padding-top: 16px;
+    border-top: 1px solid var(--harness-line);
+    color: var(--harness-muted);
+    font-size: 0.8em;
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>Story Verification: {{project}}</h1>
+  <div class="meta">{{root_ref}} &middot; mode: {{mode}} &middot; generated at {{generated_at}}</div>
+
+  <div class="summary">
+    <div class="pct-num">{{clear_pct}}%</div>
+    <div class="pct-label">Ready to build ({{clear_count}} of {{total}} verified)</div>
+    <div class="progress-bar">
+      <div class="progress-fill"></div>
+    </div>
+    <div class="counts">
+      <span><strong>{{clear_count}}</strong> clear</span>
+      <span><strong>{{unclear_count}}</strong> need clarification</span>
+      <span><strong>{{blocked_count}}</strong> blocked</span>
+    </div>
+  </div>
+
+  <section>
+    <h2>Tickets</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Ticket</th>
+          <th>Title</th>
+          <th>Type</th>
+          <th>Verdict</th>
+          <th>Failing blockers</th>
+          <th>Advisories</th>
+          <th>Qs</th>
+        </tr>
+      </thead>
+      <tbody>{{#tickets}}
+        <tr>
+          <td class="key"><a href="{{url}}">{{key}}</a></td>
+          <td class="title">{{title}}</td>
+          <td class="type">{{issue_type}}</td>
+          <td><span class="verdict {{verdict_class}}" data-verdict="{{verdict_class}}">{{verdict}}</span></td>
+          <td class="gates">{{failing_blockers}}</td>
+          <td class="gates">{{failing_advisories}}</td>
+          <td class="num">{{question_count}}</td>
+        </tr>{{/tickets}}
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Open questions</h2>
+    <ul class="questions">{{#questions}}
+      <li>
+        <div class="q-head">
+          <span class="q-key">{{key}}</span>
+          <span class="q-gate">{{gate}}</span>
+        </div>
+        <div class="q-text">{{text}}</div>
+        <div class="q-why">{{why}}</div>
+      </li>{{/questions}}
+    </ul>
+  </section>
+
+  <footer>
+    Story Verification Report &middot; schema: {{kind}} &middot; root_ref: {{root_ref}} &middot; generated_at: {{generated_at}}
+  </footer>
+</main>
+</body>
+</html>
