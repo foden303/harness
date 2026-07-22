@@ -1,9 +1,0 @@
-id: "task-10"
-name: "API Design - REST Endpoints"
-difficulty: "Hard"
-prompt: "Implement the BookStore interface. Include CRUD operations, pagination, and validation (duplicate ISBN check, and disallowing empty title/author). Do not use Express; implement it as pure functions."
-hidden_test_count: 12
-setup_files:
-  - src/types.ts
-  - package.json
-  - tsconfig.json

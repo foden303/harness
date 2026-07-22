@@ -1,9 +1,0 @@
-id: "task-08"
-name: "Concurrency - Rate Limiter"
-difficulty: "Hard"
-prompt: "Implement a RateLimiter using the Token Bucket algorithm. Follow the interface in types.ts and implement a mechanism where tokens are refilled over time."
-hidden_test_count: 10
-setup_files:
-  - src/types.ts
-  - package.json
-  - tsconfig.json

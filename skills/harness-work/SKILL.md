@@ -138,8 +138,8 @@ In Opus 4.8, thinking is off by default and effort is the main lever for reasoni
 If you observe "shallow reasoning," do not work around it in the prompt — raise the effort.
 Therefore, to strengthen complex tasks we **retire the approach of injecting a free-text marker (the old `ultrathink`) into the spawn prompt**
 and standardize on **choosing the Worker spawn's effort tier from a complexity score**.
-This is consistent with `docs/model-routing-policy.md` (do not infer effort from free text) and
-condition 5 of `.claude/rules/opus-4-7-prompt-audit.md` (`xhigh` is chosen by the caller).
+This is consistent with `docs/model-routing-policy.md` (do not infer effort from free text):
+the effort tier, including `xhigh`, is chosen by the caller.
 
 ### Multi-factor scoring
 

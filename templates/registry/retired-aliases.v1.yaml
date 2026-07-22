@@ -33,15 +33,8 @@ entries:
     reason: "TS→Go port completed in the Hokage migration. Any mention of the TS engine is old documentation"
     allowlist:
       - "docs/CLAUDE_CODE_COMPATIBILITY.md"
-      - "docs/github-harness-plugin-benchmark.md"
-      - "docs/MIGRATION-v4.md"
       - "docs/social/"
-      - "docs/claims-audit.md"
-      - "docs/distribution-scope.md"
       - "docs/private/"
-      - "docs/positioning-notes.md"
-      - "docs/release-copy-phase21.md"
-      - "Plans.md"
 
   - id: skill-gogcli-ops
     kind: path

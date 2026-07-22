@@ -106,7 +106,6 @@ Because it is irreversible, the actual query content is protected even in the ev
 
 - [cross-project-groups-schema.md](cross-project-groups-schema.md) — How to configure groups
 - [cognitive-load-surfaces.md](cognitive-load-surfaces.md) — The roles of the 3 surfaces
-- `.claude/rules/cross-repo-handoff.md` — D42 (harness ↔ harness-mem boundary)
 - `.claude/memory/decisions.md` D43 (design decisions for this feature, 4-decision package)
 
 ## Related scripts

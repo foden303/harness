@@ -97,14 +97,9 @@ go.work.sum
 /test-sandbox/
 
 
-# Benchmarks - generated outputs only (scripts/tasks/docs are tracked)
-/benchmarks/results/
-/benchmarks/**/results/
-/benchmarks/test-project/
-/benchmarks/versions/
-/benchmarks/**/*.trace.jsonl
-/benchmarks/**/*.output.txt
-/benchmarks/**/*.debug.log
+# Python bytecode
+__pycache__/
+*.pyc
 
 # docs (local-only / not for distribution)
 docs/FIX_PLAN_*.md
@@ -231,9 +226,6 @@ scripts/migrate-usage-history.js
 # Local sandbox secrets
 scripts/sandbox-test/.env
 
-# Local benchmark scratch
-benchmarks/evals-v3/scripts/mcp-empty.json
-
 # Release announcement materials (local only)
 docs/releases/
 docs/notebooklm/work-full-slides-compact.yaml
@@ -265,21 +257,6 @@ out/
 
 # OpenCode (local-only)
 .opencode/
-
-# Benchmarks - local development data only
-/benchmarks/evals-*/
-/benchmarks/results/
-/benchmarks/test-project/
-/benchmarks/versions/
-/benchmarks/scripts/
-/benchmarks/tasks/
-/benchmarks/breezing-bench/results/
-/benchmarks/breezing-bench/agent-eval/results/
-/benchmarks/breezing-bench/agent-eval/node_modules/
-/benchmarks/breezing-bench/agent-eval/.env
-/benchmarks/breezing-codex-test/dist/
-/benchmarks/breezing-codex-test/node_modules/
-/benchmarks/breezing-codex-test/.claude/
 
 # MCP Server (local development only)
 /mcp-server/

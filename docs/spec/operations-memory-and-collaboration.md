@@ -78,8 +78,8 @@ to evaluate, not permission to silently relax Harness guardrails.
 When multiple local Claude Code sessions work on the same project, Harness may
 coordinate them to reduce file conflicts, but only under these rules.
 
-- Coordination state is local-only and never depends on harness-mem. The
-  cross-repo boundary in `.claude/rules/cross-repo-handoff.md` stays intact.
+- Coordination state is local-only and never depends on harness-mem, so the
+  boundary with the sibling harness-mem repo stays intact.
 - The lease store lives in one shared location resolved from
   `git --git-common-dir`, never under a worktree-local `.claude/`, so parallel
   worktree Workers share a single lease space. Lease keys are the sha256 of the

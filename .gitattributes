@@ -19,7 +19,7 @@ harness.config.schema.json      export-ignore
 .cursor/                export-ignore
 .private/               export-ignore
 
-# Tests / benchmarks / source
+# Tests / source
 tests/                  export-ignore
 benchmarks/             export-ignore
 go/                     export-ignore

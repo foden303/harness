@@ -19,7 +19,7 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 # 1. Verify existence of template files
 # ================================
 echo ""
-echo "📁 [1/16] Verifying template files exist..."
+echo "📁 [1/20] Verifying template files exist..."
 
 REQUIRED_TEMPLATES=(
   "templates/AGENTS.md.template"
@@ -49,7 +49,7 @@ done
 # 2. Command <-> skill consistency
 # ================================
 echo ""
-echo "🔗 [2/16] Command ↔ skill reference consistency..."
+echo "🔗 [2/20] Command ↔ skill reference consistency..."
 
 # Check whether templates referenced by commands exist
 check_command_references() {
@@ -76,7 +76,7 @@ echo "  ✅ Command reference check complete"
 # 3. Version number consistency
 # ================================
 echo ""
-echo "🏷️ [3/16] Version number consistency..."
+echo "🏷️ [3/20] Version number consistency..."
 
 VERSION_FILE="$PLUGIN_ROOT/VERSION"
 PLUGIN_JSON="$PLUGIN_ROOT/.claude-plugin/plugin.json"
@@ -100,7 +100,7 @@ LATEST_RELEASE_BADGE="https://img.shields.io/github/v/release/foden303/harness?d
 # 4. Expected file structure of skills
 # ================================
 echo ""
-echo "📋 [4/16] Expected file structure of skill definitions..."
+echo "📋 [4/20] Expected file structure of skill definitions..."
 
 # 2agent config has been merged into harness-setup
 # Verify existence of skills/harness-setup/SKILL.md
@@ -116,7 +116,7 @@ fi
 # 5. Hooks configuration consistency
 # ================================
 echo ""
-echo "🪝 [5/16] Hooks configuration consistency..."
+echo "🪝 [5/20] Hooks configuration consistency..."
 
 HOOKS_JSON="$PLUGIN_ROOT/hooks/hooks.json"
 if [ -f "$HOOKS_JSON" ]; then
@@ -138,7 +138,7 @@ fi
 # 6. Regression check for retired /start-task
 # ================================
 echo ""
-echo "🚫 [6/16] Regression check for retired /start-task..."
+echo "🚫 [6/20] Regression check for retired /start-task..."
 
 # Operational-path files (history such as CHANGELOG is excluded)
 START_TASK_TARGETS=(
@@ -182,7 +182,7 @@ fi
 # 7. Regression check for docs/ normalization
 # ================================
 echo ""
-echo "📁 [7/16] Regression check for docs/ normalization..."
+echo "📁 [7/20] Regression check for docs/ normalization..."
 
 # Check root-level references to proposal.md / priority_matrix.md
 DOCS_TARGETS=(
@@ -214,7 +214,7 @@ fi
 # 8. Regression check for bypassPermissions-based operation
 # ================================
 echo ""
-echo "🔓 [8/16] Regression check for bypassPermissions-based operation..."
+echo "🔓 [8/20] Regression check for bypassPermissions-based operation..."
 
 BYPASS_ISSUES=0
 
@@ -312,7 +312,7 @@ fi
 # 9. Regression check for retired ccp-* skills
 # ================================
 echo ""
-echo "🚫 [9/16] Regression check for retired ccp-* skills..."
+echo "🚫 [9/20] Regression check for retired ccp-* skills..."
 
 CCP_ISSUES=0
 
@@ -356,7 +356,7 @@ fi
 # 10. Skill Mirror check
 # ================================
 echo ""
-echo "📦 [10/16] Skill mirror check..."
+echo "📦 [10/20] Skill mirror check..."
 
 FULL_MIRROR_LOG="$(mktemp "${TMPDIR:-/tmp}/harness-skill-mirrors.XXXXXX")"
 if bash "$PLUGIN_ROOT/scripts/sync-skill-mirrors.sh" --check >"$FULL_MIRROR_LOG" 2>&1; then
@@ -372,7 +372,7 @@ rm -f "$FULL_MIRROR_LOG"
 # 10.5 Skill orchestration design contract
 # ================================
 echo ""
-echo "🧭 [10.5/16] Skill orchestration design contract..."
+echo "🧭 [11/20] Skill orchestration design contract..."
 
 SKILL_DESIGN_LOG="$(mktemp "${TMPDIR:-/tmp}/harness-skill-design.XXXXXX")"
 if bash "$PLUGIN_ROOT/tests/test-skill-design-contract.sh" >"$SKILL_DESIGN_LOG" 2>&1; then
@@ -388,7 +388,7 @@ rm -f "$SKILL_DESIGN_LOG"
 # 10.6 Weak-supervision contract tests
 # ================================
 echo ""
-echo "🧪 [10.6/16] Weak-supervision contract tests..."
+echo "🧪 [12/20] Weak-supervision contract tests..."
 
 WEAK_SUPERVISION_LOG="$(mktemp "${TMPDIR:-/tmp}/harness-weak-supervision.XXXXXX")"
 if bash "$PLUGIN_ROOT/tests/test-weak-supervision-report.sh" >"$WEAK_SUPERVISION_LOG" 2>&1; then
@@ -404,7 +404,7 @@ rm -f "$WEAK_SUPERVISION_LOG"
 # 11. CHANGELOG format validation
 # ================================
 echo ""
-echo "📝 [11/16] CHANGELOG format validation..."
+echo "📝 [13/20] CHANGELOG format validation..."
 
 CHANGELOG_ISSUES=0
 
@@ -451,7 +451,7 @@ fi
 # 12. README claim drift check
 # ================================
 echo ""
-echo "📚 [12/16] README claim drift check..."
+echo "📚 [14/20] README claim drift check..."
 
 README_ISSUES=0
 README_EN="$PLUGIN_ROOT/README.md"
@@ -525,8 +525,14 @@ check_fixed_string "$README_EN" "5 verb skills" "README.md 5 verb skills message
 check_fixed_string "$README_EN" "Go-native guardrail engine" "README.md Go-native guardrail engine message"
 check_absent_string "$README_EN" "Production-ready code." "README.md stale production-ready wording"
 
-check_fixed_string "$SCOPE_DOC" '| `commands/` | Compatibility-retained |' "distribution-scope commands classification"
-check_fixed_string "$SCOPE_DOC" '| `mcp-server/` | Development-only and distribution-excluded |' "distribution-scope mcp-server classification"
+check_fixed_string "$SCOPE_DOC" '| `skills/` | Distribution-included |' "distribution-scope skills classification"
+check_fixed_string "$SCOPE_DOC" '| `go/`, `tests/`, `.github/` | Development-only and distribution-excluded |' "distribution-scope dev-only classification"
+# Guards: these directories were removed from the repo. If a row for one reappears,
+# the table has drifted back to describing paths that do not exist.
+check_absent_string "$SCOPE_DOC" '`commands/`' "distribution-scope stale commands row"
+check_absent_string "$SCOPE_DOC" '`mcp-server/`' "distribution-scope stale mcp-server row"
+check_absent_string "$SCOPE_DOC" '`benchmarks/`' "distribution-scope stale benchmarks row"
+check_absent_string "$SCOPE_DOC" '`workflows/`' "distribution-scope stale workflows row"
 check_fixed_string "$RUBRIC_DOC" "| Static evidence |" "benchmark-rubric static evidence"
 check_fixed_string "$RUBRIC_DOC" "| Executed evidence |" "benchmark-rubric executed evidence"
 check_fixed_string "$POSITIONING_DOC" "runtime enforcement" "positioning-notes runtime enforcement"
@@ -541,7 +547,7 @@ fi
 # 15. Verify existence of the Shared File Discipline rule
 # ================================
 echo ""
-echo "📜 [15/16] Verifying the Shared File Discipline rule exists..."
+echo "📜 [15/20] Verifying the Shared File Discipline rule exists..."
 
 SHARED_FILE_DISCIPLINE="$PLUGIN_ROOT/.claude/rules/shared-file-discipline.md"
 
@@ -575,7 +581,7 @@ fi
 # 16. Invariant for Reviewer cyber-safeguard relaxation
 # ================================
 echo ""
-echo "🛡️ [16/16] Invariant for Reviewer cyber-safeguard relaxation..."
+echo "🛡️ [16/20] Invariant for Reviewer cyber-safeguard relaxation..."
 
 REVIEWER_AGENT="$PLUGIN_ROOT/agents/reviewer.md"
 SECURITY_PROFILE="$PLUGIN_ROOT/skills/harness-review/references/security-profile.md"
@@ -623,7 +629,7 @@ fi
 # 17. Retired alias residue gate
 # ================================
 echo ""
-echo "🧹 [17/17] Retired alias residue gate..."
+echo "🧹 [17/20] Retired alias residue gate..."
 
 HARNESS_BIN="$PLUGIN_ROOT/bin/harness"
 if [ ! -x "$HARNESS_BIN" ]; then
@@ -645,7 +651,7 @@ fi
 # 19. Client Mirror drift gate
 # ================================
 echo ""
-echo "🪞 [19/19] Client Mirror drift gate..."
+echo "🪞 [18/20] Client Mirror drift gate..."
 
 MIRROR_SCHEMA="$PLUGIN_ROOT/templates/schemas/mirror-state.v1.json"
 MIRROR_HOOK="$PLUGIN_ROOT/scripts/hook-handlers/skill-mirror-drift.sh"
@@ -689,7 +695,7 @@ fi
 # 20. Plans Depends/Status gate
 # ================================
 echo ""
-echo "📌 [20/23] Plans Depends/Status gate..."
+echo "📌 [19/20] Plans Depends/Status gate..."
 
 if (cd "$PLUGIN_ROOT/go" && go run ./cmd/harness plans check-deps "$PLUGIN_ROOT/Plans.md") >/tmp/harness-plans-deps.$$ 2>&1; then
   echo "  ✅ Plans dependency closure OK"
@@ -701,25 +707,10 @@ fi
 rm -f /tmp/harness-plans-deps.$$
 
 # ================================
-# 21. Branch alignment ledger gate
-# ================================
-echo ""
-echo "🧾 [21/23] Branch alignment ledger gate..."
-
-if bash "$PLUGIN_ROOT/scripts/ci/check-branch-alignment-ledger.sh" >/tmp/harness-branch-ledger.$$ 2>&1; then
-  echo "  ✅ branch alignment ledger OK"
-else
-  echo "  ❌ branch alignment ledger failed"
-  sed 's/^/      /' /tmp/harness-branch-ledger.$$ | tail -40
-  ERRORS=$((ERRORS + 1))
-fi
-rm -f /tmp/harness-branch-ledger.$$
-
-# ================================
 # 22. Binary/source drift gate
 # ================================
 echo ""
-echo "🧱 [22/23] Binary/source drift gate..."
+echo "🧱 [20/20] Binary/source drift gate..."
 
 if bash "$PLUGIN_ROOT/scripts/ci/check-binary-source-drift.sh" >/tmp/harness-bin-drift.$$ 2>&1; then
   echo "  ✅ binary/source drift OK"

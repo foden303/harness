@@ -1,9 +1,0 @@
-id: "task-02"
-name: "Multi-file CRUD - TODO API"
-difficulty: "Medium"
-prompt: "Following the interface in types.ts, create an implementation of TodoStore. Implement all of the create, getById, getAll, update, and delete methods."
-hidden_test_count: 15
-setup_files:
-  - src/types.ts
-  - package.json
-  - tsconfig.json

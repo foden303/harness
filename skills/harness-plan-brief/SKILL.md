@@ -136,9 +136,8 @@ for each project in MEMBERS_JSON:
 **Merge, dedupe (by id), and sort by relevance_score descending on the client side**, then narrow to at most 5 items.
 Note that the total number of calls grows (5 calls for a 5-project group), so latency increases.
 
-> **Rationale for D43 decision 1**: the MCP tool schema exposes neither `projects: [array]` nor `strict_project: false`,
+> **Why N calls**: the memory search tool schema exposes neither `projects: [array]` nor `strict_project: false`,
 > so client-side N-call is the only option for cross-project search.
-> For details see "Phase 65.3 implementation decisions (D43)" in `.claude/rules/cross-repo-handoff.md`.
 
 Always pass cross-project results through the Layer 2/3 (Phase 65.3.2-65.3.4) redaction:
 - Use `bash scripts/render-html.sh ... --with-redaction` when rendering the HTML

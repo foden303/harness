@@ -1,14 +1,15 @@
 # Positioning Notes
 
-Last updated: 2026-03-06
+Last updated: 2026-07-21
 
 To put it briefly for public messaging, the value of `harness` is not "adding more skill packs" but **being able to run Plan -> Work -> Review with runtime enforcement and verification**.
 
 ## Core Message
 
-- Harness treats `5 verb skills + TypeScript guardrail engine` as the core product
+- Harness treats `5 verb skills + Go-native guardrail engine` as the core product
+- The guardrail engine is a single Go binary (`bin/harness`, built from `go/`) wired into Claude Code's native hook events, so the rules (R01-R13) are adjudicated at runtime rather than merely documented
 - The value is not the sheer number of commands, but that `guardrail`, `review`, `consistency`, and `evidence` work together as one
-- Legacy / optional buckets like `commands/` or `mcp-server/` are not weaknesses; as long as the boundaries are documented, they can be explained as operational assets
+- The distribution boundary is documented rather than implied: `docs/distribution-scope.md` classifies every top-level path as distribution-included or development-only
 
 ## Public Comparison Language
 
@@ -22,7 +23,7 @@ To put it briefly for public messaging, the value of `harness` is not "adding mo
 
 ## Proof Points
 
-- TypeScript guardrail engine (`core/`)
+- Go-native guardrail engine (`go/`, shipped as `bin/harness`)
 - 5 verb skills (`skills/`)
-- consistency check and plugin validation
+- consistency check (`scripts/ci/check-consistency.sh`) and plugin validation (`tests/validate-plugin.sh`)
 - `/harness-work all` evidence pack

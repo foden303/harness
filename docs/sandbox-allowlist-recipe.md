@@ -279,7 +279,7 @@ Set `"enabled": false`, or launch with the `--no-sandbox` flag. This regresses s
 
 - `templates/sandbox-settings.json.template` — the harness reference config. **It is fully in sync with this recipe's 29-domain allowlist + 9-domain denylist**. For bulk reuse in a new project (= no existing `sandbox` = Case A), copying the template's entire `sandbox` section is reliable. **When an existing sandbox is present (Case B), use the jq merge** (copying the whole template destroys existing `filesystem` / `failIfUnavailable`)
 - `CLAUDE.md` Permission Boundaries — the sandbox settings form defense in depth with the AI self-tampering prevention layer
-- `.claude/rules/cross-repo-handoff.md` — the redact design of Layer 1 (server-side) / Layer 2/3 (client-side)
+- `docs/cross-project-safety.md` — the redact design of Layer 1 (server-side) / Layer 2a (client-side)
 - CC v2.1.108+ sandbox spec: the `sandbox` section of the official docs
 
 ## History

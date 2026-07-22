@@ -1,9 +1,0 @@
-id: "task-07"
-name: "Add Tests - Improve Coverage"
-difficulty: "Medium"
-prompt: "Add tests covering both the happy path and edge cases for all 20 functions in string-utils.ts. For each function, cover empty strings, null-like inputs, and special-character cases."
-hidden_test_count: 12
-setup_files:
-  - src/string-utils.ts
-  - package.json
-  - tsconfig.json

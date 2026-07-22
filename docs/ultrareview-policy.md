@@ -61,8 +61,8 @@ Harness handles it as follows.
 
 ### 3.1 rationale
 
-**Consistency with rule 5**: `.claude/rules/opus-4-7-prompt-audit.md` states that
-"`/ultrareview` is the caller's review entrypoint; on the agent-definition side, make `review-result.v1` the contract".
+**Consistency with the agent contract**: `/ultrareview` is the caller's review entrypoint;
+on the agent-definition side (`agents/reviewer.md`), `review-result.v1` is the output contract.
 The Harness Reviewer agent and the harness-review skill make `review-result.v1` their output contract.
 Calling `/ultrareview` inside them would forfeit the machine-readable guarantee of `review-result.v1`.
 
@@ -91,7 +91,7 @@ Adding `/ultrareview` would increase the fallback paths and make debugging harde
 
 - Re-evaluate `/ultrareview` once it matures as a CC built-in (next evaluation Phase: 45 or later)
 - Calling `/ultrareview` within Harness will only happen after a schema conversion layer to `review-result.v1` is implemented (currently not implemented)
-- Any policy change is made simultaneously with a revision of rule 5 in `.claude/rules/opus-4-7-prompt-audit.md`
+- Any policy change is made simultaneously with a revision of the `review-result.v1` output contract in `agents/reviewer.md`
 
 ---
 

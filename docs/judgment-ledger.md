@@ -1,6 +1,6 @@
 # Judgment Ledger v1
 
-Phase 98.1 adds an append-only JSONL ledger for human judgment decisions recorded via `judgment-card.v1`. Records are project-scoped, searchable, and recallable into Decision Cards as `similar_past_decisions`.
+An append-only JSONL ledger for human judgment decisions recorded via `judgment-card.v1`. Records are project-scoped, searchable, and recallable into Decision Cards as `similar_past_decisions`.
 
 ## Schema
 
@@ -21,7 +21,7 @@ Phase 98.1 adds an append-only JSONL ledger for human judgment decisions recorde
 
 - **Ranking**: string-match (case-insensitive substring on full query, else whitespace token hits across `question`, `answer`, `rationale`, `tags`)
 - **Scope**: project filter (exact `project` field match)
-- **Limit**: max **3** results (Lead decision, Phase 98.1.5)
+- **Limit**: max **3** results
 - **Go**: `judgmentledger.Search(path, project, query, limit)`
 - **Shell**: `scripts/judgment-ledger.sh search --project … --query …` (one JSON object per line)
 

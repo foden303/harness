@@ -82,7 +82,7 @@ Rather than releasing "per commit / PR," accumulate changes in `[Unreleased]` of
 
 v1.0.0 is the first published release: no tag or GitHub Release existed before
 it, and the pre-1.0 version numbers (up to `5.0.0`) were never distributed. They
-survive only in git history and `.claude/memory/archive/Plans-pre-1.0.md`.
+survive only in git history.
 
 From v1.0.0 onward, published versions are immutable and the criteria above
 apply as written.

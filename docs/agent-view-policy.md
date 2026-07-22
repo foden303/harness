@@ -52,7 +52,7 @@ and keeps it separate from Harness's internal teammate spawn workflow.
 
 - `claude agents` is **a UI for the operator (human Lead) to view multiple sessions**.
   Harness's internal teammate spawn (Worker / Reviewer / Scaffolder) is launched by the **Agent tool / breezing skill**.
-- Worker / Reviewer do not spawn other sessions from `claude agents`. Lead only (details: the permission and responsibility boundaries in `.claude/rules/opus-4-7-prompt-audit.md`).
+- Worker / Reviewer do not spawn other sessions from `claude agents`. Lead only (details: "spawn permissions" in `docs/team-composition.md`).
 - The breezing skill uses `claude --teammate-mode in-process` / `tmux`. It does not depend on `claude agents`.
 
 ### D. Background permission mode retention (2.1.141)
@@ -80,7 +80,7 @@ and keeps it separate from Harness's internal teammate spawn workflow.
 ## CI / gate
 
 - `tests/validate-plugin.sh` does not validate the existence of `claude agents` flags (they are a CC-native feature).
-- Instead, the permission boundaries in `.claude/rules/opus-4-7-prompt-audit.md` and the
+- Instead, the spawn permission boundaries in `docs/team-composition.md` and the
   deny rules in `.claude-plugin/settings.json` function as layered defense.
 - If you want to operationally audit `claude agents` usage, record the env `CLAUDE_CODE_SESSION_ID`
   via a webhook (`scripts/hook-handlers/webhook-notify.sh`).
@@ -89,7 +89,6 @@ and keeps it separate from Harness's internal teammate spawn workflow.
 
 - `docs/team-composition.md` — SSOT for teammate spawn and parallelism
 - `agents/worker.md` — Worker contract
-- `.claude/rules/opus-4-7-prompt-audit.md` — Agent-contract audit rules (specifies Lead-only spawn)
 - `docs/upstream-update-snapshot-2026-05-15.md` — Phase 69 snapshot
 - `docs/upstream-update-snapshot-2026-05-27.md` — Phase 80 snapshot
 - `.claude/rules/hooks-2.1.139-plus.md` — 2.1.133+ rules around hooks

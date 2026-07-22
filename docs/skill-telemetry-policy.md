@@ -109,7 +109,7 @@ Write an exclude list in `.claude/settings.local.json`:
 ## Related docs
 
 - Phase 58.2.3 (`docs/upstream-followups-phase58-2026-05-03.md`) — telemetry sink design decision
-- Phase 61 (`docs/sandbagging-aware-weak-supervision.md`) — follows the same append-only design as the `.claude/state/elicitation/events.jsonl` ledger
+- The `.claude/state/elicitation/events.jsonl` ledger — follows the same append-only design
 - Claude Code OTel reference (Anthropic docs)
 
 ## Acceptance conditions (Phase 62.2.3 DoD)
@@ -123,4 +123,4 @@ Write an exclude list in `.claude/settings.local.json`:
 ## References
 
 - Claude Code 2.1.126 CHANGELOG: `claude_code.skill_activated` OTel event includes `invocation_trigger`
-- Phase 61 sandbagging-aware weak-supervision ledger design (privacy-first, append-only)
+- Weak-supervision ledger design (privacy-first, append-only)

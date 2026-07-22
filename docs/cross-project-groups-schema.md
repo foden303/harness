@@ -97,14 +97,13 @@ merge and dedupe on the client side (by relevance_score)
 Layer 2a (dictionary) redacts proper nouns → generate HTML
 ```
 
-For the detailed responsibility boundary, see "3-Layer Redaction responsibility boundary"
-and "Phase 65.3 implementation decisions (D43)" in [.claude/rules/cross-repo-handoff.md](../.claude/rules/cross-repo-handoff.md).
+For the detailed responsibility boundary between the server-side (Layer 1) and
+client-side (Layer 2a) redaction layers, see [cross-project-safety.md](cross-project-safety.md).
 
 ## Related
 
 - `.claude/rules/cross-project-groups.yaml` — SSOT for this schema (default `groups: []`)
 - `scripts/load-cross-project-groups.sh` — yaml → JSON parser + validator
 - `tests/test-cross-project-groups-schema.sh` — 4-case machine verification
-- `.claude/rules/cross-repo-handoff.md` — Phase 65.3 implementation decisions (D43)
 - `.claude/rules/client-redaction.yaml` — Layer 2a dictionary (planned for Phase 65.3.2)
 - Plans.md §65.3.1-65.3.7 — all Phase C tasks

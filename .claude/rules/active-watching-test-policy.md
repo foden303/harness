@@ -94,6 +94,6 @@ Had the `not-configured` test been written from the start, the problem could hav
 
 - [D40](../memory/decisions.md) — the design decision for tri-state health (the theoretical basis of this convention)
 - [P29](../memory/patterns.md) — dual hooks.json sync + CI gate (recurrence prevention on the wiring side)
-- [migration-policy.md](./migration-policy.md) — the sibling convention for exclusion-based verification (deletion residue vs. dependency absence)
+- [retired-alias-policy.md](./retired-alias-policy.md) — the sibling convention for exclusion-based verification (deletion residue vs. dependency absence)
 - [test-quality.md](./test-quality.md) — test quality in general (prohibiting hollow tests)
 - [implementation-quality.md](./implementation-quality.md) — implementation quality in general

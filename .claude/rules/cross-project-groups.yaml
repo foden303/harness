@@ -1,8 +1,7 @@
 # cross-project-groups.yaml
 #
 # Purpose:
-#   Definition of target groups for cross-project search, introduced in
-#   Phase 65.3 (Cross-Project Group + 3-Layer Redaction).
+#   Definition of target groups for cross-project memory search.
 #   Opt-in via the --cross-project-group <name> flag from the
 #   harness-plan-brief / harness-accept / harness-progress skills.
 #
@@ -20,12 +19,12 @@
 #   4. an invalid schema causes scripts/load-cross-project-groups.sh to exit 1
 #   5. Full spec: docs/cross-project-groups-schema.md
 #
-# Cross-Project Search Flow (D43 Option alpha):
+# Cross-Project Search Flow:
 #   client (skill) -> convert yaml to JSON via load-cross-project-groups.sh
-#   -> issue mcp__harness__harness_mem_search once for each member project
-#      (N-call required because MCP has no projects array)
+#   -> issue one memory search call per member project
+#      (the search API takes a single project, so N calls are required)
 #   -> merge / dedupe / relevance_score sort the results client-side
-#   -> redact proper nouns with Layer 2a (dictionary, language-agnostic)
+#   -> redact proper nouns with the client-redaction.yaml dictionary
 #
 
 schema_version: cross-project-group.v1

@@ -92,8 +92,8 @@ records already carry.
 
 Ticket titles and question text can carry client names. If the host project has
 `.claude/rules/client-redaction.yaml`, pass the rendered HTML through
-`scripts/redact-by-dictionary.sh` before sharing it (see
-`.claude/rules/cross-repo-handoff.md` Layer 2a). The terminal report stays
+`scripts/redact-by-dictionary.sh` before sharing it (the dictionary schema is
+documented in `.claude/rules/client-redaction.yaml`). The terminal report stays
 unredacted — it never leaves the operator's machine.
 
 ## Final summary (after the loop)

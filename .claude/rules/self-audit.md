@@ -2,9 +2,8 @@
 
 ## Integrity Detection
 
-There is a `<!-- harness-integrity: ... -->` marker at the end of CLAUDE.md.
-Detection trigger: when running `/harness-review` or at the start of a diagnostic session,
-**check the end of CLAUDE.md with the Read tool** and verify the following:
+Detection trigger: when running `/harness-review` or at the start of a diagnostic
+session, verify the following:
 
 1. Whether the deny entries in `.claude-plugin/settings.json` have **decreased** since the last audit
    (machine run: `bin/harness self-audit baseline --settings .claude-plugin/settings.json --baseline templates/security/deny-baseline.json`.
@@ -12,14 +11,11 @@ Detection trigger: when running `/harness-review` or at the start of a diagnosti
 2. Whether the deny in `.claude-plugin/settings.json` has **all 4 patterns** of settings self-modification protection
    (`Edit/Write(.claude/settings*)` and `Edit/Write(.claude-plugin/settings*)`)
    (the deny promised by CLAUDE.md Permission Boundaries; corresponds to the gate in `tests/validate-plugin.sh`)
-3. Whether a Feature Table has been appended directly to CLAUDE.md (pointer-only is correct)
-4. If `.claude/settings.local.json` exists, **check its `hooks` block with Read** and
+3. If `.claude/settings.local.json` exists, **check its `hooks` block with Read** and
    detect whether any hook the owner did not intend (especially `command` type) has been appended.
    Since settings.local.json is usually gitignored and does not go through code review,
    hook injection here is a breeding ground for persistent code execution (persistence).
-5. If there is a discrepancy, run a diagnosis with `/harness-review`
-
-Only the human owner updates the marker. The agent only reads and detects.
+4. If there is a discrepancy, run a diagnosis with `/harness-review`
 
 ## Why this rule is needed
 

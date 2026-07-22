@@ -150,7 +150,7 @@ Because adopting a cross-project record may mix in chosen_option / acceptance_cr
 bash scripts/render-html.sh --template accept ... --with-redaction
 ```
 
-For details, see "Phase 65.3 implementation decisions (D43)" in `.claude/rules/cross-repo-handoff.md`.
+The redaction dictionary itself lives in `.claude/rules/client-redaction.yaml`.
 
 ### Step 3: Retrieve past issue patterns (Phase 65.2.2 delegation)
 

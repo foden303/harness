@@ -18,14 +18,11 @@ var GlobalAllowlist = []string{
 	".claude/state/",
 	"out/",
 	"output/",
-	"benchmarks/",
 	"templates/registry/retired-aliases.v1.yaml",
 	"templates/schemas/retired-alias.v1.json",
 	".claude/rules/retired-alias-policy.md",
-	".claude/rules/migration-policy.md",
 	"go/internal/retiredalias/",
 	"tests/fixtures/retired-alias/",
-	"TASK-97.md",
 }
 
 // ParseRegistryYAML unmarshals registry YAML bytes.

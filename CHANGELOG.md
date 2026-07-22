@@ -6,6 +6,40 @@ Change history for harness.
 
 ## [Unreleased]
 
+### Removed
+
+#### Legacy-residue cleanup — the repo now describes only what it actually contains
+
+**Before**: The tree carried a large amount of material that only recorded the
+project's own past. `CLAUDE.md` documented five directories that do not exist
+(`src/`, `app/`, `frontend/`, `mcp-server/`, `harness-ui/`). The feature table
+opened with eight "Phase NN" completion reports and linked seventeen documents
+that had already been deleted. `.claude/rules/migration-policy.md` described a
+scanner (`deleted-concepts.yaml`, `check-residue.sh`) that no longer exists.
+`workflows/` held a declarative engine whose 27 referenced skills were all gone,
+guarded by a test that only warned. `benchmarks/` carried a 2026-02 A/B study
+against a third-party model, plus an npm dependency surface and two required API
+secrets. Committed `.pyc` files included bytecode for a script that had been
+deleted.
+
+**After**: 206 files removed and 24 rewritten — 13,301 lines deleted against 91
+added. Every remaining document describes something that exists. Deletions that
+were pinned by a CI gate were removed together with that gate, and where a stale
+pin guarded a real invariant it was replaced by a stronger one rather than
+dropped: `docs/distribution-scope.md` now pins two rows that describe real
+directories and adds four `check_absent_string` guards so rows for removed
+directories cannot creep back.
+
+Live contracts were preserved, not deleted with their containers — the
+`self_review[].rule` enum, the `*.v1` schema names, the Lead-only-spawn boundary
+and the caller-chooses-`xhigh` rule still live in `agents/*.md`, `harness.toml`,
+and the Go promptpack.
+
+`harness-mem` remains wired in as an opt-in companion (the tri-state health
+check treats an absent install as `not-configured`, not an error), and the
+`github.com/foden303/harness/go` module path is unchanged — re-homing it is a
+mechanical rename best done as its own atomic commit.
+
 ### Added
 
 #### 1. `harness-story-verify` — check a BA's user stories before anyone builds them

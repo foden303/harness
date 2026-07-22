@@ -436,7 +436,6 @@ adapter_gate_paths=(
   "docs/architecture/hokage-core.md"
   "docs/distribution-scope.md"
   "docs/hardening-parity.md"
-  "docs/hokage-spin-off-readiness.md"
   "docs/local-harness-environment-cleanup.md"
   "docs/skill-orchestration-design-contract.md"
   "scripts/build-host-plugin-dist.sh"
@@ -447,7 +446,6 @@ adapter_gate_paths=(
   "tests/test-host-plugin-dist.sh"
   "tests/test-bootstrap-skill-trigger-acceptance.sh"
   "tests/test-distribution-archive.sh"
-  "tests/test-hokage-spin-off-readiness.sh"
   "tests/test-skill-design-contract.sh"
 )
 
@@ -640,17 +638,6 @@ check_release_mirror_drift() {
     fi
   else
     warn "bootstrap skill trigger acceptance gate skipped"
-  fi
-
-  if [ -f tests/test-hokage-spin-off-readiness.sh ]; then
-    if bash tests/test-hokage-spin-off-readiness.sh >"$output_file" 2>&1; then
-      pass "hokage spin-off readiness gate"
-    else
-      fail "hokage spin-off readiness gate"
-      sed 's/^/  /' "$output_file"
-    fi
-  else
-    warn "hokage spin-off readiness gate skipped"
   fi
 
   rm -f "$output_file"

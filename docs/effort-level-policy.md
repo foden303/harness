@@ -36,8 +36,7 @@ For this reason, when Harness wants deeper reasoning it controls it via the `eff
 Rationale:
 1. The v2.1.111 section of `docs/CLAUDE-feature-table.md` records `xhigh effort` as `A: explicit follow-up target`
 2. The Opus 4.7 section of the same file also records `xhigh effort` as `A: explicit follow-up target`
-3. `docs/cc-2.1.99-2.1.111-impact.md` documents the addition of `xhigh` in v2.1.111
-4. Harness's `opus-4-7-prompt-audit.md` defines "`xhigh`: reasoning intensity chosen by the caller"
+3. Harness treats `xhigh` as "reasoning intensity chosen by the caller" and pins it in the agent frontmatter (`agents/reviewer.md`, `agents/advisor.md`)
 
 When `xhigh` is written in the frontmatter, CC sends a highest-effort-tier request to Opus 4.8. On non-Opus 4.8 models (such as the Sonnet family) it is silently downgraded to the equivalent of `high`. It is not rejected or errored.
 
@@ -116,13 +115,11 @@ The following are not adopted. The reasons for deferral are stated.
 - `xhigh` is not "magic that makes it smarter" but room to think more deeply
 - With vague instructions, deeper thinking just refines in the wrong direction
 - On models other than Opus 4.8, specifying `xhigh` falls back to the equivalent of `high`, so the expected effect may not materialize
-- Pass condition 5 of `opus-4-7-prompt-audit.md`: `xhigh` is "reasoning intensity chosen by the caller," not something the agent prompt infers from a free-text marker
+- `xhigh` is "reasoning intensity chosen by the caller," not something the agent prompt infers from a free-text marker (set via `effort:` frontmatter in `agents/reviewer.md` / `agents/advisor.md`)
 
 ## Related Files
 
 - `docs/CLAUDE-feature-table.md` — feature list for v2.1.111 / Opus 4.7
-- `docs/cc-2.1.99-2.1.111-impact.md` — details of the xhigh addition
 - `docs/claude-code-setup-mcp-telemetry-provider.md` — `${CLAUDE_EFFORT}` and setup guidance
-- `.claude/rules/opus-4-7-prompt-audit.md` — definition of the xhigh operating knob
 - `agents/reviewer.md` — Reviewer effort setting
 - `agents/advisor.md` — Advisor effort setting
