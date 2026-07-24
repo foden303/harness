@@ -697,7 +697,12 @@ fi
 echo ""
 echo "📌 [19/20] Plans Depends/Status gate..."
 
-if (cd "$PLUGIN_ROOT/go" && go run ./cmd/harness plans check-deps "$PLUGIN_ROOT/Plans.md") >/tmp/harness-plans-deps.$$ 2>&1; then
+# Plans.md is gitignored (a per-project working file), so it is absent on a
+# clean checkout (e.g. CI). There is nothing to validate then — skip rather
+# than fail, mirroring the missing-binary skip in the mirror gate above.
+if [ ! -f "$PLUGIN_ROOT/Plans.md" ]; then
+  echo "  ⚠️ Plans.md not present (gitignored / per-project); skipping dependency closure"
+elif (cd "$PLUGIN_ROOT/go" && go run ./cmd/harness plans check-deps "$PLUGIN_ROOT/Plans.md") >/tmp/harness-plans-deps.$$ 2>&1; then
   echo "  ✅ Plans dependency closure OK"
 else
   echo "  ❌ Plans dependency closure failed"
