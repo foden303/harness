@@ -118,4 +118,3 @@ func TestGenerateHooksJSON_UnknownHost(t *testing.T) {
 		t.Fatal("expected error for unknown host, got nil")
 	}
 }
-

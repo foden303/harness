@@ -160,6 +160,34 @@ flowchart LR
 JIRA/Confluence access uses the Atlassian MCP; an absent MCP is reported, not
 guessed around.
 
+## Requirements Authoring & Verification (BA)
+
+Two skills sit *before* the build loop, for the person who owns the requirement.
+They are mirror images: one **writes** tickets, the other **checks** them — both
+score against the same user-story quality rubric, and both make no external JIRA
+write until you approve.
+
+```mermaid
+flowchart LR
+    idea["Rough idea"] --> author["/harness-story-author"]
+    author -->|"fill template, ask only the gaps"| draft["Epic + user stories<br/>drafted to your template"]
+    draft --> approve1{"You approve"}
+    approve1 --> created["Created in JIRA"]
+    created --> verify["/harness-story-verify"]
+    verify -->|"unclear"| q["BA questions on the ticket<br/>you approve before they post"]
+    verify -->|"clear"| build["Hand to /harness-flow"]
+```
+
+| Skill | Flow |
+|-------|------|
+| `/harness-story-author <intent\|brief.md>` | Turn a rough idea into an Epic or user story **using your own template** (`--template` / `--template-confluence`, or the shipped default). Fills the template, scores the 12-gate rubric, asks only the questions needed to fill the gaps (never inventing an acceptance criterion), proposes an Epic's child-story breakdown, and calls `createJiraIssue` only after you approve. `--report-only` drafts without touching JIRA. |
+| `/harness-story-verify <EPIC-KEY\|ISSUE-KEY ...>` | Verify that existing stories are clear enough to build. Expands an Epic to every child, scores each independently, and drafts one comment of open questions per unclear ticket — posted only after you approve. Read-only until then. |
+
+Pass your idea inline (`/harness-story-author "let users export the txn list to CSV"`)
+or as a brief file. You do **not** need a complete spec — for every unfilled
+section the skill asks you one decision-shaped question. Full usage:
+[skills/harness-story-author/README.md](skills/harness-story-author/README.md).
+
 ## Basic Workflow
 
 | Stage | Output | Gate |

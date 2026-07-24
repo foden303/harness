@@ -73,6 +73,7 @@ EXPECTED_MODEL_INVOKABLE='[
   "harness-release",
   "harness-review",
   "harness-setup",
+  "harness-story-author",
   "harness-story-verify",
   "harness-sync",
   "harness-work",

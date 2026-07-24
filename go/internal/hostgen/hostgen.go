@@ -30,9 +30,6 @@ import (
 // harness binary: both hosts converge on this single policy entrypoint.
 const preToolCommand = "hook pre-tool"
 
-
-
-
 // claudeBinary is the binary invocation Codex uses directly. Claude's
 // own hooks.json wraps the binary in a valid_root bootstrap (see
 // ClaudePreToolCommand); the Codex config is generated minimally and

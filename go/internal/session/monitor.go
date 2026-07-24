@@ -204,7 +204,6 @@ func (h *MonitorHandler) Handle(r io.Reader, w io.Writer) error {
 		fmt.Fprintf(w, "⚠️ harness-mem unhealthy: %s\n", reason)
 	}
 
-
 	// 48.1.2: advisor/reviewer drift detection
 	driftLines := h.collectDrift(stateDir, projectRoot)
 	for _, line := range driftLines {

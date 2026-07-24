@@ -151,8 +151,8 @@ func TestDoctor_MigrationStatus_Mixed(t *testing.T) {
 	schema := makeHooksSchema(map[string][]hookGroup{
 		"PreToolUse": {
 			{Hooks: []hookEntry{
-				{Type: "command", Command: "harness hook pre-tool"},                                        // Go
-				{Type: "command", Command: `bash "${CLAUDE_PLUGIN_ROOT}/hooks/pre-tool.sh"`},               // shell
+				{Type: "command", Command: "harness hook pre-tool"},                                            // Go
+				{Type: "command", Command: `bash "${CLAUDE_PLUGIN_ROOT}/hooks/pre-tool.sh"`},                   // shell
 				{Type: "command", Command: `bash "${CLAUDE_PLUGIN_ROOT}/scripts/run-hook.sh" session-cleanup`}, // shell
 			}},
 		},
