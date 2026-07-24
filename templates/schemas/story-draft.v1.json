@@ -1,0 +1,133 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://harness.local/schemas/story-draft.v1.json",
+  "title": "story-draft.v1",
+  "description": "A ticket/epic draft authored by harness-story-author. Read-only until the operator approves creation; created_key/created_url are set only after the approved createJiraIssue call.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "mode",
+    "project_key",
+    "issue_type",
+    "title",
+    "body_markdown",
+    "readiness",
+    "authored_at"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "const": "story-draft.v1" },
+    "draft_id": { "type": "string" },
+    "mode": {
+      "type": "string",
+      "enum": ["epic", "story"],
+      "description": "epic = an epic plus proposed children; story = a single ticket."
+    },
+    "project_key": { "type": "string", "minLength": 1 },
+    "cloud_id": { "type": "string" },
+    "issue_type": { "type": "string", "minLength": 1 },
+    "title": { "type": "string", "minLength": 1 },
+    "template_ref": {
+      "type": "string",
+      "description": "default | an override file path | a Confluence URL — which template shaped this draft."
+    },
+    "body_markdown": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The rendered issue description (template guidance comments stripped)."
+    },
+    "fields": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "labels": { "type": "array", "items": { "type": "string" } },
+        "priority": { "type": "string" },
+        "components": { "type": "array", "items": { "type": "string" } },
+        "parent_key": {
+          "type": "string",
+          "description": "Set on a child story to the epic key it belongs to."
+        }
+      }
+    },
+    "checks": {
+      "type": "array",
+      "description": "Authoring-rubric gate results for THIS draft. Same gate ids as story-verification.v1 so the two skills share a vocabulary.",
+      "items": {
+        "type": "object",
+        "required": ["id", "severity", "result"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "enum": [
+              "story-format",
+              "goal-value-clear",
+              "ac-present-testable",
+              "ac-covers-happy-path",
+              "edge-error-states",
+              "data-validation-rules",
+              "scope-boundaries",
+              "dependencies-identified",
+              "no-ambiguous-wording",
+              "design-reference",
+              "nonfunctional-stated",
+              "invest-sizing"
+            ]
+          },
+          "severity": { "type": "string", "enum": ["blocker", "advisory"] },
+          "result": {
+            "type": "string",
+            "enum": ["pass", "fail", "n-a"],
+            "description": "fail = the slot is unfilled/ambiguous and the BA must answer. n-a requires a note."
+          },
+          "note": { "type": "string" }
+        }
+      }
+    },
+    "open_questions": {
+      "type": "array",
+      "description": "Questions asked of the BA to fill a failing gate. answer is set once the BA replies; an unanswered question keeps readiness at needs-input.",
+      "items": {
+        "type": "object",
+        "required": ["gate", "text"],
+        "additionalProperties": false,
+        "properties": {
+          "gate": { "type": "string", "minLength": 1 },
+          "text": { "type": "string", "minLength": 1 },
+          "why": { "type": "string" },
+          "answer": { "type": "string" }
+        }
+      }
+    },
+    "children": {
+      "type": "array",
+      "description": "Proposed child stories (epic mode only). Each is created only after the operator approves, then created_key is backfilled.",
+      "items": {
+        "type": "object",
+        "required": ["local_id", "title", "body_markdown", "readiness"],
+        "additionalProperties": false,
+        "properties": {
+          "local_id": { "type": "string", "description": "Stable within-draft id (e.g. c1) used before a real key exists." },
+          "title": { "type": "string", "minLength": 1 },
+          "role_group": { "type": "string", "description": "Owning role, e.g. Backend Engineer." },
+          "points": { "type": "number" },
+          "body_markdown": { "type": "string", "minLength": 1 },
+          "checks": { "type": "array", "items": { "type": "object" } },
+          "open_questions": { "type": "array", "items": { "type": "object" } },
+          "readiness": { "type": "string", "enum": ["needs-input", "ready", "created", "skipped"] },
+          "created_key": { "type": "string" },
+          "created_url": { "type": "string" }
+        }
+      }
+    },
+    "readiness": {
+      "type": "string",
+      "enum": ["needs-input", "ready", "created"],
+      "description": "needs-input = a blocker gate failed or an open question is unanswered. ready = all blocker gates pass, no unanswered questions, not yet pushed. created = the issue exists in JIRA."
+    },
+    "created_key": { "type": "string" },
+    "created_url": { "type": "string" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "authored_at": { "type": "string", "format": "date-time" }
+  }
+}

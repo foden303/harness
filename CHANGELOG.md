@@ -6,6 +6,34 @@ Change history for harness.
 
 ## [Unreleased]
 
+### Added
+
+#### `harness-story-author` — a BA authors a JIRA ticket/Epic from their own template, and it lands in JIRA only on approval
+
+**Before**: A BA turning an idea into a JIRA ticket did it by hand: open the
+template, fill every section, guess at the parts the idea didn't cover, and hope
+the result would survive a Definition-of-Ready check. Breaking an epic into
+child stories meant creating each one manually and wiring the epic link. There
+was a skill to *verify* an existing ticket's clarity (`harness-story-verify`),
+but nothing to *write* one — the two directions were asymmetric.
+
+**After**: `/harness-story-author "<idea>"` fills the BA's own ticket template
+(the default is modelled on a real epic; override with `--template <path>` or
+`--template-confluence <url>`), scores the draft against the same 12-gate rubric
+`harness-story-verify` uses, and asks — via `AskUserQuestion` — only the
+decision-shaped questions needed to fill the gaps, never inventing an acceptance
+criterion to look answered. For an Epic it then proposes an INVEST child-story
+breakdown (role group / title / points), drafting each child to the story
+template. Nothing is written to JIRA until the operator approves; only then does
+it call `createJiraIssue`, link children to the epic, and backfill the Team-split
+table with the real keys. It is the authoring mirror of `harness-story-verify`:
+a story it writes would pass the verify it later faces.
+
+```output
+/harness-story-author "move detection to a Flink stream job" --epic --project DPD
+→ draft ready · asks 3 gap questions · proposes 17 children · creates on approval
+```
+
 ### Removed
 
 #### Legacy-residue cleanup — the repo now describes only what it actually contains
