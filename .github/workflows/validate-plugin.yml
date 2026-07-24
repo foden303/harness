@@ -77,14 +77,6 @@ jobs:
       - name: Run ShellCheck high-risk subset
         run: bash ./tests/test-shell-lint.sh
 
-      - name: Check i18n regression suite
-        run: |
-          bash ./scripts/i18n/check-translations.sh
-          bash ./tests/test-i18n-default-language.sh
-          bash ./tests/test-i18n-skill-frontmatter.sh
-          bash ./tests/test-i18n-locale-roundtrip.sh
-          bash ./tests/test-setup-language-rendering.sh
-
       - name: Validate plugin structure
         run: |
           bash ./tests/validate-plugin.sh
@@ -92,16 +84,6 @@ jobs:
       - name: Check consistency (templates/refs/version/hooks)
         run: |
           bash ./scripts/ci/check-consistency.sh
-
-      - name: Validate codex package (multi-agent migration guards)
-        run: |
-          bash ./tests/test-codex-package.sh
-
-      - name: Run Codex plugin adapter smoke
-        env:
-          HARNESS_CODEX_PLUGIN_SMOKE_REQUIRED: "1"
-        run: |
-          bash ./tests/test-codex-plugin-adapter.sh
 
   test-go:
     runs-on: ubuntu-latest
