@@ -124,9 +124,14 @@ fi
 TMP_DIR="$(mktemp -d "${TMPDIR:-/tmp}/test-audit-ui-render.XXXXXX")"
 trap "rm -f '$TMP_AUDIT'; rm -rf '$TMP_DIR'" EXIT
 
-# progress fixture with audit fields
+# progress fixture with audit fields.
+# Use the tracked Plans.md.template as the snapshot source rather than the
+# project's Plans.md: the latter is gitignored, so it is absent on a clean CI
+# checkout and made this render smoke-test fail there. The template is always
+# present and the plans content is irrelevant to what this test verifies
+# (that the audit fields expand into the rendered HTML).
 SNAP="$TMP_DIR/snap.json"
-bash "$ROOT_DIR/scripts/progress-snapshot.sh" --plans Plans.md --project test > "$SNAP"
+bash "$ROOT_DIR/scripts/progress-snapshot.sh" --plans "$ROOT_DIR/templates/Plans.md.template" --project test > "$SNAP"
 
 # Inject audit fields
 SNAP2="$TMP_DIR/snap-audit.json"
