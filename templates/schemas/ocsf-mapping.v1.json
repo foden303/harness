@@ -1,0 +1,191 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/foden303/harness/templates/schemas/ocsf-mapping.v1.json",
+  "title": "ocsf-mapping.v1",
+  "description": "One raw-log-source -> OCSF class mapping, scored against the mapping rubric. Written only by scripts/ocsf-map-record.sh, which derives readiness so it can never contradict the gates.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "source_name",
+    "ocsf_version",
+    "ocsf_class",
+    "input",
+    "fields",
+    "readiness",
+    "mapped_at"
+  ],
+  "additionalProperties": true,
+  "properties": {
+    "schema_version": { "const": "ocsf-mapping.v1" },
+    "source_name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Stable slug for the log source being mapped, e.g. azure-signin, macos-unified-log."
+    },
+    "ocsf_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "The pinned OCSF version this mapping was produced against."
+    },
+    "pin_reason": {
+      "enum": ["in-sync", "not-configured", "corrupted"],
+      "description": "ocsf-pin.v1 state at mapping time. Only in-sync may reach readiness ready."
+    },
+    "ocsf_class": {
+      "type": "object",
+      "required": ["uid", "name"],
+      "properties": {
+        "uid": { "type": "integer" },
+        "name": { "type": "string", "minLength": 1 },
+        "caption": { "type": "string" },
+        "why": {
+          "type": "string",
+          "description": "Evidence from the samples for choosing this class, not a restatement of its caption."
+        }
+      }
+    },
+    "input": {
+      "type": "object",
+      "required": ["mode", "sources"],
+      "properties": {
+        "mode": {
+          "enum": ["raw", "file", "scan"],
+          "description": "raw = pasted lines, file = one named file, scan = a directory walked automatically."
+        },
+        "sources": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["ref", "format", "lines_total", "lines_parsed"],
+            "properties": {
+              "ref": { "type": "string", "description": "File path, or 'pasted' for raw input." },
+              "format": {
+                "type": "string",
+                "description": "Detected parse format: json, ndjson, syslog-rfc5424, syslog-rfc3164, cef, leef, kv, csv, w3c, or unknown."
+              },
+              "lines_total": { "type": "integer", "minimum": 0 },
+              "lines_parsed": { "type": "integer", "minimum": 0 },
+              "sha256": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "fields": {
+      "type": "array",
+      "description": "One entry per mapped raw field. Every entry must cite a raw_path AND a sample_value actually observed — an entry without both is an invented mapping.",
+      "items": {
+        "type": "object",
+        "required": ["raw_path", "sample_value", "ocsf_attribute", "confidence"],
+        "properties": {
+          "raw_path": { "type": "string", "minLength": 1 },
+          "sample_value": { "type": "string" },
+          "ocsf_attribute": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Dotted OCSF attribute path, e.g. user.email_addr, src_endpoint.ip."
+          },
+          "ocsf_type": { "type": "string" },
+          "transform": {
+            "type": "string",
+            "description": "How the raw value becomes the OCSF value: none, epoch_ms->timestamp, lowercase, split, lookup, etc."
+          },
+          "confidence": { "enum": ["high", "medium", "low"] },
+          "occurrence": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "How many sampled records carried this field. A low count is a thin-evidence signal, not a defect."
+          },
+          "pii": { "type": "boolean" }
+        }
+      }
+    },
+    "unmapped_raw": {
+      "type": "array",
+      "description": "Raw fields with no OCSF home. Declaring them is mandatory; omitting them hides data loss.",
+      "items": {
+        "type": "object",
+        "required": ["raw_path", "disposition"],
+        "properties": {
+          "raw_path": { "type": "string" },
+          "sample_value": { "type": "string" },
+          "disposition": {
+            "enum": ["unmapped", "extension", "dropped"],
+            "description": "unmapped = no home found yet; extension = carried in unmapped/enrichments; dropped = deliberately discarded."
+          },
+          "why": { "type": "string" }
+        }
+      }
+    },
+    "missing_required": {
+      "type": "array",
+      "description": "Attributes the chosen OCSF class marks required that no raw field supplies.",
+      "items": {
+        "type": "object",
+        "required": ["ocsf_attribute", "why"],
+        "properties": {
+          "ocsf_attribute": { "type": "string" },
+          "why": { "type": "string" },
+          "fallback": { "type": "string", "description": "Constant or derivation used instead, if any." }
+        }
+      }
+    },
+    "enums": {
+      "type": "array",
+      "description": "Raw categorical values mapped onto OCSF enum attributes (activity_id, status_id, severity_id...).",
+      "items": {
+        "type": "object",
+        "required": ["ocsf_attribute", "raw_path", "value_map"],
+        "properties": {
+          "ocsf_attribute": { "type": "string" },
+          "raw_path": { "type": "string" },
+          "value_map": { "type": "object" },
+          "unmapped_values": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "severity", "result"],
+        "properties": {
+          "id": { "type": "string" },
+          "severity": { "enum": ["blocker", "advisory"] },
+          "result": { "enum": ["pass", "fail", "n-a"] },
+          "note": { "type": "string" }
+        }
+      }
+    },
+    "open_questions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["gate", "text", "why"],
+        "properties": {
+          "gate": { "type": "string" },
+          "text": { "type": "string" },
+          "why": { "type": "string" },
+          "answer": { "type": "string" }
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "description": "Where the rendered document went. Empty until the operator approves publication.",
+      "properties": {
+        "target": { "enum": ["confluence", "folder"] },
+        "confluence_url": { "type": "string" },
+        "page_id": { "type": "string" },
+        "out_dir": { "type": "string" },
+        "files": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "readiness": {
+      "enum": ["needs-input", "ready", "published"],
+      "description": "Derived by scripts/ocsf-map-record.sh — never hand-written."
+    },
+    "mapped_at": { "type": "string", "format": "date-time" }
+  }
+}

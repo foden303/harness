@@ -67,6 +67,7 @@ EXPECTED_MODEL_INVOKABLE='[
   "harness-bugfix",
   "harness-flow",
   "harness-loop",
+  "harness-ocsf-map",
   "harness-plan-brief",
   "harness-plan",
   "harness-progress",

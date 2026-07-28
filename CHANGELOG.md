@@ -37,6 +37,55 @@ a story it writes would pass the verify it later faces.
 → draft ready · asks 3 gap questions · proposes 17 children · creates on approval
 ```
 
+#### `harness-ocsf-map` — raw log samples become a reviewed OCSF mapping document, published only on approval
+
+**Before**: Onboarding a log source onto OCSF was a hand exercise. You opened
+schema.ocsf.io in one window and a sample file in another, eyeballed which event
+class fit, and typed a mapping table into Confluence. Nothing recorded which
+schema version you mapped against, so a document written six months ago could not
+be told apart from one written against a schema that has since changed. Nothing
+recorded which raw fields you *failed* to map — an omitted row and a deliberately
+dropped field looked identical. And the failure modes that matter are invisible
+in a finished table: a timestamp mapped from epoch seconds into a
+millisecond pipeline, an enum where 36 of 40 raw values quietly collapsed into
+`Other`, a raw `user` holding a display name mapped onto an OCSF field that means
+the account id.
+
+**After**: `/harness-ocsf-map <source>` ingests log input one source at a time —
+pasted lines, a single file, or a directory scanned and grouped by detected
+format — profiles the raw shape (format, parse rate, field inventory, occurrence
+counts, PII flags), proposes an OCSF event class justified by what is actually in
+the records, and maps each field against a **pinned** schema in
+`templates/ocsf/<version>/`. Every mapped attribute carries the raw path and a
+sample value observed in your input; the record helper rejects an entry without
+one, so an invented mapping cannot be persisted, only asked about. The draft is
+scored against a 12-gate rubric, and each blocker failure becomes one
+decision-shaped question via `AskUserQuestion` rather than a guess. Unmapped raw
+fields, uncovered required attributes and unmapped enum values each get their own
+section — including when empty, so a reader can tell they were checked.
+
+Publication is the single external write and happens only on approval: with
+`--confluence <url>` the document becomes a child page there; without one it is
+written as `.md` plus the machine-readable `.mapping.json` into an output folder.
+
+```
+/harness-ocsf-map azure-signin --confluence https://.../pages/123456/
+→ ndjson · 120/120 parsed · Authentication (3002) · 24/31 fields mapped
+→ 2 gap questions (timestamp unit, 6 unmapped resultType values) · publishes on approval
+```
+
+The schema is pinned from the tagged source tree at
+[`github.com/ocsf/ocsf-schema`](https://github.com/ocsf/ocsf-schema), never fetched
+during a run — `./scripts/ocsf-schema-pin.sh fetch --version 1.8.0` installs it
+once, and the same samples produce the same mapping afterwards. Classes are stored
+under the `class_uid` people actually quote (`classes/3002-authentication.json`),
+computed as `category_uid * 1000 + uid` from the category-local ordinal the source
+tree carries. An unpinned version is `not-configured` (healthy, no warning); a
+hand-edited pin is `corrupted` and blocks mapping, because it silently changes
+what every mapping is scored against. A fetch builds into a staging directory and
+swaps only after validating the tree, so a bad tag, an empty `events/` or one
+malformed file leaves the existing pin untouched.
+
 ### Removed
 
 #### Legacy-residue cleanup — the repo now describes only what it actually contains
