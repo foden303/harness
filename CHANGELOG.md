@@ -18,7 +18,10 @@ was a skill to *verify* an existing ticket's clarity (`harness-story-verify`),
 but nothing to *write* one — the two directions were asymmetric.
 
 **After**: `/harness-story-author "<idea>"` fills the BA's own ticket template
-(the default is modelled on a real epic; override with `--template <path>` or
+(the defaults are modelled on a real epic and its child story — the story shape
+is table-driven, with a Given/When/Then acceptance table plus positive and
+negative scenario tables, so QA can lift the rows straight into test cases;
+override either with `--template <path>` or
 `--template-confluence <url>`), scores the draft against the same 12-gate rubric
 `harness-story-verify` uses, and asks — via `AskUserQuestion` — only the
 decision-shaped questions needed to fill the gaps, never inventing an acceptance

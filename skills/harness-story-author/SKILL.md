@@ -45,8 +45,9 @@ using the same rubric so a story it authors would pass the verify it later faces
   **only** on an explicit approval — `.claude/rules/autonomous-confirmation-scope.md`
   case 1. Nothing auto-creates.
 - **The template is the BA's, not mine.** The default lives at
-  `templates/ticket-authoring/{epic,story}.md` (modelled on a real epic,
-  DPD-832). `--template <path>` / `--template-confluence <url>` overrides it. The
+  `templates/ticket-authoring/{epic,story}.md` (modelled on a real epic and its
+  child story, DPD-832 / DPD-838). `--template <path>` /
+  `--template-confluence <url>` overrides it. The
   skill treats whatever `## Headings` the chosen template carries as the required
   sections — it does not impose its own format.
 - **Ask, never invent.** When a gate's slot is unfilled, ask the BA — never fill

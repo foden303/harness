@@ -87,7 +87,7 @@ derives `readiness`, and schema-validates):
   "issue_type": "Story",
   "title": "Export the transaction list to CSV",
   "template_ref": "default",
-  "body_markdown": "## Story\nAs a finance analyst, I want …\n\n## Acceptance criteria\n1. …",
+  "body_markdown": "## User Story\n**As a** finance analyst, **I want to** …\n\n## Acceptance Criteria Table\n| Scenario | Given (Context) | When (Action) | Then (Expected Outcome / Requirement) |\n| --- | --- | --- | --- |\n| … | … | … | … |",
   "fields": { "labels": ["export"], "priority": "Medium" },
   "checks": [
     {"id": "goal-value-clear", "severity": "blocker", "result": "pass"},
