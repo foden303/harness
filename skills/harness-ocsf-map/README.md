@@ -10,16 +10,35 @@ or writes it to a folder.
 
 ## Quick start
 
+Run it with no arguments and it asks you the two things it needs, then works:
+
+```
+/harness-ocsf-map
+
+  1. Where does the output go?   → a Confluence page link, or a folder name
+  2. How is the log provided?    → paste the lines, one file, or a folder to scan
+
+  ...profiles, maps, scores, self-reviews...
+
+  → shows you the document, then asks: publish / edit first / cancel
+```
+
+Arguments just pre-answer those questions:
+
 ```bash
 # Publish to Confluence as a child of the given page
 /harness-ocsf-map azure-signin --confluence https://secuw.atlassian.net/wiki/spaces/platform/pages/123456/
 
-# No target link -> .md + .mapping.json into a folder
+# Write .md + .mapping.json into a folder
 /harness-ocsf-map azure-signin --out ./ocsf-mappings/
 
-# Skip the prompt and ingest a directory directly
+# Ingest a directory directly, force the class
 /harness-ocsf-map macos-unified --input ./samples/macos/ --class 3002
 ```
+
+Anything you leave out is asked, not assumed — including the output folder name.
+Whatever you give is validated before any work starts: a bad Confluence link or a
+missing input file costs you ten seconds at the front, not a whole mapping run.
 
 ## First-time setup
 
@@ -50,6 +69,25 @@ On a machine with no egress, fetch the tag elsewhere and install it with
 | `--ocsf-version <v>` | Which pinned schema to use | `1.8.0` |
 | `--dry-run` | Render, never publish | off |
 
+## The publish gate
+
+Nothing is written until you approve, and the approval shows you four things
+together:
+
+1. **Exactly where it goes** — the literal file path, or the page title and its
+   parent. Not "the output folder".
+2. **The document content** — the rendered markdown itself. You are approving the
+   content, so you see the content.
+3. **The coverage summary** — mapped / unmapped / missing-required counts, plus
+   any unanswered questions travelling with the document.
+4. **The self-review result** — 8 checks run over the rendered document before you
+   see it (row provenance, count agreement, section completeness, PII redaction,
+   open questions carried, enum leftovers surfaced, reproducibility block,
+   destination agreement), reported as findings or as "0 findings".
+
+Then: **publish**, **edit first**, or **cancel**. Cancelling writes nothing and
+keeps the draft for a later re-run.
+
 ## What it will not do
 
 - **Invent a mapping.** Every mapped attribute carries the raw path and a sample
@@ -57,11 +95,13 @@ On a machine with no egress, fetch the tag elsewhere and install it with
   so an invented mapping cannot be saved — only asked about.
 - **Fetch the schema during a run.** `WebFetch` is absent from the skill's
   allowed-tools. Same samples in, same mapping out.
-- **Publish without asking.** Everything up to Step 9 is local. The Confluence
-  page or the folder write happens once, on your explicit approval.
+- **Assume where the output goes.** If you did not name a destination, it asks —
+  it does not quietly pick a folder.
 - **Hide what it could not map.** Unmapped raw fields, uncovered required
   attributes and unmapped enum values each get their own section, including when
   they are empty.
+- **Leak PII into a published page.** Sample values for PII-flagged fields render
+  as shapes, and the self-review checks it before you approve.
 
 ## Output
 

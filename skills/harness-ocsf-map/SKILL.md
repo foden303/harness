@@ -27,7 +27,7 @@ normalizer from, and what a reviewer checks the normalizer against.
 
 ```
 if $ARGUMENTS == "":
-  → ask ONLY for the first log input (Step 3), then run the whole flow
+  → run the Step 1 intake immediately (two questions, then work)
   → "task is unclear" / "waiting for further instructions" / "please provide
      more detail first" are prohibited actions
 ```
@@ -36,7 +36,7 @@ Emit the marker on the first response so a human or a monitor can see the flow
 started:
 
 ```
-OCSF_MAP_AUTOSTART: version={ocsf_version}, target={confluence|folder}, pin={in-sync|not-configured|corrupted}
+OCSF_MAP_AUTOSTART: version={ocsf_version}, target={pending}, pin={in-sync|not-configured|corrupted}
 ```
 
 ## Core contract (read first)
@@ -64,19 +64,61 @@ OCSF_MAP_AUTOSTART: version={ocsf_version}, target={confluence|folder}, pin={in-
 
 ## Arguments
 
-| Argument | Meaning | Default |
+Every argument is optional. Each one **pre-answers a Step 1 intake question**;
+whatever is not passed gets asked instead of assumed.
+
+| Argument | Meaning | If absent |
 |---|---|---|
-| `<source name>` | Slug for the log source, e.g. `azure-signin` | Asked if absent |
-| `--confluence <url>` | Publish under this Confluence page as a child | Absent → folder output |
-| `--out <dir>` | Folder for `.md` output when no Confluence target | `./ocsf-mappings/` |
-| `--input <path>` | A file or directory to ingest without prompting | Asked interactively |
-| `--class <name\|uid>` | Force the OCSF class instead of proposing one | Proposed from evidence |
+| `<source name>` | Slug for the log source, e.g. `azure-signin` | Derived from the input path or page title, and the derivation is stated |
+| `--confluence <url>` | Publish under this Confluence page as a child | **Asked** (intake Q1) |
+| `--out <dir>` | Folder to write `.md` into | **Asked** (intake Q1), suggesting `./ocsf-mappings/` |
+| `--input <path>` | File or directory to ingest | **Asked** (intake Q2) |
+| `--class <name\|uid>` | Force the OCSF class | Proposed from evidence in the samples |
 | `--ocsf-version <v>` | Which pinned schema to map against | `1.8.0` |
-| `--dry-run` | Render the document, never publish | off |
+| `--dry-run` | Render + self-review, never publish | off |
+
+Passing both `--confluence` and `--out` is ambiguous — the skill asks which one
+rather than picking.
 
 ## Flow
 
-### Step 1 — Schema pin gate
+### Step 1 — Intake (ask both, before any work)
+
+**Never start mapping with either of these unresolved.** A run that guesses the
+destination and then produces a document is a run whose output lands somewhere the
+operator did not choose. Ask both up front, in one batch, via
+`AskUserQuestion` — skipping whichever the flags already answered:
+
+1. **Where does the output go?** — a Confluence page link, or a folder. If they
+   pick folder, ask the folder name in the same batch rather than assuming
+   `./ocsf-mappings/`.
+2. **How is the log provided?** — pasted lines, one file, or a folder to scan.
+   Ask for the actual path in the same batch when they pick file or folder.
+
+Then **validate what they gave before working**, and re-ask on failure rather
+than proceeding to a destination or an input that does not exist:
+
+| Answer | Validate now | On failure |
+|---|---|---|
+| Confluence link | `getConfluencePage` resolves it | Re-ask for the link — do not silently fall back to folder output |
+| Folder for output | Parent path exists and is writable | Offer to create it, or re-ask |
+| File input | File exists and is non-empty | Re-ask |
+| Folder input | Folder exists and holds at least one readable file | Re-ask, listing what was found |
+
+Ten seconds of validation here is the difference between a bad link costing the
+operator nothing and costing them a full mapping run.
+
+Record `target`, `out_dir` / `confluence_url`, and the input plan in the draft,
+then restate the resolved intake in one line before continuing:
+
+```
+OCSF_MAP_INTAKE: target=folder out_dir=./ocsf-mappings input=scan:./samples/azure/ source=azure-signin
+```
+
+Question wording, the option sets, and how flags pre-answer them:
+[intake.md](${CLAUDE_SKILL_DIR}/references/intake.md)
+
+### Step 2 — Schema pin gate
 
 ```bash
 ./scripts/ocsf-schema-pin.sh status --version "$OCSF_VERSION" --json
@@ -94,21 +136,6 @@ schema:
 A record whose `pin_reason` is not `in-sync` can never reach `ready` — the record
 helper enforces it, so there is no path where a mapping against a missing schema
 looks finished.
-
-### Step 2 — Resolve the output target
-
-One decision, made once, recorded in the draft:
-
-- `--confluence <url>` given → `target: "confluence"`. Resolve the page with
-  `mcp__claude_ai_Atlassian_Rovo__getConfluencePage` **now**, so a bad link fails
-  before any mapping work rather than after it.
-- No link → `target: "folder"`, `out_dir` from `--out` or `./ocsf-mappings/`.
-
-State the resolved target in one line and continue. This is not a confirmation —
-the operator chose it by passing (or not passing) the flag.
-
-Details, page shape and the folder layout:
-[output-targets.md](${CLAUDE_SKILL_DIR}/references/output-targets.md)
 
 ### Step 3 — Ingest input, one source at a time
 
@@ -189,10 +216,39 @@ Render from the record, not from memory of the conversation. Section order and
 the exact table shapes are in
 [output-targets.md](${CLAUDE_SKILL_DIR}/references/output-targets.md).
 
-### Step 9 — Publish (the only external write)
+### Step 9 — Self-review the rendered document
 
-Show the rendered document and the coverage summary, then ask for approval once.
-On approval:
+Review what you just wrote **before** showing it. Rendering is a second chance to
+introduce errors the rubric already cleared: a row that exists in the document but
+not in the record, a header count that disagrees with its own table, a PII value
+printed unredacted into a page that will be read more widely than the log file
+was.
+
+Run the 8 render checks in
+[self-review.md](${CLAUDE_SKILL_DIR}/references/self-review.md). Fix what you can
+fix, and report what you cannot — the review result is shown to the operator at
+the publish gate, not quietly discarded.
+
+A self-review that finds nothing says so explicitly. "0 findings across 8 checks"
+is information; silence is indistinguishable from not having looked.
+
+### Step 10 — Publish gate (the only external write)
+
+Present all four of these together, then ask **once** with `AskUserQuestion`:
+
+1. **Exactly where it goes** — the full file path, or the Confluence page title
+   and its parent. Never "the output folder"; the literal target.
+2. **The document content** — the rendered markdown itself, not a description of
+   it. The operator is approving the content, so the content is what they see.
+3. **The coverage summary** — mapped / unmapped / missing-required counts, and any
+   unanswered open questions travelling with the document.
+4. **The self-review result** — the findings from Step 9, or "0 findings".
+
+Offer three choices: **publish**, **edit first** (say what to change, re-render,
+re-review, ask again), or **cancel** (nothing is written; the draft survives for a
+later re-run).
+
+On publish:
 
 - **Confluence** — `createConfluencePage` as a child of the target, then re-run
   the record helper with `--set-published` carrying the returned `page_id`.
@@ -201,7 +257,11 @@ On approval:
   its machine-readable source stay together), then `--set-published` with the
   file list.
 
-`--dry-run` stops before this step with the document printed and nothing written.
+Report the concrete result afterwards — the page URL, or the paths written with
+their byte counts. "Published successfully" without a locator is not a result.
+
+`--dry-run` stops before this step with the document and the self-review printed,
+and nothing written.
 
 ## Related skills
 

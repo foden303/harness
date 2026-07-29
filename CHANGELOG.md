@@ -64,9 +64,24 @@ decision-shaped question via `AskUserQuestion` rather than a guess. Unmapped raw
 fields, uncovered required attributes and unmapped enum values each get their own
 section — including when empty, so a reader can tell they were checked.
 
-Publication is the single external write and happens only on approval: with
-`--confluence <url>` the document becomes a child page there; without one it is
-written as `.md` plus the machine-readable `.mapping.json` into an output folder.
+Invoked bare, it opens with an **intake gate** rather than assumptions: where the
+output goes (a Confluence link, or a folder — and which folder), and how the log
+arrives (pasted lines, one file, or a folder to scan). Both answers are validated
+before any work starts, so a mistyped page link or a missing input file costs ten
+seconds at the front instead of a whole mapping run, and a bad link never silently
+degrades into writing files somewhere the operator did not choose. Arguments
+simply pre-answer those questions.
+
+Publication is the single external write and happens only on approval — and the
+approval shows the operator the literal destination path, the rendered document
+itself, the coverage counts, and the result of a **self-review** pass: 8 checks
+over the rendered document (row provenance, count agreement, section
+completeness, PII redaction, open questions carried, enum leftovers surfaced,
+reproducibility block, destination agreement), reported as findings or as
+"0 findings across 8 checks". The choices are publish, edit first, or cancel.
+The self-review exists because rendering is its own chance to go wrong: a green
+rubric scores the record, not the page, and an unredacted sample value reaching a
+Confluence page is not recoverable afterwards.
 
 ```
 /harness-ocsf-map azure-signin --confluence https://.../pages/123456/
