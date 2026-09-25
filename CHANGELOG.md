@@ -8,6 +8,48 @@ Change history for harness.
 
 ### Added
 
+#### `harness-ba-ticket` — short, one-screen tickets in the BA's voice
+
+**Before**: the only way to author a ticket was `harness-story-author`, whose
+template produces a long, table-heavy story: an acceptance-criteria table, a
+positive-scenario table, a negative-scenario table, a contract & schema table,
+and a notes & risks list. The result was thorough but hard to read — FE, QA,
+Data and AI engineers had to dig through sections written for a backend planner
+to find the two lines that concerned them, and the BA had to answer questions
+about story points and contract types they did not own.
+
+**After**: `/harness-ba-ticket "<idea>"` writes a story that fits on one screen:
+
+```
+# [Transactions] [BE] Export the filtered list to CSV
+**Epic:** DPD-832 · **Teams:** BE, QA · **Depends on:** none
+## Why                   As a / I want / so that + 1-2 lines of context
+## Scope                 In / Out (and where Out goes)
+## Acceptance criteria   Given / When / Then rows
+## Fields                every input / returned value: required or optional, rules, default
+## Edge & error cases    Case / Expected rows
+## Notes per team        one line per team that has work — FE, BE, Data, AI, QA
+## Open questions        only what the BA could not settle, with an owner
+```
+
+Titles read `[Area] [Team] ...` (`[Admin Portal] [BE] ...`) for a one-team story;
+when BE and FE deliver one feature together it stays one story titled
+`[Area] ...` with every team listed, instead of two tickets repeating the same
+Why, scope and acceptance criteria.
+The **Fields** table answers the question every "create an account" criterion
+leaves open — which fields are required, which are optional, and what each
+accepts — and a field with no stated rule is asked, not guessed.
+It is written from the BA's side — user need and business rules, not endpoints
+or tables — and each team gets a note only when it is in the ticket. An Epic
+gets Why / Done when / Scope / a Stories table with teams and dependencies. The
+skill asks the BA only what is missing (up to four pick-an-option questions per
+round), never invents an acceptance criterion, and creates in JIRA only after
+approval; `--draft-only` writes markdown and stops. Pass an existing key
+(`/harness-ba-ticket DPD-1573`) to rewrite that ticket into the short format:
+the old description is backed up locally and only the summary and description
+are updated, after approval. `harness-story-author` is unchanged for teams that
+want the full 12-gate rubric.
+
 #### `harness-story-author` — a BA authors a JIRA ticket/Epic from their own template, and it lands in JIRA only on approval
 
 **Before**: A BA turning an idea into a JIRA ticket did it by hand: open the

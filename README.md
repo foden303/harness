@@ -181,6 +181,7 @@ flowchart LR
 | Skill | Flow |
 |-------|------|
 | `/harness-story-author <intent\|brief.md>` | Turn a rough idea into an Epic or user story **using your own template** (`--template` / `--template-confluence`, or the shipped default). Fills the template, scores the 12-gate rubric, asks only the questions needed to fill the gaps (never inventing an acceptance criterion), proposes an Epic's child-story breakdown, and calls `createJiraIssue` only after you approve. `--report-only` drafts without touching JIRA. |
+| `/harness-ba-ticket <idea\|brief.md>` | The **short** alternative: a one-screen story or Epic in the BA's voice titled `[Area] [Team] ...` (Why / Scope / Acceptance criteria / Fields with required-optional rules / Edge cases / Notes per team for FE, BE, Data, AI, QA / Open questions). Pass an existing key to rewrite a long ticket into this shape. Asks only what is missing, proposes an Epic's stories, and creates in JIRA only after you approve. `--draft-only` writes markdown without touching JIRA. Usage: [skills/harness-ba-ticket/README.md](skills/harness-ba-ticket/README.md). |
 | `/harness-story-verify <EPIC-KEY\|ISSUE-KEY ...>` | Verify that existing stories are clear enough to build. Expands an Epic to every child, scores each independently, and drafts one comment of open questions per unclear ticket — posted only after you approve. Read-only until then. |
 
 Pass your idea inline (`/harness-story-author "let users export the txn list to CSV"`)

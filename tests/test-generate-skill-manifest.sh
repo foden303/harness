@@ -64,6 +64,7 @@ EXPECTED_MODEL_INVOKABLE='[
   "ci",
   "failure-codifier",
   "harness-accept",
+  "harness-ba-ticket",
   "harness-bugfix",
   "harness-flow",
   "harness-loop",
