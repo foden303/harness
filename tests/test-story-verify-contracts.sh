@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# test-story-verify-contracts.sh — harness-story-verify contracts.
+# test-story-verify-contracts.sh — ba-story-verify contracts.
 #
 # Proves the story-verification.v1 schema and its two shell helpers:
 #   - story-verify-record.sh writes a schema-valid story-verification.v1

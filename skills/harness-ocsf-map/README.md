@@ -130,6 +130,6 @@ where it stopped, so answering a question later does not mean re-ingesting.
 
 ## Related
 
-- `harness-story-author` — turn the open questions into JIRA tickets
+- `ba-ticket` — turn the open questions into JIRA tickets
 - `harness-work` — implement the normalizer from a published mapping
 - `harness-review` — review a normalizer against its mapping document

@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://harness.local/schemas/story-draft.v1.json",
   "title": "story-draft.v1",
-  "description": "A ticket/epic draft authored by harness-story-author. Read-only until the operator approves creation; created_key/created_url are set only after the approved createJiraIssue call.",
+  "description": "A ticket/epic draft authored by ba-ticket --full. Read-only until the operator approves creation; created_key/created_url are set only after the approved createJiraIssue call.",
   "type": "object",
   "required": [
     "schema_version",

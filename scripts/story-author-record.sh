@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # story-author-record.sh — validate and persist a story-draft.v1 record.
 #
-# harness-story-author drafts the ticket/epic in-context (fills the template,
+# ba-ticket --full drafts the ticket/epic in-context (fills the template,
 # scores the authoring rubric, records the BA's answers), then hands the JSON
 # here. This helper is the only writer: it stamps authored_at, derives the
 # readiness from the gates + open questions so a hand-written readiness can never

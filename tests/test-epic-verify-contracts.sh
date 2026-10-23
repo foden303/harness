@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# test-epic-verify-contracts.sh — harness-epic-verify contracts.
+# test-epic-verify-contracts.sh — ba-epic-verify contracts.
 #
 # Proves the epic-verification.v1 schema and its two shell helpers:
 #   - epic-verify-record.sh writes a schema-valid epic-verification.v1

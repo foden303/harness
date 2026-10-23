@@ -1,20 +1,20 @@
 <!--
-harness-story-author :: default EPIC template
+ba-ticket --full :: default EPIC template
 ================================================
-This is the DEFAULT format harness-story-author fills in when authoring an Epic.
+This is the DEFAULT format ba-ticket --full fills in when authoring an Epic.
 It is modelled on a real, well-shaped epic (secuw.atlassian.net/browse/DPD-832).
 
 How the skill uses this file:
   - Every `## Heading` below is a REQUIRED section of the epic description.
   - Text in {{double-braces}} is a slot the skill fills from the BA's answers.
   - A `<!-- gate: <id> -->` comment ties a section to an authoring-rubric gate
-    (skills/harness-story-author/references/authoring-rubric.md). If the BA has
+    (skills/ba-ticket/references/full/authoring-rubric.md). If the BA has
     not supplied enough to fill a gated slot, the skill ASKS instead of guessing.
   - Lines beginning with `<!--` are guidance only and are stripped before the
     description is written to JIRA.
 
 To use YOUR OWN format instead of this one, copy this file, edit the sections,
-and run: /harness-story-author "<intent>" --template <path-to-your-copy.md>
+and run: /ba-ticket "<intent>" --full --template <path-to-your-copy.md>
 The skill treats whatever `## Headings` your copy contains as the required
 sections — this file is only the default, never a hard-coded schema.
 -->

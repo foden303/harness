@@ -2,7 +2,7 @@
 
 Resolve the ref, confirm it really is an Epic, and inventory its children. The
 inventory is **evidence for two gates**, not a work list — child stories are
-scored by `harness-story-verify`, never here.
+scored by `ba-story-verify`, never here.
 
 ## Resolving the ref
 
@@ -16,7 +16,7 @@ shape or the word "epic" in the title.
 
 If `issuetype.name` is not the project's epic-level type, stop and route:
 
-> PROJ-123 is a Story, not an Epic. Run `/harness-story-verify PROJ-123` — that
+> PROJ-123 is a Story, not an Epic. Run `/ba-story-verify PROJ-123` — that
 > skill scores it against the user-story rubric.
 
 Do not score a Story with the epic rubric to be helpful; the gates would fail for
@@ -48,7 +48,7 @@ what `epic-team-split` and `epic-children-coverage` judge.
 
 For each child keep only what the two gates need: `key, summary, issuetype,
 status, assignee, labels`. Do not fetch child descriptions — that is
-`harness-story-verify`'s job and it will re-fetch them anyway.
+`ba-story-verify`'s job and it will re-fetch them anyway.
 
 ## Using the inventory
 
@@ -78,7 +78,7 @@ score the gate on the Epic's own text plus this evidence.
 Only after the Epic run finishes, and only when the Epic came back `clear`:
 
 ```
-/harness-story-verify PROJ-101 PROJ-102 PROJ-103 …
+/ba-story-verify PROJ-101 PROJ-102 PROJ-103 …
 ```
 
 Chaining while the Epic is still `needs-clarification` generates story questions

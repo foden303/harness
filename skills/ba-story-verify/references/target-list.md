@@ -23,7 +23,7 @@ This skill scores **stories** against the user-story rubric. An Epic has no
 acceptance criteria of its own, so those gates would fail for the wrong reasons.
 When a passed ref resolves to an Epic, do not expand it and do not score it:
 
-> PROJ-100 is an Epic. Run `/harness-epic-verify PROJ-100` — it scores the Epic
+> PROJ-100 is an Epic. Run `/ba-epic-verify PROJ-100` — it scores the Epic
 > itself (goal, definition of done, team split, critical path) and asks from the
 > BE / FE / BA angles. It can then hand the children back here with
 > `--with-children`.
@@ -33,7 +33,7 @@ Offer to run it, but do not silently switch skills. Two exceptions:
 - **`--jql`** results are taken as given. If the query returns an Epic, verify
   what the operator asked for and note the type in the report — several rubric
   gates will come back `n-a`.
-- **Explicit child list.** `harness-epic-verify --with-children` calls this skill
+- **Explicit child list.** `ba-epic-verify --with-children` calls this skill
   with the already-expanded child keys, which is the supported way to verify an
   Epic's stories.
 
@@ -82,7 +82,7 @@ re-running after the BA adds two more stories verifies just the two new ones.
 
 `--batch-id` derivation: for a ticket list, the first key lowercased
 (`PROJ-101` → `proj-101`); for `--jql`, `jql-<count>`. When called from
-`harness-epic-verify --with-children`, the Epic key is passed as `--root` and the
+`ba-epic-verify --with-children`, the Epic key is passed as `--root` and the
 mode stays `tickets`, so the batch is traceable back to its Epic.
 
 ## Reporting the target list

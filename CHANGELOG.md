@@ -8,9 +8,9 @@ Change history for harness.
 
 ### Added
 
-#### `harness-ba-ticket` — short, one-screen tickets in the BA's voice
+#### `ba-ticket` — short, one-screen tickets in the BA's voice
 
-**Before**: the only way to author a ticket was `harness-story-author`, whose
+**Before**: the only way to author a ticket was the 12-gate authoring flow, whose
 template produces a long, table-heavy story: an acceptance-criteria table, a
 positive-scenario table, a negative-scenario table, a contract & schema table,
 and a notes & risks list. The result was thorough but hard to read — FE, QA,
@@ -18,7 +18,7 @@ Data and AI engineers had to dig through sections written for a backend planner
 to find the two lines that concerned them, and the BA had to answer questions
 about story points and contract types they did not own.
 
-**After**: `/harness-ba-ticket "<idea>"` writes a story that fits on one screen:
+**After**: `/ba-ticket "<idea>"` writes a story that fits on one screen:
 
 ```
 # [Transactions] [BE] Export the filtered list to CSV
@@ -45,14 +45,14 @@ gets Why / Done when / Scope / a Stories table with teams and dependencies. The
 skill asks the BA only what is missing (up to four pick-an-option questions per
 round), never invents an acceptance criterion, and creates in JIRA only after
 approval; `--draft-only` writes markdown and stops. Pass an existing key
-(`/harness-ba-ticket DPD-1573`) to rewrite that ticket into the short format:
+(`/ba-ticket DPD-1573`) to rewrite that ticket into the short format:
 the old description is backed up locally and only the summary and description
-are updated, after approval. `harness-story-author` is unchanged for teams that
-want the full 12-gate rubric.
+are updated, after approval. The 12-gate flow is still there behind `--full`
+for teams that want the full rubric (next entry).
 
-#### `harness-epic-verify` — verify an Epic from the backend, frontend, and business angles, and hand it back to the BA
+#### `ba-epic-verify` — verify an Epic from the backend, frontend, and business angles, and hand it back to the BA
 
-**Before**: `harness-story-verify` did two jobs with one rubric. Passing it an
+**Before**: `ba-story-verify` did two jobs with one rubric. Passing it an
 Epic expanded the Epic to its children and scored each child against the
 user-story rubric — the Epic itself was never judged. Nobody asked whether its
 Definition of Done was observable, whether the team split covered every promised
@@ -65,7 +65,7 @@ BA that it was now waiting on them.
 
 **After**: the two units are separate skills.
 
-`/harness-epic-verify PROJ-100` scores the **Epic itself** against 12 epic gates
+`/ba-epic-verify PROJ-100` scores the **Epic itself** against 12 epic gates
 (goal and value, observable Definition of Done, scope boundaries, team split,
 child coverage of the DoD, critical path, external dependencies, ambiguous
 wording, plus advisories for design reference, non-functionals, rollout/backout,
@@ -84,10 +84,10 @@ posts nothing. Questions are traced to a failing gate at the schema level: the
 record helper rejects a question citing a gate that passed, so the BA is never
 asked something the Epic already answers.
 
-`/harness-story-verify` keeps the user-story rubric and now takes **stories
+`/ba-story-verify` keeps the user-story rubric and now takes **stories
 only** — one ticket, a list, or a JQL set. An Epic ref is routed to
-`/harness-epic-verify` rather than silently expanded, and
-`/harness-epic-verify --with-children` is the supported way to run an Epic's
+`/ba-epic-verify` rather than silently expanded, and
+`/ba-epic-verify --with-children` is the supported way to run an Epic's
 children through it.
 
 #### Reporter handoff — posting questions now moves the ticket to the person who has to answer
@@ -118,32 +118,32 @@ approval gate (`.claude/rules/autonomous-confirmation-scope.md` case 1) — noth
 auto-posts, nothing auto-transitions, and `--report-only` / `--dry-run` skip all
 of it.
 
-#### `harness-story-author` — a BA authors a JIRA ticket/Epic from their own template, and it lands in JIRA only on approval
+#### `ba-ticket --full` — a BA authors a JIRA ticket/Epic from their own template, and it lands in JIRA only on approval
 
 **Before**: A BA turning an idea into a JIRA ticket did it by hand: open the
 template, fill every section, guess at the parts the idea didn't cover, and hope
 the result would survive a Definition-of-Ready check. Breaking an epic into
 child stories meant creating each one manually and wiring the epic link. There
-was a skill to *verify* an existing ticket's clarity (`harness-story-verify`),
+was a skill to *verify* an existing ticket's clarity (`ba-story-verify`),
 but nothing to *write* one — the two directions were asymmetric.
 
-**After**: `/harness-story-author "<idea>"` fills the BA's own ticket template
+**After**: `/ba-ticket "<idea>" --full` fills the BA's own ticket template
 (the defaults are modelled on a real epic and its child story — the story shape
 is table-driven, with a Given/When/Then acceptance table plus positive and
 negative scenario tables, so QA can lift the rows straight into test cases;
 override either with `--template <path>` or
 `--template-confluence <url>`), scores the draft against the same 12-gate rubric
-`harness-story-verify` uses, and asks — via `AskUserQuestion` — only the
+`ba-story-verify` uses, and asks — via `AskUserQuestion` — only the
 decision-shaped questions needed to fill the gaps, never inventing an acceptance
 criterion to look answered. For an Epic it then proposes an INVEST child-story
 breakdown (role group / title / points), drafting each child to the story
 template. Nothing is written to JIRA until the operator approves; only then does
 it call `createJiraIssue`, link children to the epic, and backfill the Team-split
-table with the real keys. It is the authoring mirror of `harness-story-verify`:
+table with the real keys. It is the authoring mirror of `ba-story-verify`:
 a story it writes would pass the verify it later faces.
 
 ```output
-/harness-story-author "move detection to a Flink stream job" --epic --project DPD
+/ba-ticket "move detection to a Flink stream job" --full --epic --project DPD
 → draft ready · asks 3 gap questions · proposes 17 children · creates on approval
 ```
 
@@ -211,6 +211,34 @@ what every mapping is scored against. A fetch builds into a staging directory an
 swaps only after validating the tree, so a bad tag, an empty `events/` or one
 malformed file leaves the existing pin untouched.
 
+### Changed
+
+#### BA skills share one `ba-` prefix, and one skill writes tickets
+
+**Before**: the requirement-side skills were named like the engineering ones
+(`harness-ba-ticket`, `harness-story-author`, `harness-story-verify`,
+`harness-epic-verify`), so a BA scanning the skill list could not tell which
+ones were theirs. Two separate skills wrote tickets, and the BA had to know in
+advance whether they wanted the short one-screen format or the long 12-gate one.
+
+**After**: every BA skill starts with `ba-`, and writing a ticket is one skill
+with two modes:
+
+| Before | After |
+|--------|-------|
+| `/harness-ba-ticket "<idea>"` | `/ba-ticket "<idea>"` (short, default) |
+| `/harness-story-author "<idea>"` | `/ba-ticket "<idea>" --full` |
+| `/harness-story-author ... --report-only` | `/ba-ticket ... --full --draft-only` |
+| `/harness-story-verify PROJ-123` | `/ba-story-verify PROJ-123` |
+| `/harness-epic-verify PROJ-100` | `/ba-epic-verify PROJ-100` |
+
+None of the old names shipped in a release, so nothing published breaks. The old
+names are registered in the retired-alias registry so a leftover reference fails
+`harness retired-alias scan`. Draft and verification state paths
+(`.claude/state/story-author/`, `.claude/state/story-verify/`) are unchanged, so
+an in-progress draft or batch resumes as before. Engineering skills
+(`harness-flow`, `harness-bugfix`, …) keep their names.
+
 ### Removed
 
 #### Legacy-residue cleanup — the repo now describes only what it actually contains
@@ -247,7 +275,7 @@ mechanical rename best done as its own atomic commit.
 
 ### Added
 
-#### 1. `harness-story-verify` — check a BA's user stories before anyone builds them
+#### 1. `ba-story-verify` — check a BA's user stories before anyone builds them
 
 **Before**: The only way to find out that a ticket was under-specified was to
 start building it. `harness-flow` verifies a requirement, but it verifies the
@@ -256,7 +284,7 @@ single feature. Checking a whole Epic for readiness meant opening every child
 ticket by hand, deciding what was missing, and writing the questions to the BA
 one comment at a time.
 
-**After**: `/harness-story-verify PROJ-100` expands the Epic to every child
+**After**: `/ba-story-verify PROJ-100` expands the Epic to every child
 ticket, scores each one **independently** against a 12-gate user-story rubric
 (8 blocker gates, 4 advisory), and drafts the specific questions the BA needs to
 answer per ticket. A single ticket, a list of tickets, or a `--jql` result set

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # jira-status-match.sh — pick the clarification transition for a JIRA issue.
 #
-# When harness-story-verify / harness-epic-verify post questions back to the BA
+# When ba-story-verify / ba-epic-verify post questions back to the BA
 # they also hand the ticket over: assignee -> reporter, status -> a
 # clarification state. Workflow names differ per project, so the target is
 # chosen from the transitions the issue ACTUALLY offers rather than assumed.

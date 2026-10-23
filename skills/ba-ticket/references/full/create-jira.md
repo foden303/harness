@@ -5,7 +5,7 @@ created ticket notifies watchers and takes a key). Under
 `.claude/rules/autonomous-confirmation-scope.md` case 1 it requires operator
 approval first. This skill never auto-creates.
 
-`--report-only` and `--dry-run` stop before this step: render the draft, save the
+`--draft-only` and `--dry-run` stop before this step: render the draft, save the
 state, offer no approval prompt, call no create.
 
 ## Approval BEFORE creating (required)

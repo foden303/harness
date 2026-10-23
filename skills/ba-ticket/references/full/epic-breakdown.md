@@ -23,7 +23,7 @@ them by the role that owns them, mirroring the default epic template:
 
 Size discipline: if a proposed child is obviously multi-sprint or bundles
 unrelated deliverables, split it. If two children are trivially coupled, merge
-them. Aim for children that would each pass `harness-story-verify` on their own.
+them. Aim for children that would each pass `ba-story-verify` on their own.
 
 ## Drafting each child
 

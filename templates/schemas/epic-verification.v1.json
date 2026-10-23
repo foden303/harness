@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://harness.local/schemas/epic-verification.v1.json",
   "title": "epic-verification.v1",
-  "description": "Epic-level clarity verdict produced by harness-epic-verify. One record per JIRA Epic. Questions carry a lens (be|fe|ba) because the Epic is asked about from three angles, and each lens is posted, tracked, and answered as its own thread.",
+  "description": "Epic-level clarity verdict produced by ba-epic-verify. One record per JIRA Epic. Questions carry a lens (be|fe|ba) because the Epic is asked about from three angles, and each lens is posted, tracked, and answered as its own thread.",
   "type": "object",
   "required": [
     "schema_version",
@@ -28,7 +28,7 @@
     "assignee_account_id": { "type": "string" },
     "child_keys": {
       "type": "array",
-      "description": "Child tickets found by expansion. Inventory only — child stories are verified by harness-story-verify, not here.",
+      "description": "Child tickets found by expansion. Inventory only — child stories are verified by ba-story-verify, not here.",
       "items": { "type": "string" }
     },
     "child_count": { "type": "integer", "minimum": 0 },

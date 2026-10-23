@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://harness.local/schemas/story-verification.v1.json",
   "title": "story-verification.v1",
-  "description": "Per-ticket user-story quality verdict produced by harness-story-verify. One record per JIRA issue, independent of every other issue in the batch.",
+  "description": "Per-ticket user-story quality verdict produced by ba-story-verify. One record per JIRA issue, independent of every other issue in the batch.",
   "type": "object",
   "required": [
     "schema_version",

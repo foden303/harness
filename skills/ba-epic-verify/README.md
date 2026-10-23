@@ -1,10 +1,10 @@
-# harness-epic-verify
+# ba-epic-verify
 
 Check whether an **Epic** is clear enough to break into stories — and ask the BA
 the missing questions from three angles: **backend**, **frontend**, and
 **business**.
 
-It is the Epic half of `harness-story-verify`. That skill judges one story
+It is the Epic half of `ba-story-verify`. That skill judges one story
 against a user-story rubric; this one judges an Epic against an epic rubric
 (goal, definition of done, team split, critical path, dependencies, rollout) and
 posts **one comment per lens**, so the backend thread and the frontend thread can
@@ -16,16 +16,16 @@ be answered independently.
 
 ```bash
 # Verify an Epic and ask from all three lenses
-/harness-epic-verify PROJ-100
+/ba-epic-verify PROJ-100
 
 # Only the backend and frontend angles
-/harness-epic-verify PROJ-100 --lens be,fe
+/ba-epic-verify PROJ-100 --lens be,fe
 
 # Look first, touch nothing in JIRA
-/harness-epic-verify PROJ-100 --report-only
+/ba-epic-verify PROJ-100 --report-only
 
-# Verify the Epic, then run the child stories through harness-story-verify
-/harness-epic-verify PROJ-100 --with-children
+# Verify the Epic, then run the child stories through ba-story-verify
+/ba-epic-verify PROJ-100 --with-children
 ```
 
 Nothing is written to JIRA until you approve — and you approve **per lens**.
@@ -35,7 +35,7 @@ Nothing is written to JIRA until you approve — and you approve **per lens**.
 ## What happens on a run
 
 1. **Fetch + inventory** — reads the Epic, confirms it is an Epic (a Story gets
-   routed to `/harness-story-verify`), and lists the children by type and role.
+   routed to `/ba-story-verify`), and lists the children by type and role.
 2. **Score** — 12 epic gates, 8 blocking and 4 advisory, each backed by quoted
    evidence from the Epic. A missing section is never filled in with a guess.
 3. **Three lenses** — every failing gate is turned into questions from the BE, FE,
@@ -81,7 +81,7 @@ available: In Progress, Done)."*
 | `--lens be,fe,ba` | Which angles to ask from (default: all three) |
 | `--ask-status "<name>"` | Force the status the handoff moves to |
 | `--no-handoff` | Comment only — never touch assignee or status |
-| `--with-children` | Chain into `harness-story-verify` for the child stories |
+| `--with-children` | Chain into `ba-story-verify` for the child stories |
 | `--resume` | Re-check BA replies per lens and re-verify |
 | `--report-only` | Verify and report; no JIRA writes at all |
 | `--dry-run` | Walk the flow, write no state and no comments |
@@ -92,9 +92,9 @@ available: In Progress, Done)."*
 
 | You have | Use |
 |----------|-----|
-| An Epic to check before breaking it down | `harness-epic-verify` |
-| One story, or a list of stories | `harness-story-verify` |
-| An idea and no ticket yet | `harness-story-author` |
+| An Epic to check before breaking it down | `ba-epic-verify` |
+| One story, or a list of stories | `ba-story-verify` |
+| An idea and no ticket yet | `ba-ticket` |
 | A verified ticket to build | `harness-flow` |
 
 ---

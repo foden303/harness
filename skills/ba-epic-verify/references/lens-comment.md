@@ -19,7 +19,7 @@ slowest answer.
 Three fixed parts: the tracking marker, the reporter tag, the questions.
 
 ```
-<!-- harness-epic-verify:clarify epic=<PROJ-100> lens=<be|fe|ba> nonce=<uuid> -->
+<!-- ba-epic-verify:clarify epic=<PROJ-100> lens=<be|fe|ba> nonce=<uuid> -->
 [~accountid:<reporter_account_id>] — <LENS LABEL> questions on this Epic.
 
 Before this Epic is broken into stories, these need pinning down — otherwise the
@@ -186,7 +186,7 @@ Schedule a re-check rather than blocking. One wake re-checks **every**
 ```
 ScheduleWakeup(
   delaySeconds=1800,
-  prompt="/harness-epic-verify --resume",
+  prompt="/ba-epic-verify --resume",
   reason="awaiting BA replies on PROJ-100 (be, ba lenses — round 1/3)"
 )
 ```
@@ -222,7 +222,7 @@ bash "${HARNESS_PLUGIN_ROOT}/scripts/flow-ba-match.sh" \
      the Epic is already assigned and already in the clarification status.
 5. When every lens is `answered` / `skipped`, re-run the full rubric once. Clear
    → report it and, if `--with-children`, hand the child keys to
-   `harness-story-verify`.
+   `ba-story-verify`.
 
 ## Round cap + escalation
 

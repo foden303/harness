@@ -1,14 +1,14 @@
 ---
-name: harness-epic-verify
-description: "Verify that a BA-authored Epic is clear enough to break down and build, asking from three angles: backend, frontend, and business. Scores the Epic itself against an epic-level rubric (goal, definition of done, team split, critical path, dependencies), then drafts one comment per lens — BE questions, FE questions, BA questions — each approved separately before posting. On posting it hands the Epic back: mentions the reporter, assigns it to them, and moves the status to a clarification state. Read-only until you approve; it never plans, implements, or commits. Child stories are inventoried here and verified by harness-story-verify. Trigger: verify an epic, is this epic clear, epic clarity check, ask the BA about an epic, epic DoR check, EPIC-100 clear enough, verify epic from BE/FE/BA angle. Do NOT load for: verifying a single user story or ticket list (use harness-story-verify), authoring a new epic (use harness-story-author), implementing (use harness-flow), bug triage, code review, or release."
-description-en: "Verify that a BA-authored Epic is clear enough to break down and build, asking from three angles: backend, frontend, and business. Scores the Epic itself against an epic-level rubric (goal, definition of done, team split, critical path, dependencies), then drafts one comment per lens — BE questions, FE questions, BA questions — each approved separately before posting. On posting it hands the Epic back: mentions the reporter, assigns it to them, and moves the status to a clarification state. Read-only until you approve; it never plans, implements, or commits. Child stories are inventoried here and verified by harness-story-verify. Trigger: verify an epic, is this epic clear, epic clarity check, ask the BA about an epic, epic DoR check, EPIC-100 clear enough, verify epic from BE/FE/BA angle. Do NOT load for: verifying a single user story or ticket list (use harness-story-verify), authoring a new epic (use harness-story-author), implementing (use harness-flow), bug triage, code review, or release."
+name: ba-epic-verify
+description: "Verify that a BA-authored Epic is clear enough to break down and build, asking from three angles: backend, frontend, and business. Scores the Epic itself against an epic-level rubric (goal, definition of done, team split, critical path, dependencies), then drafts one comment per lens — BE questions, FE questions, BA questions — each approved separately before posting. On posting it hands the Epic back: mentions the reporter, assigns it to them, and moves the status to a clarification state. Read-only until you approve; it never plans, implements, or commits. Child stories are inventoried here and verified by ba-story-verify. Trigger: verify an epic, is this epic clear, epic clarity check, ask the BA about an epic, epic DoR check, EPIC-100 clear enough, verify epic from BE/FE/BA angle. Do NOT load for: verifying a single user story or ticket list (use ba-story-verify), authoring a new epic (use ba-ticket), implementing (use harness-flow), bug triage, code review, or release."
+description-en: "Verify that a BA-authored Epic is clear enough to break down and build, asking from three angles: backend, frontend, and business. Scores the Epic itself against an epic-level rubric (goal, definition of done, team split, critical path, dependencies), then drafts one comment per lens — BE questions, FE questions, BA questions — each approved separately before posting. On posting it hands the Epic back: mentions the reporter, assigns it to them, and moves the status to a clarification state. Read-only until you approve; it never plans, implements, or commits. Child stories are inventoried here and verified by ba-story-verify. Trigger: verify an epic, is this epic clear, epic clarity check, ask the BA about an epic, epic DoR check, EPIC-100 clear enough, verify epic from BE/FE/BA angle. Do NOT load for: verifying a single user story or ticket list (use ba-story-verify), authoring a new epic (use ba-ticket), implementing (use harness-flow), bug triage, code review, or release."
 kind: workflow
 purpose: "Verify ONE Epic against the epic rubric -> ask it from the BE, FE, and BA lenses -> operator approves each lens -> post one comment per lens + hand the Epic back to its reporter -> track replies per lens"
 trigger: "verify an epic, epic clarity check, is this epic clear, ask the BA about an epic, epic DoR check"
 shape: delegate
 role: orchestrator
-base: harness-story-verify
-pair: harness-story-verify
+base: ba-story-verify
+pair: ba-story-verify
 owner: harness-core
 since: "2026-08-11"
 allowed-tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob", "Task", "AskUserQuestion", "ScheduleWakeup", "mcp__claude_ai_Atlassian_Rovo__*"]
@@ -17,7 +17,7 @@ user-invocable: true
 effort: high
 ---
 
-# harness-epic-verify
+# ba-epic-verify
 
 The clarity gate for an **Epic**, before it is broken into stories:
 
@@ -25,17 +25,17 @@ The clarity gate for an **Epic**, before it is broken into stories:
 > operator approves each lens → post one comment per lens + hand the Epic back to
 > its reporter → track each lens thread → re-verify.**
 
-The Epic sibling of `harness-story-verify`. That skill judges a *story* against a
+The Epic sibling of `ba-story-verify`. That skill judges a *story* against a
 user-story rubric; this one judges an *Epic* against an epic rubric — goal,
 definition of done, team split, critical path, dependencies — and asks about it
 from the three angles that will have to build it.
 
-| | harness-story-verify | harness-epic-verify |
+| | ba-story-verify | ba-epic-verify |
 |---|---|---|
 | Unit | one story (or a list of stories) | **one Epic** |
 | Rubric | 12 user-story gates | **12 epic gates** |
 | Questions | one set, one comment | **three lenses, one comment each (BE / FE / BA)** |
-| Children | n/a | inventoried, then handed to `harness-story-verify` |
+| Children | n/a | inventoried, then handed to `ba-story-verify` |
 | On posting | mention + assign + transition | mention + assign + transition (once per Epic) |
 
 ## Core contract (read first)
@@ -54,27 +54,27 @@ from the three angles that will have to build it.
 - **No requirement invention.** A missing section is asked about, never
   filled in with a plausible guess.
 - **Verify the Epic, not the children.** Child tickets are inventoried (count,
-  keys, coverage of the DoD) but scored only by `harness-story-verify`. Use
+  keys, coverage of the DoD) but scored only by `ba-story-verify`. Use
   `--with-children` to chain into it after this run.
 - **MCP dependency.** JIRA access uses the Atlassian Rovo MCP tools. Absent
   (headless/cron) → tri-state health reports `not-configured` and the skill
   pauses at the first step that needs it rather than guessing.
-- **No HTML surface (yet).** `--html` exists on `harness-story-verify` only; the
+- **No HTML surface (yet).** `--html` exists on `ba-story-verify` only; the
   terminal report is this skill's surface.
 
 ## Quick Reference
 
 | Input | Behavior |
 |------|------|
-| `/harness-epic-verify PROJ-100` | Verify the Epic, ask from all three lenses |
-| `/harness-epic-verify https://<site>/browse/PROJ-100` | Same, from a URL |
-| `/harness-epic-verify PROJ-100 --lens be,fe` | Only the backend and frontend lenses |
-| `/harness-epic-verify PROJ-100 --ask-status "Waiting for BA"` | Force the status the handoff moves to |
-| `/harness-epic-verify PROJ-100 --no-handoff` | Comment only; do not touch assignee or status |
-| `/harness-epic-verify PROJ-100 --with-children` | After the Epic, run `harness-story-verify` on its children |
-| `/harness-epic-verify --resume` | Re-check BA replies per lens, fold them in, re-verify |
-| `/harness-epic-verify PROJ-100 --report-only` | Verify + report, never offer to post (no JIRA writes) |
-| `/harness-epic-verify PROJ-100 --dry-run` | Walk the flow, write no state and no comments |
+| `/ba-epic-verify PROJ-100` | Verify the Epic, ask from all three lenses |
+| `/ba-epic-verify https://<site>/browse/PROJ-100` | Same, from a URL |
+| `/ba-epic-verify PROJ-100 --lens be,fe` | Only the backend and frontend lenses |
+| `/ba-epic-verify PROJ-100 --ask-status "Waiting for BA"` | Force the status the handoff moves to |
+| `/ba-epic-verify PROJ-100 --no-handoff` | Comment only; do not touch assignee or status |
+| `/ba-epic-verify PROJ-100 --with-children` | After the Epic, run `ba-story-verify` on its children |
+| `/ba-epic-verify --resume` | Re-check BA replies per lens, fold them in, re-verify |
+| `/ba-epic-verify PROJ-100 --report-only` | Verify + report, never offer to post (no JIRA writes) |
+| `/ba-epic-verify PROJ-100 --dry-run` | Walk the flow, write no state and no comments |
 
 ## Options
 
@@ -84,18 +84,18 @@ from the three angles that will have to build it.
 | `--lens be,fe,ba` | Which lenses to ask from | all three |
 | `--ask-status "<name>"` | Status the handoff transitions to | matched from a candidate list |
 | `--no-handoff` | Never change assignee or status | off (handoff on) |
-| `--with-children` | Chain into `harness-story-verify` for the children | off |
+| `--with-children` | Chain into `ba-story-verify` for the children | off |
 | `--resume` | Re-check BA replies on the existing record | - |
 | `--report-only` | Never post; output the report only | off |
 | `--dry-run` | No state writes, no comments | off |
 
 **Not an Epic?** If the ref resolves to a Story/Task/Bug, do not score it here —
-say so and route to `/harness-story-verify <KEY>`. The reverse also holds:
-`harness-story-verify` routes an Epic key back to this skill.
+say so and route to `/ba-story-verify <KEY>`. The reverse also holds:
+`ba-story-verify` routes an Epic key back to this skill.
 
 ## Resolving the plugin bundle root
 
-Same as `harness-story-verify`: resolve `HARNESS_PLUGIN_ROOT` from
+Same as `ba-story-verify`: resolve `HARNESS_PLUGIN_ROOT` from
 `CLAUDE_PLUGIN_ROOT` (if it contains `scripts/`), else from `CLAUDE_SKILL_DIR`
 (`${CLAUDE_SKILL_DIR}/../..`, or `../../..` for a mirror). Call only
 `${HARNESS_PLUGIN_ROOT}/scripts/...`; keep state under the host project's
@@ -119,7 +119,7 @@ key lowercased (`PROJ-100` → `proj-100`). Each lens thread lives in
   v
 [Step 1] Fetch + expand      Reference: references/expansion.md
   getJiraIssue on the ref. Confirm issuetype is Epic — if not, route to
-  harness-story-verify and stop. Inventory the children (parent, then the
+  ba-story-verify and stop. Inventory the children (parent, then the
   Epic Link fallback) for the coverage gate; never broaden the query.
   Report the Epic + child inventory BEFORE verifying.
   |
@@ -159,7 +159,7 @@ key lowercased (`PROJ-100` → `proj-100`). Each lens thread lives in
   v
 [Done] Summary + next action
   Report the verdict, per-lens state, and the handoff result. Then:
-  --with-children -> run harness-story-verify on the child keys.
+  --with-children -> run ba-story-verify on the child keys.
 ```
 
 ## Stop / pause conditions
@@ -167,7 +167,7 @@ key lowercased (`PROJ-100` → `proj-100`). Each lens thread lives in
 | Condition | Response |
 |-----------|----------|
 | MCP not-configured / unreachable | `decision_needed.v1`, stop |
-| Ref is not an Epic | Report the type, route to `/harness-story-verify <KEY>`, stop |
+| Ref is not an Epic | Report the type, route to `/ba-story-verify <KEY>`, stop |
 | Epic unreadable (permission) | Record verdict `blocked`, report, stop |
 | Epic has zero children | Not fatal — `epic-team-split` / `epic-children-coverage` judge it; report the count |
 | Operator declines a lens | That lens stays `skipped`; the draft stays in the report |
@@ -185,7 +185,7 @@ naming the verdict, the per-lens state, and the next action.
 
 ## Related skills
 
-- `harness-story-verify` — verify the child stories once the Epic is clear
-- `harness-story-author` — the inverse: author an Epic from a template
+- `ba-story-verify` — verify the child stories once the Epic is clear
+- `ba-ticket` — the inverse: author an Epic (`--full` for the long template)
 - `harness-flow` — build a ticket once it is verified clear
 - `harness-plan` — turn verified stories into Plans.md tasks

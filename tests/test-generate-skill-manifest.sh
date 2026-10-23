@@ -60,13 +60,14 @@ jq -e '
 ' "${OUTPUT_JSON}" >/dev/null
 
 EXPECTED_MODEL_INVOKABLE='[
+  "ba-epic-verify",
+  "ba-story-verify",
+  "ba-ticket",
   "breezing",
   "ci",
   "failure-codifier",
   "harness-accept",
-  "harness-ba-ticket",
   "harness-bugfix",
-  "harness-epic-verify",
   "harness-flow",
   "harness-loop",
   "harness-ocsf-map",
@@ -76,8 +77,6 @@ EXPECTED_MODEL_INVOKABLE='[
   "harness-release",
   "harness-review",
   "harness-setup",
-  "harness-story-author",
-  "harness-story-verify",
   "harness-sync",
   "harness-work",
   "maintenance",

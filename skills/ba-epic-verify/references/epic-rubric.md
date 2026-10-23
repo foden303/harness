@@ -6,7 +6,7 @@ advisory failure is worth telling the BA about but does not, on its own, hold th
 Epic.
 
 This is the epic-level counterpart of the user-story rubric in
-`skills/harness-story-verify/references/us-rubric.md`. Do not score story gates
+`skills/ba-story-verify/references/us-rubric.md`. Do not score story gates
 here — an Epic legitimately has no acceptance criteria of its own; it has a
 Definition of Done and a breakdown.
 
@@ -20,7 +20,7 @@ do not hand-write it:
 ## The gates
 
 The section names in parentheses are the default Epic template
-(`templates/ticket-authoring/epic.md`) written by `harness-story-author`. A
+(`templates/ticket-authoring/epic.md`) written by `ba-ticket --full`. A
 project using its own format still gets scored — match on meaning, not heading
 text.
 
@@ -54,7 +54,7 @@ text.
   present — quote it as `evidence` and pass the gate. This prevents re-asking.
 - **Children are evidence, not a rubric target.** Use the child inventory to
   score `epic-team-split` and `epic-children-coverage`. Do not score a child's
-  own quality here — that is `harness-story-verify`.
+  own quality here — that is `ba-story-verify`.
 
 ## Record shape
 

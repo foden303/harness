@@ -1,7 +1,7 @@
 <!--
-harness-story-author :: default STORY (child ticket) template
+ba-ticket --full :: default STORY (child ticket) template
 ==============================================================
-The DEFAULT format harness-story-author fills in when authoring a single Story,
+The DEFAULT format ba-ticket --full fills in when authoring a single Story,
 or each child story proposed under an Epic. It is modelled on a real,
 well-shaped story (secuw.atlassian.net/browse/DPD-838), the sibling of the epic
 that epic.md is modelled on (DPD-832).
@@ -10,7 +10,7 @@ Same conventions as epic.md:
   - `## Heading` = a required section of the description.
   - {{double-braces}} = a slot filled from the BA's answers.
   - `<!-- gate: <id> -->` ties a section to an authoring-rubric gate
-    (skills/harness-story-author/references/authoring-rubric.md); a slot the BA
+    (skills/ba-ticket/references/full/authoring-rubric.md); a slot the BA
     has not answered is ASKED, never guessed.
   - `<!-- ... -->` lines are guidance, stripped before writing to JIRA.
 
@@ -18,7 +18,7 @@ The shape is deliberately TABLE-DRIVEN. Prose acceptance criteria drift into
 "works well"; a Given/When/Then row forces one decidable outcome per line, and
 QA can lift the rows straight into test cases.
 
-Override with: /harness-story-author "<intent>" --template <your-copy.md>
+Override with: /ba-ticket "<intent>" --full --template <your-copy.md>
 -->
 
 # {{story_title}}

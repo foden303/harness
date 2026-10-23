@@ -1,7 +1,7 @@
 ---
 name: harness-ocsf-map
-description: "Map a raw log source onto the pinned OCSF schema and publish the mapping as a document. Takes an optional Confluence target link, then ingests log input one source at a time — pasted raw lines, a single file, or a directory scanned automatically — profiles the raw shape, chooses an OCSF event class, maps every field with the sample value that justifies it, and renders a mapping document. With a Confluence target link it publishes there; without one it writes .md into an output folder. Never invents a mapping and never fetches the schema live. Trigger: ocsf mapping, map logs to ocsf, raw log to ocsf, normalize a log source, field mapping document, ocsf schema mapping, log onboarding. Do NOT load for: authoring JIRA tickets (use harness-story-author), implementing a mapping in code (use harness-work), code review, or release."
-description-en: "Map a raw log source onto the pinned OCSF schema and publish the mapping doc: ingest pasted lines / a file / a scanned directory, profile the raw shape, pick an OCSF class, map each field with its observed sample value, score the mapping rubric, then publish to Confluence when a target link is given or write .md to a folder when it is not. Trigger: ocsf mapping, map logs to ocsf, normalize a log source, field mapping document. Do NOT load for: JIRA ticket authoring (harness-story-author), implementation (harness-work), review, release."
+description: "Map a raw log source onto the pinned OCSF schema and publish the mapping as a document. Takes an optional Confluence target link, then ingests log input one source at a time — pasted raw lines, a single file, or a directory scanned automatically — profiles the raw shape, chooses an OCSF event class, maps every field with the sample value that justifies it, and renders a mapping document. With a Confluence target link it publishes there; without one it writes .md into an output folder. Never invents a mapping and never fetches the schema live. Trigger: ocsf mapping, map logs to ocsf, raw log to ocsf, normalize a log source, field mapping document, ocsf schema mapping, log onboarding. Do NOT load for: authoring JIRA tickets (use ba-ticket), implementing a mapping in code (use harness-work), code review, or release."
+description-en: "Map a raw log source onto the pinned OCSF schema and publish the mapping doc: ingest pasted lines / a file / a scanned directory, profile the raw shape, pick an OCSF class, map each field with its observed sample value, score the mapping rubric, then publish to Confluence when a target link is given or write .md to a folder when it is not. Trigger: ocsf mapping, map logs to ocsf, normalize a log source, field mapping document. Do NOT load for: JIRA ticket authoring (ba-ticket), implementation (harness-work), review, release."
 kind: workflow
 purpose: "Raw log samples -> profile the shape -> pick an OCSF class -> map every field against the pinned schema -> score the mapping rubric -> ask only the gap questions -> operator approves -> publish to Confluence or write .md"
 trigger: "ocsf mapping, map logs to ocsf, raw log to ocsf, normalize a log source, field mapping document, log onboarding"
@@ -265,6 +265,6 @@ and nothing written.
 
 ## Related skills
 
-- `harness-story-author` — turn the open questions this produces into JIRA tickets
+- `ba-ticket` — turn the open questions this produces into JIRA tickets
 - `harness-work` — implement the normalizer from a published mapping
 - `harness-review` — review a normalizer against its mapping document

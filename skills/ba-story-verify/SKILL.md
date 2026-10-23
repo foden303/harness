@@ -1,14 +1,14 @@
 ---
-name: harness-story-verify
-description: "Verify that BA-authored user stories are clear enough to build, and ask the BA the missing questions on the ticket. Takes a single ticket link or a list of tickets (or a JQL result set), scores each one independently against a user-story/acceptance-criteria rubric, and drafts one comment of open questions per unclear ticket. When a comment is posted it also hands the ticket back: the reporter is @mentioned, made assignee, and the status is moved to a clarification state. Posted only after the operator approves; read-only until then, and it never plans, implements, or commits. An Epic link is routed to harness-epic-verify instead of expanded. Trigger: verify user story, check requirements clarity, is this ticket clear, ask the BA, DoR check, PROJ-123 clear enough. Do NOT load for: verifying an Epic (use harness-epic-verify), implementing a requirement (use harness-flow), bug triage (use harness-bugfix), code review, or release."
-description-en: "Verify that BA-authored user stories are clear enough to build, and ask the BA the missing questions on the ticket. Takes a single ticket link or a list of tickets (or a JQL result set), scores each one independently against a user-story/acceptance-criteria rubric, and drafts one comment of open questions per unclear ticket. When a comment is posted it also hands the ticket back: the reporter is @mentioned, made assignee, and the status is moved to a clarification state. Posted only after the operator approves; read-only until then, and it never plans, implements, or commits. An Epic link is routed to harness-epic-verify instead of expanded. Trigger: verify user story, check requirements clarity, is this ticket clear, ask the BA, DoR check, PROJ-123 clear enough. Do NOT load for: verifying an Epic (use harness-epic-verify), implementing a requirement (use harness-flow), bug triage (use harness-bugfix), code review, or release."
+name: ba-story-verify
+description: "Verify that BA-authored user stories are clear enough to build, and ask the BA the missing questions on the ticket. Takes a single ticket link or a list of tickets (or a JQL result set), scores each one independently against a user-story/acceptance-criteria rubric, and drafts one comment of open questions per unclear ticket. When a comment is posted it also hands the ticket back: the reporter is @mentioned, made assignee, and the status is moved to a clarification state. Posted only after the operator approves; read-only until then, and it never plans, implements, or commits. An Epic link is routed to ba-epic-verify instead of expanded. Trigger: verify user story, check requirements clarity, is this ticket clear, ask the BA, DoR check, PROJ-123 clear enough. Do NOT load for: verifying an Epic (use ba-epic-verify), implementing a requirement (use harness-flow), bug triage (use harness-bugfix), code review, or release."
+description-en: "Verify that BA-authored user stories are clear enough to build, and ask the BA the missing questions on the ticket. Takes a single ticket link or a list of tickets (or a JQL result set), scores each one independently against a user-story/acceptance-criteria rubric, and drafts one comment of open questions per unclear ticket. When a comment is posted it also hands the ticket back: the reporter is @mentioned, made assignee, and the status is moved to a clarification state. Posted only after the operator approves; read-only until then, and it never plans, implements, or commits. An Epic link is routed to ba-epic-verify instead of expanded. Trigger: verify user story, check requirements clarity, is this ticket clear, ask the BA, DoR check, PROJ-123 clear enough. Do NOT load for: verifying an Epic (use ba-epic-verify), implementing a requirement (use harness-flow), bug triage (use harness-bugfix), code review, or release."
 kind: workflow
 purpose: "Verify a ticket list against the US/AC rubric -> draft BA questions per unclear ticket -> operator approves -> post comments + hand the ticket back to its reporter -> track replies"
 trigger: "verify user story, is this ticket clear, ask the BA, DoR check"
 shape: delegate
 role: orchestrator
 base: harness-flow
-pair: harness-epic-verify
+pair: ba-epic-verify
 owner: harness-core
 since: "2026-07-20"
 allowed-tools: ["Read", "Write", "Edit", "Bash", "Grep", "Glob", "Task", "AskUserQuestion", "ScheduleWakeup", "mcp__claude_ai_Atlassian_Rovo__*"]
@@ -17,7 +17,7 @@ user-invocable: true
 effort: high
 ---
 
-# harness-story-verify
+# ba-story-verify
 
 The requirements-quality gate that runs **before** anyone starts building:
 
@@ -30,11 +30,11 @@ a list of stories. It stops at a clear/unclear verdict — **it never plans, wri
 code, or commits.** When a ticket comes back clear, hand it to `harness-flow` to
 build it.
 
-| | harness-flow | harness-story-verify | harness-epic-verify |
+| | harness-flow | ba-story-verify | ba-epic-verify |
 |---|---|---|---|
 | Unit | one feature | **N independent stories** | one Epic |
 | Multiple links | merged into **one** feature | verified independently | n/a |
-| Epic link | not expanded | **routed out** to `harness-epic-verify` | the target |
+| Epic link | not expanded | **routed out** to `ba-epic-verify` | the target |
 | Questions | one set | one set per ticket | **one set per lens** (BE/FE/BA) |
 | Ends at | committed change | **verdict + questions on the ticket** | verdict + questions on the Epic |
 
@@ -48,7 +48,7 @@ build it.
   and nothing auto-transitions.
 - **One ticket = one verdict = one comment.** Questions are never pooled across
   tickets; a question about `PROJ-124` is posted on `PROJ-124`.
-- **Stories only.** An Epic ref is routed to `harness-epic-verify`, never scored
+- **Stories only.** An Epic ref is routed to `ba-epic-verify`, never scored
   here — an Epic has no acceptance criteria of its own, so these gates would fail
   for the wrong reasons.
 - **Questions must trace to a failing gate.** Every question in the draft comes
@@ -68,17 +68,17 @@ build it.
 
 | Input | Behavior |
 |------|------|
-| `/harness-story-verify PROJ-123` | Verify that one story |
-| `/harness-story-verify PROJ-123 PROJ-124 PROJ-125` | Verify all three **independently** (not merged) |
-| `/harness-story-verify https://<site>/browse/PROJ-123` | Same, from a URL |
-| `/harness-story-verify PROJ-100` (an Epic) | **Route out**: recommend `/harness-epic-verify PROJ-100`, verify nothing |
-| `/harness-story-verify --jql "parent = PROJ-100 AND status = 'To Do'"` | Verify the JQL result set |
-| `/harness-story-verify PROJ-123 --ask-status "Waiting for BA"` | Force the status the handoff moves to |
-| `/harness-story-verify PROJ-123 --no-handoff` | Comment only; do not touch assignee or status |
-| `/harness-story-verify --resume` | Re-check for BA replies, fold them in, re-verify |
-| `/harness-story-verify PROJ-123 --report-only` | Verify + report, never offer to post (no JIRA writes at all) |
-| `/harness-story-verify PROJ-123 --html` | Also render the report as a single-file HTML |
-| `/harness-story-verify PROJ-123 --dry-run` | Walk the flow, write no state and no comments |
+| `/ba-story-verify PROJ-123` | Verify that one story |
+| `/ba-story-verify PROJ-123 PROJ-124 PROJ-125` | Verify all three **independently** (not merged) |
+| `/ba-story-verify https://<site>/browse/PROJ-123` | Same, from a URL |
+| `/ba-story-verify PROJ-100` (an Epic) | **Route out**: recommend `/ba-epic-verify PROJ-100`, verify nothing |
+| `/ba-story-verify --jql "parent = PROJ-100 AND status = 'To Do'"` | Verify the JQL result set |
+| `/ba-story-verify PROJ-123 --ask-status "Waiting for BA"` | Force the status the handoff moves to |
+| `/ba-story-verify PROJ-123 --no-handoff` | Comment only; do not touch assignee or status |
+| `/ba-story-verify --resume` | Re-check for BA replies, fold them in, re-verify |
+| `/ba-story-verify PROJ-123 --report-only` | Verify + report, never offer to post (no JIRA writes at all) |
+| `/ba-story-verify PROJ-123 --html` | Also render the report as a single-file HTML |
+| `/ba-story-verify PROJ-123 --dry-run` | Walk the flow, write no state and no comments |
 
 ## Options
 
@@ -111,7 +111,7 @@ Per-ticket verdicts: `.claude/state/story-verify/<batch-id>/<KEY>.json`
 `${HARNESS_PLUGIN_ROOT}/scripts/story-verify-record.sh`.
 `<batch-id>` is derived from the root ref (a bare list → the first key
 lowercased, `PROJ-101` → `proj-101`; `--jql` → `jql-<n>` where `<n>` is the
-ticket count; called from `harness-epic-verify --with-children` → the Epic key).
+ticket count; called from `ba-epic-verify --with-children` → the Epic key).
 
 ```
 [Step 0] Resolve + probe
@@ -127,7 +127,7 @@ ticket count; called from `harness-epic-verify --with-children` → the Epic key
   Reference: references/target-list.md
   Ticket keys -> that exact list, deduped, order preserved
   --jql       -> the query result set
-  Epic key    -> STOP and route to /harness-epic-verify (do not expand, do not score)
+  Epic key    -> STOP and route to /ba-epic-verify (do not expand, do not score)
   Skip done/closed tickets unless --include-done; skip sub-tasks of a listed ticket.
   story-verify-batch.sh init --batch-id <id> --mode tickets \
     --root <ref> --keys <k1,k2,...>
@@ -180,7 +180,7 @@ ticket count; called from `harness-epic-verify --with-children` → the Epic key
 |-----------|-------|----------|
 | MCP not-configured / unreachable | unchanged | `decision_needed.v1`, stop |
 | A ticket cannot be read (permission) | `blocked` | Record verdict `blocked`, continue the rest, list them in the summary |
-| The ref is an Epic | n/a | Report the type, recommend `/harness-epic-verify <KEY>`, stop |
+| The ref is an Epic | n/a | Report the type, recommend `/ba-epic-verify <KEY>`, stop |
 | The target list is empty after filtering | n/a | Report the counts per reason and stop (do not fall back to a broader JQL) |
 | Operator declines to post | `needs-clarification` | Keep the draft in the report; the operator asks the BA themselves. No handoff |
 | Transition unavailable | `awaiting-ba` | Post + assign anyway, record `transition_skipped_reason`, name it in the summary |
@@ -199,7 +199,7 @@ completed run by naming the clear/unclear/blocked counts and the next action
 
 ## Related skills
 
-- `harness-epic-verify` — the Epic sibling: epic rubric + BE/FE/BA lens questions
+- `ba-epic-verify` — the Epic sibling: epic rubric + BE/FE/BA lens questions
 - `harness-flow` — build a ticket once it is verified clear (Steps 4-9 there)
 - `harness-bugfix` — the bug sibling (triage vs source, QA ask-back)
 - `harness-plan` — turn verified stories into Plans.md tasks

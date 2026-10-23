@@ -1,6 +1,6 @@
 # Authoring rubric (Steps 2-3)
 
-Score the draft against the **same 12 gates** `harness-story-verify` uses, so a
+Score the draft against the **same 12 gates** `ba-story-verify` uses, so a
 ticket this skill authors would pass the verify it later faces. The difference is
 what a failure *does*: in verify a failing blocker becomes a comment on the
 ticket; here it becomes a **question to the BA in-session**, and the draft cannot

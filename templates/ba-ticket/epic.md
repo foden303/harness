@@ -1,9 +1,9 @@
 <!--
-harness-ba-ticket :: EPIC template
+ba-ticket :: EPIC template
 Target: one screen. The epic says WHY and WHAT "done" looks like; each story
 under it carries the detail. {{slots}} are filled from the BA's intent and
 answers. HTML comments are guidance and are stripped before the epic goes to JIRA.
-Override with: /harness-ba-ticket "<intent>" --epic --template <your-copy.md>
+Override with: /ba-ticket "<intent>" --epic --template <your-copy.md>
 -->
 
 # [{{area}}] {{title}}

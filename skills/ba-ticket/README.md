@@ -1,4 +1,4 @@
-# harness-ba-ticket
+# ba-ticket
 
 Turn a rough idea into a **short, clear JIRA story or Epic**, written from the
 BA's point of view, that FE, BE, Data, AI and QA can build and test from without
@@ -8,19 +8,19 @@ a follow-up meeting.
 
 ```bash
 # One story
-/harness-ba-ticket "Let finance export the filtered transaction list to CSV" --project DPD
+/ba-ticket "Let finance export the filtered transaction list to CSV" --project DPD
 
 # An epic with its stories
-/harness-ba-ticket brief.md --epic --project DPD
+/ba-ticket brief.md --epic --project DPD
 
 # A story under an existing epic
-/harness-ba-ticket "..." --epic-key DPD-832
+/ba-ticket "..." --epic-key DPD-832
 
 # Rewrite an existing long ticket into this format (updates it on approval)
-/harness-ba-ticket DPD-1573
+/ba-ticket DPD-1573
 
 # Markdown only, never touch JIRA
-/harness-ba-ticket "..." --draft-only
+/ba-ticket "..." --draft-only
 ```
 
 Titles follow `[Area] [Team] ...` for a one-team story, e.g.
@@ -117,18 +117,44 @@ to 2 days. After this epic, finance pulls the data themselves in under a minute.
 | 3 | [Transactions] [Data] Record every export in the audit log | Data, QA | 1 |
 ```
 
-## How it differs from `harness-story-author`
+## Full mode (`--full`)
 
-| | harness-story-author | harness-ba-ticket |
+Add `--full` when you want the long template and the 12-gate rubric instead of
+one screen. It fills `templates/ticket-authoring/{epic,story}.md` (AC table,
+positive + negative scenarios, contract table, notes & risks), scores the draft
+against the **same 12 gates** `ba-story-verify` uses, and keeps a resumable
+draft record under `.claude/state/story-author/<draft-id>/`.
+
+```bash
+# A single story with the full rubric
+/ba-ticket "let users export the transaction list to CSV" --full
+
+# An Epic with child stories and story points
+/ba-ticket "move detection from OpenSearch to a Flink stream job" --full --epic --project DPD
+
+# Use a Confluence page as the template
+/ba-ticket "..." --full --template-confluence https://<site>/wiki/.../pageId
+
+# Walk the whole flow without writing state or calling JIRA
+/ba-ticket "..." --full --dry-run
+```
+
+| | short (default) | `--full` |
 |---|---|---|
-| Template | Long, table-heavy (AC table, positive + negative scenarios, contract table, notes & risks) | One screen: Why / Scope / AC / Fields / Edge cases / Notes per team |
-| Audience | Engineer planning the build | Every team that touches the story, including QA, Data, AI |
-| Title | `[Area] ... -(BE)` suffix | `[Area] [Team] ...`, or `[Area] ...` when BE + FE ship one feature together |
-| Quality check | 12-gate rubric with a state record | 9-point ready check (incl. no code outside BE / FE notes) |
-| Epic sizing | Story points per child | Stories table with teams and dependencies; teams size it |
+| Template | One screen: Why / Scope / AC / Fields / Edge cases / Notes per team | Long, table-heavy (AC table, scenarios, contract table, notes & risks) |
+| Audience | Every team that touches the story, including QA, Data, AI | Engineer planning the build |
+| Title | `[Area] [Team] ...`, or `[Area] ...` when BE + FE ship one feature together | `[Area] ... -(BE)` suffix |
+| Quality check | 9-point ready check (incl. no code outside BE / FE notes) | 12-gate rubric with a state record |
+| Epic sizing | Stories table with teams and dependencies; teams size it | Story points per child |
+| Rewrite an existing key | Yes | No |
 
-Use `harness-story-author` when you want the full rubric and detailed contract
-tables; use this one when the ticket must be quick to read.
+Use the short mode when the ticket must be quick to read; use `--full` when you
+want the full rubric and detailed contract tables. Details:
+[references/full/flow.md](references/full/flow.md).
+
+In full mode a `<!-- gate: <id> -->` comment in your template ties a section to
+a quality gate the skill will ask about; a section without one is filled
+best-effort and never blocks.
 
 ## Your own template
 

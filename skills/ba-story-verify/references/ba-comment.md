@@ -11,7 +11,7 @@ approval first. This skill never auto-posts and never auto-transitions.
 Three fixed parts: the tracking marker, the reporter tag, the questions.
 
 ```
-<!-- harness-story-verify:clarify batch=<batch-id> key=<PROJ-123> nonce=<uuid> -->
+<!-- ba-story-verify:clarify batch=<batch-id> key=<PROJ-123> nonce=<uuid> -->
 [~accountid:<reporter_account_id>] — a few things need pinning down before this
 story goes into a sprint; otherwise the implementer has to guess and the AC can't
 be tested as written.
@@ -179,7 +179,7 @@ Schedule a re-check rather than blocking. One wake re-checks **every**
 ```
 ScheduleWakeup(
   delaySeconds=1800,
-  prompt="/harness-story-verify --resume",
+  prompt="/ba-story-verify --resume",
   reason="awaiting BA replies on 4 tickets in PROJ-100 (round 1/3)"
 )
 ```

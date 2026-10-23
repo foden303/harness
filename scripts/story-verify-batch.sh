@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# story-verify-batch.sh — batch cursor for harness-story-verify.
+# story-verify-batch.sh — batch cursor for ba-story-verify.
 #
 # One batch = one invocation target (an Epic and its children, or an explicit
 # ticket list). Per-ticket verdicts live in story-verification.v1 records next

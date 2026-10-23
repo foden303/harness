@@ -471,15 +471,15 @@ else
 fi
 
 if bash "$PLUGIN_ROOT/tests/test-story-verify-contracts.sh" >/dev/null 2>&1; then
-    pass_test "harness-story-verify story-verification.v1 schema and the story-verify-record.sh / story-verify-batch.sh helpers work (test-story-verify-contracts.sh)"
+    pass_test "ba-story-verify story-verification.v1 schema and the story-verify-record.sh / story-verify-batch.sh helpers work (test-story-verify-contracts.sh)"
 else
-    fail_test "harness-story-verify contract test failed — run 'bash tests/test-story-verify-contracts.sh' for details"
+    fail_test "ba-story-verify contract test failed — run 'bash tests/test-story-verify-contracts.sh' for details"
 fi
 
 if bash "$PLUGIN_ROOT/tests/test-epic-verify-contracts.sh" >/dev/null 2>&1; then
-    pass_test "harness-epic-verify epic-verification.v1 schema and the epic-verify-record.sh / jira-status-match.sh helpers work (test-epic-verify-contracts.sh)"
+    pass_test "ba-epic-verify epic-verification.v1 schema and the epic-verify-record.sh / jira-status-match.sh helpers work (test-epic-verify-contracts.sh)"
 else
-    fail_test "harness-epic-verify contract test failed — run 'bash tests/test-epic-verify-contracts.sh' for details"
+    fail_test "ba-epic-verify contract test failed — run 'bash tests/test-epic-verify-contracts.sh' for details"
 fi
 
 if bash "$PLUGIN_ROOT/tests/test-flow-mcp-health.sh" >/dev/null 2>&1; then
