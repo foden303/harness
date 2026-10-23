@@ -1,18 +1,20 @@
-# BA comment loop (Steps 4-5)
+# BA comment loop + reporter handoff (Steps 4-5)
 
-Ask the BA on the ticket, then resume when they reply. Posting is an **external
-transmission** — under `.claude/rules/autonomous-confirmation-scope.md` case 1 it
-requires operator approval first. This skill never auto-posts.
+Ask the BA on the ticket, hand the ticket back to them, then resume when they
+reply. Posting a comment, changing the assignee, and moving the status are all
+**external transmission** — under
+`.claude/rules/autonomous-confirmation-scope.md` case 1 they require operator
+approval first. This skill never auto-posts and never auto-transitions.
 
-## Marker format
+## Comment template
 
-Every comment carries a hidden, greppable marker plus the human message. The
-`nonce` (a uuid) is the join key used by the reply matcher.
+Three fixed parts: the tracking marker, the reporter tag, the questions.
 
 ```
 <!-- harness-story-verify:clarify batch=<batch-id> key=<PROJ-123> nonce=<uuid> -->
-Before this story goes into a sprint, a few things need to be pinned down —
-otherwise the implementer has to guess and the AC can't be tested as written.
+[~accountid:<reporter_account_id>] — a few things need pinning down before this
+story goes into a sprint; otherwise the implementer has to guess and the AC can't
+be tested as written.
 
 1. <question 1>
    ↳ why: <what cannot be built or tested until this is answered>
@@ -24,6 +26,12 @@ Reply to this comment with the answers and I'll re-check the ticket.
 ```
 
 Generate the nonce with `python3 -c 'import uuid;print(uuid.uuid4())'`.
+
+**Reporter tag.** `[~accountid:<id>]` is the JIRA Cloud mention form and is what
+notifies the BA — this is the point of the tag. Take the id from
+`reporter_account_id` on the ticket record. If the ticket has no reporter, fall
+back to the plain display name, never to a guessed account id, and note the
+fallback in the report.
 
 Tone rules: the comment is a request for information, never a critique of the
 BA's work. No scores, no gate ids, no "this ticket failed 4 checks" — the
@@ -63,8 +71,12 @@ Batch the approval: draft every unclear ticket's comment first, then ask **once*
 3. If `AskUserQuestion` is unavailable, emit `decision_needed.v1` and halt. Never
    fall through to posting.
 
+State plainly in the prompt what else the approval covers — the handoff is part
+of "post this", not a second decision: *"Posting also assigns each ticket to its
+reporter and moves it to Waiting for BA."*
+
 `--report-only` and `--dry-run` skip this step entirely: no approval prompt, no
-writes.
+writes, no handoff.
 
 ## Posting (only after approval)
 
@@ -94,6 +106,70 @@ timestamp the API returns; fall back to the current UTC if it omits one.
 If MCP turns `unreachable` mid-post, stop immediately: emit `decision_needed.v1`
 naming which tickets were posted and which were not, so a retry does not
 double-post.
+
+## Reporter handoff (once per posted ticket)
+
+After a ticket's comment posts successfully, hand it back to the person who has
+to answer. Skipped entirely when `--no-handoff`, for tickets the operator did not
+approve, and in `--report-only` / `--dry-run`.
+
+### 1. Assignee → reporter
+
+`mcp__claude_ai_Atlassian_Rovo__editJiraIssue` with
+`fields: {"assignee": {"accountId": "<reporter_account_id>"}}`.
+
+Skip conditions, each recorded and reported, never fatal:
+
+| Condition | `assign_skipped_reason` |
+|-----------|-------------------------|
+| Ticket has no reporter | `no-reporter` |
+| Reporter is already the assignee | `already-assigned` |
+| The field rejects the write (permission/screen) | `assign-not-permitted` |
+
+### 2. Status → a clarification state
+
+Never assume a workflow name. Read what the ticket actually offers and match:
+
+```bash
+# getTransitionsForJiraIssue -> $TMP/transitions.json
+bash "${HARNESS_PLUGIN_ROOT}/scripts/jira-status-match.sh" \
+  --transitions "$TMP/transitions.json" \
+  --current-status "To Do" \
+  ${ASK_STATUS:+--prefer "$ASK_STATUS"}
+```
+
+- `matched: true` → `transitionJiraIssue` with `transition_id`, then record
+  `status_from`, `status_to`, `transition_id`, `transitioned_at`.
+- `matched: false` → **the comment stays, the transition is skipped**. Record
+  `transition_skipped_reason` (`no-matching-transition`,
+  `preferred-status-not-available`, `already-in-target-status`) and name the
+  available statuses in the summary.
+
+Default candidate order: `Clarification`, `Waiting for BA`, `Needs Info`,
+`In Review`. `--ask-status "<name>"` overrides it; when the named status is not
+available the transition is skipped rather than redirected — an explicit operator
+choice is never silently substituted. Transitions are read per ticket: a batch
+can legitimately land on different statuses if the tickets sit in different
+workflow states.
+
+### 3. Record it
+
+```bash
+printf '%s' '{"assignee_set_to":"<acct>","assigned_at":"<utc>","status_from":"To Do","status_to":"Waiting for BA","transition_id":"31","transitioned_at":"<utc>"}' \
+  > "$TMP/handoff.json"
+
+bash "${HARNESS_PLUGIN_ROOT}/scripts/story-verify-record.sh" \
+  --in ".claude/state/story-verify/<batch-id>/PROJ-123.json" \
+  --out ".claude/state/story-verify/<batch-id>/PROJ-123.json" \
+  --set-handoff "$TMP/handoff.json"
+```
+
+Report it in one line per ticket: *"PROJ-123 → assigned to Jamie Tran, To Do →
+Waiting for BA."* Or, when skipped: *"PROJ-123 → assigned to Jamie Tran; status
+left at To Do (no clarification transition available: In Progress, Done)."*
+
+A follow-up round does **not** repeat the handoff — the ticket is already
+assigned and already in the clarification status.
 
 ## Auto-poll (ScheduleWakeup)
 

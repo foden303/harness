@@ -32,6 +32,16 @@ Rules:
 - Then print, per unclear ticket, the actual questions that would be posted. The
   operator must be able to judge the questions themselves before approving —
   a table of counts is not enough.
+- State what posting will do besides commenting, before the approval prompt:
+  *"Posting also assigns each ticket to its reporter and moves it to a
+  clarification status."* After posting, report the handoff per ticket in one
+  line, including every skip and its reason:
+
+```
+PROJ-102 → assigned to Jamie Tran, To Do → Waiting for BA
+PROJ-104 → assigned to Jamie Tran; status left at To Do (no clarification transition available: In Progress, Done)
+PROJ-106 → status → Waiting for BA; not assigned (ticket has no reporter)
+```
 
 ## HTML report (`--html`)
 

@@ -161,3 +161,14 @@ entries:
       - "templates/registry/"
       - "docs/reports/"
       - "docs/research/"
+
+  - id: story-verify-epic-expansion-ref
+    kind: path
+    pattern: "skills/harness-story-verify/references/epic-expansion.md"
+    removed_in: "Unreleased"
+    reason: "Epic handling moved out of harness-story-verify into the new harness-epic-verify skill. The story skill now resolves a ticket list only, in references/target-list.md, and routes an Epic ref to harness-epic-verify"
+    allowlist:
+      - "CHANGELOG.md"
+      - ".claude/memory/archive/"
+      - "Plans.md"
+      - "templates/registry/"

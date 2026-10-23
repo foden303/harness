@@ -476,6 +476,12 @@ else
     fail_test "harness-story-verify contract test failed — run 'bash tests/test-story-verify-contracts.sh' for details"
 fi
 
+if bash "$PLUGIN_ROOT/tests/test-epic-verify-contracts.sh" >/dev/null 2>&1; then
+    pass_test "harness-epic-verify epic-verification.v1 schema and the epic-verify-record.sh / jira-status-match.sh helpers work (test-epic-verify-contracts.sh)"
+else
+    fail_test "harness-epic-verify contract test failed — run 'bash tests/test-epic-verify-contracts.sh' for details"
+fi
+
 if bash "$PLUGIN_ROOT/tests/test-flow-mcp-health.sh" >/dev/null 2>&1; then
     pass_test "harness-flow Atlassian MCP tri-state health probe (not-configured/unreachable/healthy) works (test-flow-mcp-health.sh)"
 else

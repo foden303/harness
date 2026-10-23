@@ -173,8 +173,13 @@ flowchart LR
     author -->|"fill template, ask only the gaps"| draft["Epic + user stories<br/>drafted to your template"]
     draft --> approve1{"You approve"}
     approve1 --> created["Created in JIRA"]
-    created --> verify["/harness-story-verify"]
+    created --> kind{"Epic or story?"}
+    kind -->|"Epic"| everify["/harness-epic-verify"]
+    kind -->|"story"| verify["/harness-story-verify"]
+    everify -->|"unclear"| lq["BE / FE / BA questions<br/>one comment per lens"]
+    everify -->|"clear"| verify
     verify -->|"unclear"| q["BA questions on the ticket<br/>you approve before they post"]
+    lq & q --> handoff["Ticket handed back:<br/>@reporter, assigned, status moved"]
     verify -->|"clear"| build["Hand to /harness-flow"]
 ```
 
@@ -182,7 +187,15 @@ flowchart LR
 |-------|------|
 | `/harness-story-author <intent\|brief.md>` | Turn a rough idea into an Epic or user story **using your own template** (`--template` / `--template-confluence`, or the shipped default). Fills the template, scores the 12-gate rubric, asks only the questions needed to fill the gaps (never inventing an acceptance criterion), proposes an Epic's child-story breakdown, and calls `createJiraIssue` only after you approve. `--report-only` drafts without touching JIRA. |
 | `/harness-ba-ticket <idea\|brief.md>` | The **short** alternative: a one-screen story or Epic in the BA's voice titled `[Area] [Team] ...` (Why / Scope / Acceptance criteria / Fields with required-optional rules / Edge cases / Notes per team for FE, BE, Data, AI, QA / Open questions). Pass an existing key to rewrite a long ticket into this shape. Asks only what is missing, proposes an Epic's stories, and creates in JIRA only after you approve. `--draft-only` writes markdown without touching JIRA. Usage: [skills/harness-ba-ticket/README.md](skills/harness-ba-ticket/README.md). |
-| `/harness-story-verify <EPIC-KEY\|ISSUE-KEY ...>` | Verify that existing stories are clear enough to build. Expands an Epic to every child, scores each independently, and drafts one comment of open questions per unclear ticket — posted only after you approve. Read-only until then. |
+| `/harness-story-verify <ISSUE-KEY ...>` | Verify that existing stories are clear enough to build. Scores each ticket independently against the user-story rubric and drafts one comment of open questions per unclear ticket — posted only after you approve. Read-only until then. An Epic ref is routed to `/harness-epic-verify`. |
+| `/harness-epic-verify <EPIC-KEY>` | Verify an **Epic** before it is broken down: 12 epic gates (goal, definition of done, team split, critical path, dependencies, rollout), then questions from three angles — **backend, frontend, business** — as one comment per lens, each approved separately. |
+
+When a comment posts, the ticket is handed back to the person who has to answer:
+the reporter is `@`-mentioned, made assignee, and the status is moved to a
+clarification state (`Clarification` / `Waiting for BA` / `Needs Info` /
+`In Review`, whichever the workflow actually offers — override with
+`--ask-status`, or turn the whole handoff off with `--no-handoff`). A workflow
+with no such transition is reported as a skip; the comment still posts.
 
 Pass your idea inline (`/harness-story-author "let users export the txn list to CSV"`)
 or as a brief file. You do **not** need a complete spec — for every unfilled

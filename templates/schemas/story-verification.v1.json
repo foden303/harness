@@ -103,6 +103,24 @@
         "reply_comment_id": { "type": "string" },
         "answered_at": { "type": "string" }
       }
+    },
+    "handoff": {
+      "type": "object",
+      "description": "The reporter handoff performed when the clarification comment is posted: assign the ticket back to its reporter and move the status to a clarification state. A missing transition is recorded as skipped, never as a failure.",
+      "additionalProperties": false,
+      "properties": {
+        "assignee_set_to": { "type": "string" },
+        "assigned_at": { "type": "string" },
+        "assign_skipped_reason": { "type": "string" },
+        "status_from": { "type": "string" },
+        "status_to": { "type": "string" },
+        "transition_id": { "type": "string" },
+        "transitioned_at": { "type": "string" },
+        "transition_skipped_reason": {
+          "type": "string",
+          "description": "Why the status was left alone: no-matching-transition, preferred-status-not-available, already-in-target-status, or disabled-by-flag."
+        }
+      }
     }
   }
 }

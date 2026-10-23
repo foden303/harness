@@ -50,6 +50,74 @@ the old description is backed up locally and only the summary and description
 are updated, after approval. `harness-story-author` is unchanged for teams that
 want the full 12-gate rubric.
 
+#### `harness-epic-verify` — verify an Epic from the backend, frontend, and business angles, and hand it back to the BA
+
+**Before**: `harness-story-verify` did two jobs with one rubric. Passing it an
+Epic expanded the Epic to its children and scored each child against the
+user-story rubric — the Epic itself was never judged. Nobody asked whether its
+Definition of Done was observable, whether the team split covered every promised
+outcome, or whether the critical path was stated. Questions came out as one
+undifferentiated list, so a backend contract question and a frontend
+empty-state question landed in the same comment and waited on the same reply.
+And after the comment posted, the ticket sat unchanged in the sprint board:
+still assigned to whoever had it, still in its old status, with no signal to the
+BA that it was now waiting on them.
+
+**After**: the two units are separate skills.
+
+`/harness-epic-verify PROJ-100` scores the **Epic itself** against 12 epic gates
+(goal and value, observable Definition of Done, scope boundaries, team split,
+child coverage of the DoD, critical path, external dependencies, ambiguous
+wording, plus advisories for design reference, non-functionals, rollout/backout,
+and success metrics), then asks about every failing gate from **three lenses**:
+
+| Lens | Asks as | Owns questions about |
+|------|---------|----------------------|
+| `be` | the backend engineer | data ownership, contracts, idempotency, volume/retention, migration and backfill, failure modes, auth |
+| `fe` | the frontend engineer | entry points, screen states (empty/loading/error/permission-denied), the actual copy, device scope, accessibility |
+| `ba` | the business analyst | user and pain, priority, non-goals, sign-off, rollout and comms, success metrics, regulatory constraints |
+
+Each lens becomes **its own comment**, approved separately, with its own tracking
+nonce and round counter — so the frontend thread can be answered and re-verified
+while the backend one is still with an architect. A lens with nothing to ask
+posts nothing. Questions are traced to a failing gate at the schema level: the
+record helper rejects a question citing a gate that passed, so the BA is never
+asked something the Epic already answers.
+
+`/harness-story-verify` keeps the user-story rubric and now takes **stories
+only** — one ticket, a list, or a JQL set. An Epic ref is routed to
+`/harness-epic-verify` rather than silently expanded, and
+`/harness-epic-verify --with-children` is the supported way to run an Epic's
+children through it.
+
+#### Reporter handoff — posting questions now moves the ticket to the person who has to answer
+
+**Before**: the clarification comment was the only thing that changed. The BA
+found out only if they happened to read the ticket, and the board still showed
+the ticket as the team's work.
+
+**After**: on the same approval that sends the comment, both verify skills hand
+the ticket back:
+
+1. **Tag** — the comment opens with `[~accountid:…]`, the JIRA Cloud mention
+   that actually notifies the reporter.
+2. **Assign** — the reporter becomes the assignee.
+3. **Status** — the ticket moves to a clarification status.
+
+The status is never assumed. `scripts/jira-status-match.sh` reads the
+transitions the ticket actually offers and takes the first of `Clarification`,
+`Waiting for BA`, `Needs Info`, `In Review`. `--ask-status "<name>"` forces a
+specific one — and if that exact status is not available the transition is
+**skipped and reported**, never silently swapped for a different one. A workflow
+with no clarification transition, or a ticket with no reporter, is a recorded
+skip with its reason named in the summary; the comment still posts. `--no-handoff`
+turns the whole step off.
+
+Both are external transmissions, so both stay behind the existing operator
+approval gate (`.claude/rules/autonomous-confirmation-scope.md` case 1) — nothing
+auto-posts, nothing auto-transitions, and `--report-only` / `--dry-run` skip all
+of it.
+
 #### `harness-story-author` — a BA authors a JIRA ticket/Epic from their own template, and it lands in JIRA only on approval
 
 **Before**: A BA turning an idea into a JIRA ticket did it by hand: open the

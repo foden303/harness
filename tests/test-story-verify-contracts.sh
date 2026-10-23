@@ -173,6 +173,42 @@ else
   die "--set-clarification did not merge correctly"
 fi
 
+# --- --set-handoff merges the reporter handoff and still validates ---
+printf '{"assignee_set_to":"acct-ba","assigned_at":"2026-08-11T09:00:00Z","status_from":"To Do","status_to":"Waiting for BA","transition_id":"31"}\n' \
+  > "${TMP}/handoff.json"
+bash "${RECORD}" --in "${TMP}/out-clarif.json" --out "${TMP}/out-handoff.json" \
+  --set-handoff "${TMP}/handoff.json" >/dev/null
+if [ "$(jq -r .handoff.assignee_set_to "${TMP}/out-handoff.json")" = "acct-ba" ] \
+  && [ "$(jq -r .handoff.status_to "${TMP}/out-handoff.json")" = "Waiting for BA" ] \
+  && [ "$(jq -r .clarification.nonce "${TMP}/out-handoff.json")" = "abc123" ]; then
+  pass "--set-handoff merges the handoff block without dropping the clarification"
+else
+  die "--set-handoff did not merge correctly"
+fi
+
+# A skipped transition is recorded, not an error — the comment still posted.
+printf '{"transition_skipped_reason":"no-matching-transition"}\n' > "${TMP}/skip.json"
+bash "${RECORD}" --in "${TMP}/out-handoff.json" --out "${TMP}/out-skip.json" \
+  --set-handoff "${TMP}/skip.json" >/dev/null
+if [ "$(jq -r .handoff.transition_skipped_reason "${TMP}/out-skip.json")" = "no-matching-transition" ] \
+  && [ "$(jq -r .handoff.assignee_set_to "${TMP}/out-skip.json")" = "acct-ba" ]; then
+  pass "a skipped transition merges into the existing handoff block"
+else
+  die "handoff merge dropped earlier fields"
+fi
+
+if [ "${HAS_JSONSCHEMA}" -eq 1 ]; then
+  printf '{"bogus":"x"}\n' > "${TMP}/bad-handoff.json"
+  if bash "${RECORD}" --in "${TMP}/clear.json" --out "${TMP}/out-bad-handoff.json" \
+    --set-handoff "${TMP}/bad-handoff.json" >/dev/null 2>&1; then
+    die "an unknown handoff field was accepted (additionalProperties not enforced)"
+  else
+    pass "unknown handoff field rejected by the schema"
+  fi
+else
+  echo "PASS: (skipped) handoff additionalProperties assertion — python jsonschema not installed"
+fi
+
 # --- batch: init ---
 BFILE="$(bash "${BATCH}" init --batch-id b1 --mode epic --root PROJ-100 \
   --keys PROJ-1,PROJ-2,PROJ-3 --out "${TMP}/batch.json")"

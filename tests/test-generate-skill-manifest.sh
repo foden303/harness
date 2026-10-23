@@ -66,6 +66,7 @@ EXPECTED_MODEL_INVOKABLE='[
   "harness-accept",
   "harness-ba-ticket",
   "harness-bugfix",
+  "harness-epic-verify",
   "harness-flow",
   "harness-loop",
   "harness-ocsf-map",
