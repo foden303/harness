@@ -70,7 +70,7 @@ jq -n \
   | ($ts | map({
       id: (.id | tostring),
       name: (.name // ""),
-      to: (.to.name // .to // "")
+      to: (if (.to | type) == "object" then (.to.name // "") else (.to // "") end)
     })) as $t
   | ($t | map(if (.to | length) > 0 then .to else .name end)) as $available
   | ($candidates | split(",") | map(gsub("^\\s+|\\s+$"; "")) | map(select(length > 0))) as $cands
@@ -79,7 +79,7 @@ jq -n \
     {matched: false, reason: "already-in-target-status",
      current_status: $current, available: $available}
   elif ($prefer | length) > 0 then
-    (pick_exact($t; $prefer) // pick_loose($t; $prefer)) as $hit
+    pick_exact($t; $prefer) as $hit
     | if $hit == null then
         {matched: false, reason: "preferred-status-not-available",
          preferred: $prefer, available: $available}

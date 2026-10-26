@@ -303,6 +303,11 @@ gain an `## Assumptions` section for it. Both record helpers now pin each gate t
 its rubric severity and reject a record that disagrees, so a blocker cannot be
 downgraded on the way in. The ticket itself no longer needs an INVEST section.
 
+The Epic record helper pins its 12 gates the same way, so an Epic blocker can no
+longer be recorded as advisory and pass as `clear`. In the handoff, an
+operator-chosen status (`--ask-status`) must now match exactly: `Review` no
+longer moves the ticket to `Code Review`.
+
 ### Removed
 
 #### Legacy-residue cleanup — the repo now describes only what it actually contains
@@ -348,8 +353,9 @@ single feature. Checking a whole Epic for readiness meant opening every child
 ticket by hand, deciding what was missing, and writing the questions to the BA
 one comment at a time.
 
-**After**: `/ba-story-verify PROJ-100` expands the Epic to every child
-ticket, scores each one **independently** against a 13-gate user-story rubric
+**After**: `/ba-story-verify PROJ-101 PROJ-102` (or
+`/ba-epic-verify PROJ-100 --with-children` for an Epic's children) scores each
+story **independently** against a 13-gate user-story rubric
 (9 blocker gates, 4 advisory), and drafts the specific questions the BA needs to
 answer per ticket. A single ticket, a list of tickets, or a `--jql` result set
 works the same way.

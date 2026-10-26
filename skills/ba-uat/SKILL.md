@@ -35,7 +35,7 @@ the ticket does not ask for, and nothing the ticket asks for goes untested.
    yet** with the reason, and the report recommends `ba-story-verify <KEY>`.
    A guessed expectation is worse than a visible gap.
 3. **Concrete test data only.** Real values (`anna.tran@example.com`,
-   `49,999 rows`, `2026-02-29`), never "valid data", "a long string", "etc.".
+   `49,999 rows`, `2028-02-29`), never "valid data", "a long string", "etc.".
 4. **Coverage minimums** (details in
    [case-rules.md](${CLAUDE_SKILL_DIR}/references/case-rules.md)):
    every AC row ≥ 1 positive case; every Fields row with rules gets boundary
