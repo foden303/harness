@@ -8,6 +8,42 @@ Change history for harness.
 
 ### Added
 
+#### The BA skill pack covers the whole requirement lifecycle, from meeting notes to release notes
+
+**Before**: the BA skills only covered the middle of the job — writing a ticket
+and checking one. Everything around it was manual: turning a two-hour meeting
+transcript into requirements, writing a spec for a large feature, tidying the
+backlog before refinement, working out which tickets a client's change breaks,
+writing test cases and a UAT checklist, answering "is requirement X built yet?",
+and turning a sprint's Done tickets into notes a client can read. A BA also had
+to know which of the skills to call.
+
+**After**: eight new skills, all read-only until you approve a write:
+
+| You have… | Run | You get |
+|-----------|-----|---------|
+| Not sure which skill | `/ba` | The right `ba-*` skill and the exact command |
+| Meeting notes, transcripts, client emails | `/ba-discovery notes/` | A brief where every requirement carries the quote it came from, plus conflicts between sources and open questions |
+| A large feature | `/ba-spec brief.md` | A spec on Confluence: flows, numbered testable business rules, data fields, traceability to the brief, then the proposed Epics |
+| A backlog before refinement | `/ba-backlog --sprint next` | A ranked list of what to fix first (missing AC, duplicates, stale, oversized…); comments, labels and duplicate links on approval |
+| "The client changed X" | `/ba-change "<change>" --scope DPD-832` | Every affected AC row, field, rule and test case, with the edits, notice comments and follow-up tickets drafted |
+| Tickets ready to test | `/ba-uat DPD-832` | QA test cases with concrete data, traced to each AC row and field boundary, and a UAT checklist with a sign-off block |
+| "Is it built yet?" | `/ba-trace DPD-832` | Requirement → ticket → commit → test → UAT matrix, with the gaps |
+| A finished sprint | `/ba-release-notes --sprint "Sprint 42"` | Release notes in user-benefit language for clients, support or management |
+
+```
+notes ──► ba-discovery ──► ba-spec ──► ba-ticket ──► ba-story-verify / ba-epic-verify ──► harness-flow
+                    ba-change (client changes a requirement)   ba-uat ──► ba-trace ──► ba-release-notes
+```
+
+Every skill asks the BA instead of guessing — a requirement with no source quote,
+an untestable AC row, or a change whose impact is only "maybe" becomes a
+question, never an invented answer. JIRA edits, comments and Confluence pages
+are drafted, shown, and sent only after one approval, and each skill logs what
+it sent so a re-run never posts twice. A ticket that is already Done is never
+reopened by `ba-change`; it gets a follow-up ticket. Nothing is emailed or posted
+to chat.
+
 #### `ba-ticket` — short, one-screen tickets in the BA's voice
 
 **Before**: the only way to author a ticket was the 13-gate authoring flow, whose

@@ -60,9 +60,17 @@ jq -e '
 ' "${OUTPUT_JSON}" >/dev/null
 
 EXPECTED_MODEL_INVOKABLE='[
+  "ba-backlog",
+  "ba-change",
+  "ba-discovery",
   "ba-epic-verify",
+  "ba-release-notes",
+  "ba-spec",
   "ba-story-verify",
   "ba-ticket",
+  "ba-trace",
+  "ba-uat",
+  "ba",
   "breezing",
   "ci",
   "failure-codifier",

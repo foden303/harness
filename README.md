@@ -185,6 +185,9 @@ flowchart LR
 
 | Skill | Flow |
 |-------|------|
+| `/ba` | Not sure which one? Say what you have in hand (meeting notes, an idea, a ticket, a change request, a sprint) and it routes to the right `ba-*` skill with the exact command. Writes nothing itself. |
+| `/ba-discovery <notes\|transcript\|folder>` | Meeting notes, call transcripts or client emails → a discovery brief: stakeholders, goals, every requirement with the source quote it came from, business rules, decisions, assumptions to confirm, conflicts between sources, open questions. Recommends `/ba-spec` or `/ba-ticket` next. |
+| `/ba-spec <brief.md\|idea>` | A feature spec / PRD for a large feature: scope, user flows, numbered testable business rules, data fields, non-functionals, rollout, risks, and traceability back to the brief. Published to Confluence on approval, then proposes the Epics for `/ba-ticket`. |
 | `/ba-ticket <idea\|brief.md\|ISSUE-KEY>` | A story or Epic in the BA's voice. **Default**: one screen titled `[Area] [Team] ...` (Why / Scope / Acceptance criteria / Fields with required-optional rules / Edge cases / Notes per team for FE, BE, Data, AI, QA / Open questions); pass an existing key to rewrite a long ticket into this shape. **`--full`**: the long template (`--template` / `--template-confluence`, or the shipped default) scored against the same 13 gates `/ba-story-verify` uses. Both ask only what is missing (never inventing an acceptance criterion), propose an Epic's stories, and create in JIRA only after you approve. `--draft-only` writes the draft without touching JIRA. |
 | `/ba-story-verify <ISSUE-KEY ...>` | Verify that existing stories are clear enough to build. Scores each ticket independently against the user-story rubric and drafts one comment of open questions per unclear ticket — posted only after you approve. Read-only until then. An Epic ref is routed to `/ba-epic-verify`. |
 | `/ba-epic-verify <EPIC-KEY>` | Verify an **Epic** before it is broken down: 12 epic gates (goal, definition of done, team split, critical path, dependencies, rollout), then questions from three angles — **backend, frontend, business** — as one comment per lens, each approved separately. |
@@ -195,6 +198,16 @@ clarification state (`Clarification` / `Waiting for BA` / `Needs Info` /
 `In Review`, whichever the workflow actually offers — override with
 `--ask-status`, or turn the whole handoff off with `--no-handoff`). A workflow
 with no such transition is reported as a skip; the comment still posts.
+
+After the tickets are written, five more skills cover the rest of the BA's job:
+
+| Skill | Flow |
+|-------|------|
+| `/ba-backlog --sprint next` | Backlog hygiene before refinement: missing AC, possible duplicates, stale or stuck tickets, no Epic, broken links, unestimated or unassigned sprint work, oversized stories. A ranked "fix these first" list; comments, labels and duplicate links only on approval — it never closes a ticket. |
+| `/ba-change "<change>" --scope <EPIC-KEY>` | Change impact: restates the change as before → after, finds every affected AC row, field, rule, spec section and test case in scope, and drafts the edits (not started), notice comments (in progress) and follow-up tickets (done — never silently reopened). Applied only on approval. |
+| `/ba-uat <KEY\|EPIC-KEY>` | QA test cases (traced to each AC row, field boundary and edge case, with concrete test data) and a plain-language UAT checklist with a sign-off block for the client. `--refresh` diffs after a change; `--csv` for a test tool. |
+| `/ba-trace <EPIC-KEY>` | Traceability: requirement → ticket → commits (`[KEY]` in the git log) → tests → UAT result, with the gaps (requirement without a ticket, Done without a commit, AC without a test). Read-only. |
+| `/ba-release-notes --sprint "<name>"` | Release notes for clients, support or management from the Done tickets: New / Improved / Fixed in user-benefit language, tech chores filtered out, known issues listed. Published to Confluence on approval. |
 
 Pass your idea inline (`/ba-ticket "let users export the txn list to CSV"`)
 or as a brief file. You do **not** need a complete spec — for every unfilled
