@@ -6,6 +6,8 @@ Change history for harness.
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-10-26
+
 ### Added
 
 #### The BA skill pack covers the whole requirement lifecycle, from meeting notes to release notes
@@ -247,6 +249,38 @@ what every mapping is scored against. A fetch builds into a staging directory an
 swaps only after validating the tree, so a bad tag, an empty `events/` or one
 malformed file leaves the existing pin untouched.
 
+#### `ba-story-verify` — check a BA's user stories before anyone builds them
+
+**Before**: The only way to find out that a ticket was under-specified was to
+start building it. `harness-flow` verifies a requirement, but it verifies the
+*one* thing you are about to implement, and it merges several links into a
+single feature. Checking a whole Epic for readiness meant opening every child
+ticket by hand, deciding what was missing, and writing the questions to the BA
+one comment at a time.
+
+**After**: `/ba-story-verify PROJ-101 PROJ-102` (or
+`/ba-epic-verify PROJ-100 --with-children` for an Epic's children) scores each
+story **independently** against a 13-gate user-story rubric
+(9 blocker gates, 4 advisory), and drafts the specific questions the BA needs to
+answer per ticket. A single ticket, a list of tickets, or a `--jql` result set
+works the same way.
+
+```
+PROJ-100 "Q3 payments" — 7 stories verified: 3 clear, 4 need clarification, 0 blocked.
+Ready to build now: PROJ-101, PROJ-103, PROJ-105
+Blocked on the BA:  PROJ-102, PROJ-104, PROJ-106, PROJ-107
+```
+
+Nothing reaches JIRA without your approval: the run is read-only until it shows
+you every drafted comment at once and you choose post-all / pick / edit / skip.
+Approved comments carry a tracking marker, and `--resume` matches the BA's
+replies, folds them back into the ticket, and re-runs the rubric — with a
+3-round cap before it escalates instead of guessing the missing criteria. Use
+`--report-only` for a pure read, `--html` for a shareable report.
+
+The skill stops at a verdict; it never plans, implements, or commits. Clear
+tickets hand off to `/harness-flow`.
+
 ### Changed
 
 #### BA skills share one `ba-` prefix, and one skill writes tickets
@@ -341,40 +375,6 @@ and the Go promptpack.
 check treats an absent install as `not-configured`, not an error), and the
 `github.com/foden303/harness/go` module path is unchanged — re-homing it is a
 mechanical rename best done as its own atomic commit.
-
-### Added
-
-#### 1. `ba-story-verify` — check a BA's user stories before anyone builds them
-
-**Before**: The only way to find out that a ticket was under-specified was to
-start building it. `harness-flow` verifies a requirement, but it verifies the
-*one* thing you are about to implement, and it merges several links into a
-single feature. Checking a whole Epic for readiness meant opening every child
-ticket by hand, deciding what was missing, and writing the questions to the BA
-one comment at a time.
-
-**After**: `/ba-story-verify PROJ-101 PROJ-102` (or
-`/ba-epic-verify PROJ-100 --with-children` for an Epic's children) scores each
-story **independently** against a 13-gate user-story rubric
-(9 blocker gates, 4 advisory), and drafts the specific questions the BA needs to
-answer per ticket. A single ticket, a list of tickets, or a `--jql` result set
-works the same way.
-
-```
-PROJ-100 "Q3 payments" — 7 stories verified: 3 clear, 4 need clarification, 0 blocked.
-Ready to build now: PROJ-101, PROJ-103, PROJ-105
-Blocked on the BA:  PROJ-102, PROJ-104, PROJ-106, PROJ-107
-```
-
-Nothing reaches JIRA without your approval: the run is read-only until it shows
-you every drafted comment at once and you choose post-all / pick / edit / skip.
-Approved comments carry a tracking marker, and `--resume` matches the BA's
-replies, folds them back into the ticket, and re-runs the rubric — with a
-3-round cap before it escalates instead of guessing the missing criteria. Use
-`--report-only` for a pure read, `--html` for a shareable report.
-
-The skill stops at a verdict; it never plans, implements, or commits. Clear
-tickets hand off to `/harness-flow`.
 
 ## [1.0.0] - 2026-07-20
 
@@ -496,3 +496,7 @@ deleted, and matrix wording that never existed. They are fixed and wired in.
 ---
 
 Generated with [Claude Code](https://claude.com/claude-code)
+
+[Unreleased]: https://github.com/foden303/harness/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/foden303/harness/compare/v1.0.0...v1.1.0
+[1.0.0]: https://github.com/foden303/harness/releases/tag/v1.0.0

@@ -1,7 +1,7 @@
 {
   "name": "harness-marketplace",
   "metadata": {
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "Marketplace entry for distributing and installing harness as a single plugin."
   },
   "owner": {
@@ -10,7 +10,7 @@
   "plugins": [
     {
       "name": "harness",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "source": "./",
       "description": "A harness for solo developers (Vibecoders) to handle full-cycle contract development.",
       "author": {
