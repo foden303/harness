@@ -1,9 +1,9 @@
 <!--
-harness-ba-ticket :: STORY template
+ba-ticket :: STORY template
 Target: one screen, readable in two minutes by FE, BE, Data, AI and QA.
 {{slots}} are filled from the BA's intent and answers. HTML comments are
 guidance and are stripped before the ticket goes to JIRA.
-Override with: /harness-ba-ticket "<intent>" --template <your-copy.md>
+Override with: /ba-ticket "<intent>" --template <your-copy.md>
 -->
 
 # [{{area}}] [{{build_team_or_omit}}] {{title}}

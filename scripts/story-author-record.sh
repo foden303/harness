@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # story-author-record.sh — validate and persist a story-draft.v1 record.
 #
-# harness-story-author drafts the ticket/epic in-context (fills the template,
+# ba-ticket --full drafts the ticket/epic in-context (fills the template,
 # scores the authoring rubric, records the BA's answers), then hands the JSON
 # here. This helper is the only writer: it stamps authored_at, derives the
 # readiness from the gates + open questions so a hand-written readiness can never
@@ -127,6 +127,29 @@ else:
 for check in data.get("checks", []):
     if check.get("result") == "n-a" and not check.get("note"):
         raise SystemExit(f"gate {check.get('id')} is n-a without a note explaining why")
+
+# Each gate's severity is fixed by the rubric
+# (skills/ba-ticket/references/full/authoring-rubric.md). A record that downgrades
+# a blocker to advisory would let a failing gate pass silently.
+GATE_SEVERITY = {
+    "goal-value-clear": "blocker",
+    "ac-present-testable": "blocker",
+    "ac-covers-happy-path": "blocker",
+    "edge-error-states": "blocker",
+    "data-validation-rules": "blocker",
+    "scope-boundaries": "blocker",
+    "dependencies-identified": "blocker",
+    "no-ambiguous-wording": "blocker",
+    "invest-sizing": "blocker",
+    "story-format": "advisory",
+    "design-reference": "advisory",
+    "nonfunctional-stated": "advisory",
+    "assumptions-confirmed": "advisory",
+}
+for check in data.get("checks", []):
+    expected = GATE_SEVERITY.get(check.get("id"))
+    if expected and check.get("severity") != expected:
+        raise SystemExit(f"gate {check.get('id')} must be severity={expected}, got {check.get('severity')}")
 PY
 
 mv "${tmp}" "${out_file}"

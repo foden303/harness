@@ -17,7 +17,7 @@ destination governs an external write, so it is asked, not inferred.
 
 Pre-answered by `--confluence <url>` or `--out <dir>`. If **both** flags are
 passed, stop and ask which one — do not silently prefer one, the same way
-`harness-story-author` refuses to choose between two templates.
+`ba-ticket` refuses to choose between two templates.
 
 Do not offer `./ocsf-mappings/` as a silent default when the operator picks
 folder. Offer it as the *pre-filled suggestion* they can accept or replace. A

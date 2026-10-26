@@ -161,3 +161,54 @@ entries:
       - "templates/registry/"
       - "docs/reports/"
       - "docs/research/"
+
+  - id: story-verify-epic-expansion-ref
+    kind: path
+    pattern: "skills/harness-story-verify/references/epic-expansion.md"
+    removed_in: "Unreleased"
+    reason: "Epic handling moved out of harness-story-verify into the new harness-epic-verify skill. The story skill now resolves a ticket list only, in references/target-list.md, and routes an Epic ref to harness-epic-verify"
+    allowlist:
+      - "CHANGELOG.md"
+      - ".claude/memory/archive/"
+      - "Plans.md"
+      - "templates/registry/"
+
+  - id: skill-harness-ba-ticket
+    kind: skill
+    pattern: "harness-ba-ticket"
+    removed_in: "Unreleased"
+    reason: "Renamed to ba-ticket before any release so every BA skill shares the ba- prefix"
+    allowlist:
+      - "CHANGELOG.md"
+      - ".claude/memory/archive/"
+      - "templates/registry/"
+
+  - id: skill-harness-story-author
+    kind: skill
+    pattern: "harness-story-author"
+    removed_in: "Unreleased"
+    reason: "Merged into ba-ticket as its --full mode, so one skill writes tickets in either the short or the 12-gate format"
+    allowlist:
+      - "CHANGELOG.md"
+      - ".claude/memory/archive/"
+      - "templates/registry/"
+
+  - id: skill-harness-story-verify
+    kind: skill
+    pattern: "harness-story-verify"
+    removed_in: "Unreleased"
+    reason: "Renamed to ba-story-verify before any release so every BA skill shares the ba- prefix"
+    allowlist:
+      - "CHANGELOG.md"
+      - ".claude/memory/archive/"
+      - "templates/registry/"
+
+  - id: skill-harness-epic-verify
+    kind: skill
+    pattern: "harness-epic-verify"
+    removed_in: "Unreleased"
+    reason: "Renamed to ba-epic-verify before any release so every BA skill shares the ba- prefix"
+    allowlist:
+      - "CHANGELOG.md"
+      - ".claude/memory/archive/"
+      - "templates/registry/"

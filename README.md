@@ -162,32 +162,57 @@ guessed around.
 
 ## Requirements Authoring & Verification (BA)
 
-Two skills sit *before* the build loop, for the person who owns the requirement.
-They are mirror images: one **writes** tickets, the other **checks** them — both
-score against the same user-story quality rubric, and both make no external JIRA
-write until you approve.
+The `ba-*` skills sit *before* the build loop, for the person who owns the
+requirement. `/ba-ticket` **writes** tickets; `/ba-story-verify` and
+`/ba-epic-verify` **check** them. None of them makes an external JIRA write until
+you approve.
 
 ```mermaid
 flowchart LR
-    idea["Rough idea"] --> author["/harness-story-author"]
+    idea["Rough idea"] --> author["/ba-ticket"]
     author -->|"fill template, ask only the gaps"| draft["Epic + user stories<br/>drafted to your template"]
     draft --> approve1{"You approve"}
     approve1 --> created["Created in JIRA"]
-    created --> verify["/harness-story-verify"]
+    created --> kind{"Epic or story?"}
+    kind -->|"Epic"| everify["/ba-epic-verify"]
+    kind -->|"story"| verify["/ba-story-verify"]
+    everify -->|"unclear"| lq["BE / FE / BA questions<br/>one comment per lens"]
+    everify -->|"clear"| verify
     verify -->|"unclear"| q["BA questions on the ticket<br/>you approve before they post"]
+    lq & q --> handoff["Ticket handed back:<br/>@reporter, assigned, status moved"]
     verify -->|"clear"| build["Hand to /harness-flow"]
 ```
 
 | Skill | Flow |
 |-------|------|
-| `/harness-story-author <intent\|brief.md>` | Turn a rough idea into an Epic or user story **using your own template** (`--template` / `--template-confluence`, or the shipped default). Fills the template, scores the 12-gate rubric, asks only the questions needed to fill the gaps (never inventing an acceptance criterion), proposes an Epic's child-story breakdown, and calls `createJiraIssue` only after you approve. `--report-only` drafts without touching JIRA. |
-| `/harness-ba-ticket <idea\|brief.md>` | The **short** alternative: a one-screen story or Epic in the BA's voice titled `[Area] [Team] ...` (Why / Scope / Acceptance criteria / Fields with required-optional rules / Edge cases / Notes per team for FE, BE, Data, AI, QA / Open questions). Pass an existing key to rewrite a long ticket into this shape. Asks only what is missing, proposes an Epic's stories, and creates in JIRA only after you approve. `--draft-only` writes markdown without touching JIRA. Usage: [skills/harness-ba-ticket/README.md](skills/harness-ba-ticket/README.md). |
-| `/harness-story-verify <EPIC-KEY\|ISSUE-KEY ...>` | Verify that existing stories are clear enough to build. Expands an Epic to every child, scores each independently, and drafts one comment of open questions per unclear ticket — posted only after you approve. Read-only until then. |
+| `/ba` | Not sure which one? Say what you have in hand (meeting notes, an idea, a ticket, a change request, a sprint) and it routes to the right `ba-*` skill with the exact command. Writes nothing itself. |
+| `/ba-discovery <notes\|transcript\|folder>` | Meeting notes, call transcripts or client emails → a discovery brief: stakeholders, goals, every requirement with the source quote it came from, business rules, decisions, assumptions to confirm, conflicts between sources, open questions. Recommends `/ba-spec` or `/ba-ticket` next. |
+| `/ba-spec <brief.md\|idea>` | A feature spec / PRD for a large feature: scope, user flows, numbered testable business rules, data fields, non-functionals, rollout, risks, and traceability back to the brief. Published to Confluence on approval, then proposes the Epics for `/ba-ticket`. |
+| `/ba-ticket <idea\|brief.md\|ISSUE-KEY>` | A story or Epic in the BA's voice. **Default**: one screen titled `[Area] [Team] ...` (Why / Scope / Acceptance criteria / Fields with required-optional rules / Edge cases / Notes per team for FE, BE, Data, AI, QA / Open questions); pass an existing key to rewrite a long ticket into this shape. **`--full`**: the long template (`--template` / `--template-confluence`, or the shipped default) scored against the same 13 gates `/ba-story-verify` uses. Both ask only what is missing (never inventing an acceptance criterion), propose an Epic's stories, and create in JIRA only after you approve. `--draft-only` writes the draft without touching JIRA. |
+| `/ba-story-verify <ISSUE-KEY ...>` | Verify that existing stories are clear enough to build. Scores each ticket independently against the user-story rubric and drafts one comment of open questions per unclear ticket — posted only after you approve. Read-only until then. An Epic ref is routed to `/ba-epic-verify`. |
+| `/ba-epic-verify <EPIC-KEY>` | Verify an **Epic** before it is broken down: 12 epic gates (goal, definition of done, team split, critical path, dependencies, rollout), then questions from three angles — **backend, frontend, business** — as one comment per lens, each approved separately. |
 
-Pass your idea inline (`/harness-story-author "let users export the txn list to CSV"`)
+When a comment posts, the ticket is handed back to the person who has to answer:
+the reporter is `@`-mentioned, made assignee, and the status is moved to a
+clarification state (`Clarification` / `Waiting for BA` / `Needs Info` /
+`In Review`, whichever the workflow actually offers — override with
+`--ask-status`, or turn the whole handoff off with `--no-handoff`). A workflow
+with no such transition is reported as a skip; the comment still posts.
+
+After the tickets are written, five more skills cover the rest of the BA's job:
+
+| Skill | Flow |
+|-------|------|
+| `/ba-backlog --sprint next` | Backlog hygiene before refinement: missing AC, possible duplicates, stale or stuck tickets, no Epic, broken links, unestimated or unassigned sprint work, oversized stories. A ranked "fix these first" list; comments, labels and duplicate links only on approval — it never closes a ticket. |
+| `/ba-change "<change>" --scope <EPIC-KEY>` | Change impact: restates the change as before → after, finds every affected AC row, field, rule, spec section and test case in scope, and drafts the edits (not started), notice comments (in progress) and follow-up tickets (done — never silently reopened). Applied only on approval. |
+| `/ba-uat <KEY\|EPIC-KEY>` | QA test cases (traced to each AC row, field boundary and edge case, with concrete test data) and a plain-language UAT checklist with a sign-off block for the client. `--refresh` diffs after a change; `--csv` for a test tool. |
+| `/ba-trace <EPIC-KEY>` | Traceability: requirement → ticket → commits (`[KEY]` in the git log) → tests → UAT result, with the gaps (requirement without a ticket, Done without a commit, AC without a test). Read-only. |
+| `/ba-release-notes --sprint "<name>"` | Release notes for clients, support or management from the Done tickets: New / Improved / Fixed in user-benefit language, tech chores filtered out, known issues listed. Published to Confluence on approval. |
+
+Pass your idea inline (`/ba-ticket "let users export the txn list to CSV"`)
 or as a brief file. You do **not** need a complete spec — for every unfilled
 section the skill asks you one decision-shaped question. Full usage:
-[skills/harness-story-author/README.md](skills/harness-story-author/README.md).
+[skills/ba-ticket/README.md](skills/ba-ticket/README.md).
 
 ## Basic Workflow
 

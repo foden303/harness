@@ -15,6 +15,7 @@
 # Usage:
 #   story-verify-record.sh --in RECORD.json --out FILE
 #   story-verify-record.sh --in RECORD.json --out FILE --set-clarification CLARIF.json
+#   story-verify-record.sh --in RECORD.json --out FILE --set-handoff HANDOFF.json
 #   story-verify-record.sh verdict --in RECORD.json      # print derived verdict only
 set -euo pipefail
 
@@ -23,10 +24,10 @@ SCHEMA="${ROOT}/templates/schemas/story-verification.v1.json"
 
 now_utc() { date -u +%Y-%m-%dT%H:%M:%SZ; }
 
-usage() { sed -n '2,20p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; }
+usage() { sed -n '2,21p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; }
 
 mode="write"
-in_file="" out_file="" clarif_file=""
+in_file="" out_file="" clarif_file="" handoff_file=""
 
 if [ "${1:-}" = "verdict" ]; then mode="verdict"; shift; fi
 
@@ -35,6 +36,7 @@ while [ "$#" -gt 0 ]; do
     --in) in_file="${2:-}"; shift 2 ;;
     --out) out_file="${2:-}"; shift 2 ;;
     --set-clarification) clarif_file="${2:-}"; shift 2 ;;
+    --set-handoff) handoff_file="${2:-}"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     *) echo "story-verify-record: unknown arg: $1" >&2; exit 1 ;;
   esac
@@ -70,6 +72,12 @@ if [ -n "${clarif_file}" ]; then
   clarif_json="$(jq -e . "${clarif_file}")" || { echo "story-verify-record: --set-clarification is not valid JSON" >&2; exit 1; }
 fi
 
+handoff_json="null"
+if [ -n "${handoff_file}" ]; then
+  [ -f "${handoff_file}" ] || { echo "story-verify-record: handoff file not found: ${handoff_file}" >&2; exit 1; }
+  handoff_json="$(jq -e . "${handoff_file}")" || { echo "story-verify-record: --set-handoff is not valid JSON" >&2; exit 1; }
+fi
+
 mkdir -p "$(dirname "${out_file}")"
 
 tmp="$(mktemp)"
@@ -78,8 +86,10 @@ jq \
   --arg verdict "${verdict}" \
   --arg now "$(now_utc)" \
   --argjson clarif "${clarif_json}" \
+  --argjson handoff "${handoff_json}" \
   '. + {schema_version: $schema, verdict: $verdict, verified_at: $now}
-   + (if $clarif != null then {clarification: ((.clarification // {}) + $clarif)} else {} end)' \
+   + (if $clarif != null then {clarification: ((.clarification // {}) + $clarif)} else {} end)
+   + (if $handoff != null then {handoff: ((.handoff // {}) + $handoff)} else {} end)' \
   "${in_file}" >"${tmp}"
 
 python3 - "${tmp}" "${SCHEMA}" <<'PY'
@@ -119,6 +129,29 @@ else:
 for check in data["checks"]:
     if check.get("result") == "n-a" and not check.get("note"):
         raise SystemExit(f"gate {check.get('id')} is n-a without a note explaining why")
+
+# Each gate's severity is fixed by the rubric
+# (skills/ba-story-verify/references/us-rubric.md). A record that downgrades
+# a blocker to advisory would let a failing gate pass silently.
+GATE_SEVERITY = {
+    "goal-value-clear": "blocker",
+    "ac-present-testable": "blocker",
+    "ac-covers-happy-path": "blocker",
+    "edge-error-states": "blocker",
+    "data-validation-rules": "blocker",
+    "scope-boundaries": "blocker",
+    "dependencies-identified": "blocker",
+    "no-ambiguous-wording": "blocker",
+    "invest-sizing": "blocker",
+    "story-format": "advisory",
+    "design-reference": "advisory",
+    "nonfunctional-stated": "advisory",
+    "assumptions-confirmed": "advisory",
+}
+for check in data["checks"]:
+    expected = GATE_SEVERITY.get(check.get("id"))
+    if expected and check.get("severity") != expected:
+        raise SystemExit(f"gate {check.get('id')} must be severity={expected}, got {check.get('severity')}")
 PY
 
 mv "${tmp}" "${out_file}"

@@ -1,0 +1,145 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://harness.local/schemas/epic-verification.v1.json",
+  "title": "epic-verification.v1",
+  "description": "Epic-level clarity verdict produced by ba-epic-verify. One record per JIRA Epic. Questions carry a lens (be|fe|ba) because the Epic is asked about from three angles, and each lens is posted, tracked, and answered as its own thread.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "issue_key",
+    "title",
+    "verdict",
+    "checks",
+    "verified_at"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "type": "string", "const": "epic-verification.v1" },
+    "issue_key": { "type": "string", "minLength": 1 },
+    "issue_url": { "type": "string" },
+    "title": { "type": "string", "minLength": 1 },
+    "issue_type": { "type": "string" },
+    "status": { "type": "string" },
+    "reporter_account_id": {
+      "type": "string",
+      "description": "Usually the BA who wrote the Epic — the person the questions are addressed to, mentioned in the comment and made assignee by the handoff."
+    },
+    "reporter_display_name": { "type": "string" },
+    "assignee_account_id": { "type": "string" },
+    "child_keys": {
+      "type": "array",
+      "description": "Child tickets found by expansion. Inventory only — child stories are verified by ba-story-verify, not here.",
+      "items": { "type": "string" }
+    },
+    "child_count": { "type": "integer", "minimum": 0 },
+    "verdict": {
+      "type": "string",
+      "enum": ["clear", "needs-clarification", "blocked"],
+      "description": "clear = every blocker gate passes and there are no open questions. blocked = the Epic could not be read (permission/MCP), so no judgment was made."
+    },
+    "checks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "severity", "result"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "enum": [
+              "epic-goal-value",
+              "epic-dod-observable",
+              "epic-scope-boundaries",
+              "epic-team-split",
+              "epic-children-coverage",
+              "epic-critical-path",
+              "epic-dependencies-external",
+              "epic-no-ambiguous-wording",
+              "epic-design-reference",
+              "epic-nonfunctional",
+              "epic-rollout-backout",
+              "epic-success-metrics"
+            ]
+          },
+          "severity": { "type": "string", "enum": ["blocker", "advisory"] },
+          "result": {
+            "type": "string",
+            "enum": ["pass", "fail", "n-a"],
+            "description": "n-a requires a note stating why the gate does not apply to this Epic."
+          },
+          "note": { "type": "string" },
+          "evidence": {
+            "type": "string",
+            "description": "The quoted Epic text the judgment is based on (empty when the section is absent)."
+          }
+        }
+      }
+    },
+    "questions": {
+      "type": "array",
+      "description": "The exact questions that will be posted. Each one traces back to a failing gate and carries the lens it was asked from.",
+      "items": {
+        "type": "object",
+        "required": ["lens", "gate", "text"],
+        "additionalProperties": false,
+        "properties": {
+          "lens": {
+            "type": "string",
+            "enum": ["be", "fe", "ba"],
+            "description": "be = backend/data/contract angle, fe = frontend/UX angle, ba = business/scope angle."
+          },
+          "gate": { "type": "string", "minLength": 1 },
+          "text": { "type": "string", "minLength": 1 },
+          "why": {
+            "type": "string",
+            "description": "One line on what cannot be built, sized, or tested until this is answered."
+          }
+        }
+      }
+    },
+    "verified_at": { "type": "string", "format": "date-time" },
+    "clarifications": {
+      "type": "array",
+      "description": "One entry per lens thread. A lens with no questions gets no entry.",
+      "items": {
+        "type": "object",
+        "required": ["lens"],
+        "additionalProperties": false,
+        "properties": {
+          "lens": { "type": "string", "enum": ["be", "fe", "ba"] },
+          "state": {
+            "type": "string",
+            "enum": ["drafted", "awaiting-ba", "answered", "escalated", "skipped"],
+            "description": "drafted = comment written, not posted. skipped = the operator declined to post this lens."
+          },
+          "nonce": { "type": "string" },
+          "posted_comment_id": { "type": "string" },
+          "posted_at": { "type": "string" },
+          "bot_account_id": { "type": "string" },
+          "rounds": { "type": "integer", "minimum": 0 },
+          "reply_comment_id": { "type": "string" },
+          "answered_at": { "type": "string" }
+        }
+      }
+    },
+    "handoff": {
+      "type": "object",
+      "description": "The reporter handoff performed once per Epic when the first lens comment is posted: assign back to the reporter and move the status to a clarification state. A missing transition is recorded as skipped, never as a failure.",
+      "additionalProperties": false,
+      "properties": {
+        "assignee_set_to": { "type": "string" },
+        "assigned_at": { "type": "string" },
+        "assign_skipped_reason": { "type": "string" },
+        "status_from": { "type": "string" },
+        "status_to": { "type": "string" },
+        "transition_id": { "type": "string" },
+        "transitioned_at": { "type": "string" },
+        "transition_skipped_reason": {
+          "type": "string",
+          "description": "Why the status was left alone: no-matching-transition, preferred-status-not-available, already-in-target-status, or disabled-by-flag."
+        }
+      }
+    }
+  }
+}
