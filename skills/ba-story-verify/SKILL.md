@@ -135,7 +135,7 @@ ticket count; called from `ba-epic-verify --with-children` → the Epic key).
   |
   v
 [Step 2] Verify each   -> <KEY>.json (state: clear | needs-clarification | blocked)
-  Reference: references/us-rubric.md   (12 gates, 8 blocker + 4 advisory)
+  Reference: references/us-rubric.md   (13 gates, 9 blocker + 4 advisory)
   Per ticket: getJiraIssue (summary, description, AC field, labels, type, status,
     reporter, parent, links, attachments/design links, comments).
   Score every gate to pass | fail | n-a(+note). Each failing blocker contributes

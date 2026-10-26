@@ -10,7 +10,7 @@ Change history for harness.
 
 #### `ba-ticket` — short, one-screen tickets in the BA's voice
 
-**Before**: the only way to author a ticket was the 12-gate authoring flow, whose
+**Before**: the only way to author a ticket was the 13-gate authoring flow, whose
 template produces a long, table-heavy story: an acceptance-criteria table, a
 positive-scenario table, a negative-scenario table, a contract & schema table,
 and a notes & risks list. The result was thorough but hard to read — FE, QA,
@@ -47,7 +47,7 @@ round), never invents an acceptance criterion, and creates in JIRA only after
 approval; `--draft-only` writes markdown and stops. Pass an existing key
 (`/ba-ticket DPD-1573`) to rewrite that ticket into the short format:
 the old description is backed up locally and only the summary and description
-are updated, after approval. The 12-gate flow is still there behind `--full`
+are updated, after approval. The 13-gate flow is still there behind `--full`
 for teams that want the full rubric (next entry).
 
 #### `ba-epic-verify` — verify an Epic from the backend, frontend, and business angles, and hand it back to the BA
@@ -132,7 +132,7 @@ but nothing to *write* one — the two directions were asymmetric.
 is table-driven, with a Given/When/Then acceptance table plus positive and
 negative scenario tables, so QA can lift the rows straight into test cases;
 override either with `--template <path>` or
-`--template-confluence <url>`), scores the draft against the same 12-gate rubric
+`--template-confluence <url>`), scores the draft against the same 13-gate rubric
 `ba-story-verify` uses, and asks — via `AskUserQuestion` — only the
 decision-shaped questions needed to fill the gaps, never inventing an acceptance
 criterion to look answered. For an Epic it then proposes an INVEST child-story
@@ -219,7 +219,7 @@ malformed file leaves the existing pin untouched.
 (`harness-ba-ticket`, `harness-story-author`, `harness-story-verify`,
 `harness-epic-verify`), so a BA scanning the skill list could not tell which
 ones were theirs. Two separate skills wrote tickets, and the BA had to know in
-advance whether they wanted the short one-screen format or the long 12-gate one.
+advance whether they wanted the short one-screen format or the long 13-gate one.
 
 **After**: every BA skill starts with `ba-`, and writing a ticket is one skill
 with two modes:
@@ -238,6 +238,34 @@ names are registered in the retired-alias registry so a leftover reference fails
 (`.claude/state/story-author/`, `.claude/state/story-verify/`) are unchanged, so
 an in-progress draft or batch resumes as before. Engineering skills
 (`harness-flow`, `harness-bugfix`, …) keep their names.
+
+#### INVEST is checked by the skills, not ticked inside the ticket
+
+**Before**: a ticket that was obviously too big for one sprint still came back
+`clear` from `ba-story-verify` — `invest-sizing` was only advisory, so it was
+mentioned but never held the ticket or produced a question. Assumptions a story
+rested on ("the partner API already returns the fee") were never asked about. And
+a gate's severity came from the record itself, so a record that labelled a
+blocker as `advisory` let a failing gate pass. Teams compensated by pasting an
+INVEST checklist into the ticket, which the author ticked "Yes" six times.
+
+**After**: the user-story rubric has **13 gates (9 blocker, 4 advisory)** and
+covers every INVEST letter that can be judged from the ticket text:
+
+| INVEST | Gate | Severity |
+|--------|------|----------|
+| Independent | `dependencies-identified`, `invest-sizing` | blocker |
+| Valuable | `goal-value-clear`, `story-format` | blocker / advisory |
+| Estimable | `data-validation-rules`, `scope-boundaries`, `no-ambiguous-wording` | blocker |
+| Small | `invest-sizing` — **now a blocker**: an oversized story gets a "how should we split it?" question | blocker |
+| Testable | `ac-present-testable`, `ac-covers-happy-path`, `edge-error-states` | blocker |
+
+Negotiable is a property of the refinement conversation, not of the text, so no
+gate scores it. A new advisory gate, `assumptions-confirmed`, turns each
+unconfirmed assumption into a question for the BA, and the `--full` templates
+gain an `## Assumptions` section for it. Both record helpers now pin each gate to
+its rubric severity and reject a record that disagrees, so a blocker cannot be
+downgraded on the way in. The ticket itself no longer needs an INVEST section.
 
 ### Removed
 
@@ -285,8 +313,8 @@ ticket by hand, deciding what was missing, and writing the questions to the BA
 one comment at a time.
 
 **After**: `/ba-story-verify PROJ-100` expands the Epic to every child
-ticket, scores each one **independently** against a 12-gate user-story rubric
-(8 blocker gates, 4 advisory), and drafts the specific questions the BA needs to
+ticket, scores each one **independently** against a 13-gate user-story rubric
+(9 blocker gates, 4 advisory), and drafts the specific questions the BA needs to
 answer per ticket. A single ticket, a list of tickets, or a `--jql` result set
 works the same way.
 

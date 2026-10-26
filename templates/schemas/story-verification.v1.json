@@ -56,7 +56,8 @@
               "no-ambiguous-wording",
               "design-reference",
               "nonfunctional-stated",
-              "invest-sizing"
+              "invest-sizing",
+              "assumptions-confirmed"
             ]
           },
           "severity": { "type": "string", "enum": ["blocker", "advisory"] },

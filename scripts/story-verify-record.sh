@@ -129,6 +129,29 @@ else:
 for check in data["checks"]:
     if check.get("result") == "n-a" and not check.get("note"):
         raise SystemExit(f"gate {check.get('id')} is n-a without a note explaining why")
+
+# Each gate's severity is fixed by the rubric
+# (skills/ba-story-verify/references/us-rubric.md). A record that downgrades
+# a blocker to advisory would let a failing gate pass silently.
+GATE_SEVERITY = {
+    "goal-value-clear": "blocker",
+    "ac-present-testable": "blocker",
+    "ac-covers-happy-path": "blocker",
+    "edge-error-states": "blocker",
+    "data-validation-rules": "blocker",
+    "scope-boundaries": "blocker",
+    "dependencies-identified": "blocker",
+    "no-ambiguous-wording": "blocker",
+    "invest-sizing": "blocker",
+    "story-format": "advisory",
+    "design-reference": "advisory",
+    "nonfunctional-stated": "advisory",
+    "assumptions-confirmed": "advisory",
+}
+for check in data["checks"]:
+    expected = GATE_SEVERITY.get(check.get("id"))
+    if expected and check.get("severity") != expected:
+        raise SystemExit(f"gate {check.get('id')} must be severity={expected}, got {check.get('severity')}")
 PY
 
 mv "${tmp}" "${out_file}"

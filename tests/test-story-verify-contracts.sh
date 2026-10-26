@@ -6,6 +6,7 @@
 #   - the verdict is DERIVED from the gates and overrides a wrong hand-written one
 #   - n-a without a note (silent skip) is rejected
 #   - invalid severity / result / unknown gate id / unknown key are rejected
+#   - each gate's severity is pinned to the rubric (both record helpers)
 #   - `verdict --in FILE` prints the derived verdict without writing
 #   - --set-clarification merges and the result still validates
 #   - story-verify-batch.sh init/re-init/set-state/next/summary contracts
@@ -52,9 +53,9 @@ draft_with() {
       issue_type: "Story",
       verdict: $verdict,
       checks: [
-        {id: "story-format",       severity: "blocker",  result: "pass", evidence: "As a user..."},
+        {id: "story-format",       severity: "advisory", result: "pass", evidence: "As a user..."},
         {id: "ac-present-testable", severity: "blocker", result: $blocker_result, note: "n"},
-        {id: "invest-sizing",      severity: "advisory", result: "pass"}
+        {id: "invest-sizing",      severity: "blocker",  result: "pass"}
       ],
       questions: $questions
     }'
@@ -207,6 +208,75 @@ if [ "${HAS_JSONSCHEMA}" -eq 1 ]; then
   fi
 else
   echo "PASS: (skipped) handoff additionalProperties assertion — python jsonschema not installed"
+fi
+
+# --- gate severity is pinned to the rubric (us-rubric.md) ---
+# gate_record GATE SEVERITY RESULT > FILE — one check with explicit severity.
+gate_record() {
+  jq -n --arg id "$1" --arg sev "$2" --arg res "$3" '{
+    issue_key: "PROJ-2", title: "As a user I want Y", issue_type: "Story",
+    verdict: "clear",
+    checks: [
+      {id: "goal-value-clear", severity: "blocker", result: "pass"},
+      {id: $id, severity: $sev, result: $res, note: "n"}
+    ],
+    questions: []
+  }'
+}
+
+gate_record invest-sizing advisory fail > "${TMP}/sev-downgrade.json"
+if bash "${RECORD}" --in "${TMP}/sev-downgrade.json" --out "${TMP}/out-sev-down.json" >/dev/null 2>&1; then
+  die "invest-sizing recorded as advisory was accepted (a blocker can be downgraded)"
+else
+  pass "a blocker gate recorded with severity=advisory is rejected"
+fi
+
+gate_record invest-sizing blocker fail > "${TMP}/invest-fail.json"
+bash "${RECORD}" --in "${TMP}/invest-fail.json" --out "${TMP}/out-invest.json" >/dev/null
+if [ "$(jq -r .verdict "${TMP}/out-invest.json")" = "needs-clarification" ]; then
+  pass "a failing invest-sizing (now a blocker) holds the ticket at needs-clarification"
+else
+  die "a failing invest-sizing did not hold the ticket"
+fi
+
+gate_record assumptions-confirmed advisory fail > "${TMP}/assume.json"
+bash "${RECORD}" --in "${TMP}/assume.json" --out "${TMP}/out-assume.json" >/dev/null
+if [ "$(jq -r .verdict "${TMP}/out-assume.json")" = "clear" ]; then
+  pass "assumptions-confirmed is an accepted advisory gate (fails alone without holding the ticket)"
+else
+  die "assumptions-confirmed was not accepted as an advisory gate"
+fi
+
+gate_record assumptions-confirmed blocker fail > "${TMP}/assume-up.json"
+if bash "${RECORD}" --in "${TMP}/assume-up.json" --out "${TMP}/out-assume-up.json" >/dev/null 2>&1; then
+  die "assumptions-confirmed recorded as blocker was accepted"
+else
+  pass "an advisory gate recorded with severity=blocker is rejected"
+fi
+
+# The authoring helper pins the same severities, so a --full draft cannot be
+# marked ready with a downgraded blocker.
+AUTHOR="${ROOT}/scripts/story-author-record.sh"
+author_draft() {
+  jq -n --arg sev "$1" '{
+    schema_version: "story-draft.v1", mode: "story", project_key: "PROJ",
+    issue_type: "Story", title: "Export to CSV", body_markdown: "# Export",
+    readiness: "ready", authored_at: "2026-10-23T00:00:00Z",
+    checks: [{id: "invest-sizing", severity: $sev, result: "fail", note: "n"}]
+  }'
+}
+author_draft advisory > "${TMP}/author-down.json"
+if bash "${AUTHOR}" --in "${TMP}/author-down.json" --out "${TMP}/out-author-down.json" >/dev/null 2>&1; then
+  die "story-author-record accepted invest-sizing recorded as advisory"
+else
+  pass "story-author-record rejects a downgraded blocker gate"
+fi
+author_draft blocker > "${TMP}/author-ok.json"
+bash "${AUTHOR}" --in "${TMP}/author-ok.json" --out "${TMP}/out-author-ok.json" >/dev/null
+if [ "$(jq -r .readiness "${TMP}/out-author-ok.json")" = "needs-input" ]; then
+  pass "story-author-record derives needs-input from a failing invest-sizing blocker"
+else
+  die "story-author-record did not hold a draft with a failing invest-sizing"
 fi
 
 # --- batch: init ---

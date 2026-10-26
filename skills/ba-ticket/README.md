@@ -119,10 +119,10 @@ to 2 days. After this epic, finance pulls the data themselves in under a minute.
 
 ## Full mode (`--full`)
 
-Add `--full` when you want the long template and the 12-gate rubric instead of
+Add `--full` when you want the long template and the 13-gate rubric instead of
 one screen. It fills `templates/ticket-authoring/{epic,story}.md` (AC table,
 positive + negative scenarios, contract table, notes & risks), scores the draft
-against the **same 12 gates** `ba-story-verify` uses, and keeps a resumable
+against the **same 13 gates** `ba-story-verify` uses, and keeps a resumable
 draft record under `.claude/state/story-author/<draft-id>/`.
 
 ```bash
@@ -144,7 +144,7 @@ draft record under `.claude/state/story-author/<draft-id>/`.
 | Template | One screen: Why / Scope / AC / Fields / Edge cases / Notes per team | Long, table-heavy (AC table, scenarios, contract table, notes & risks) |
 | Audience | Every team that touches the story, including QA, Data, AI | Engineer planning the build |
 | Title | `[Area] [Team] ...`, or `[Area] ...` when BE + FE ship one feature together | `[Area] ... -(BE)` suffix |
-| Quality check | 9-point ready check (incl. no code outside BE / FE notes) | 12-gate rubric with a state record |
+| Quality check | 9-point ready check (incl. no code outside BE / FE notes) | 13-gate rubric with a state record |
 | Epic sizing | Stories table with teams and dependencies; teams size it | Story points per child |
 | Rewrite an existing key | Yes | No |
 

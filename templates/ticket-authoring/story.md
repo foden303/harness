@@ -137,6 +137,16 @@ comes from (e.g. "From DPD-836 — lets the job order an update").
 Write "n/a — no new inputs or contract changes" if the story truly has none.
 -->
 
+## Assumptions
+<!-- gate: assumptions-confirmed -->
+{{assumptions_bullets_or_none}}
+<!--
+Things the story takes as true but nobody has confirmed yet, one bullet each,
+marked with who confirmed it ("— confirmed by <BA>") once they do. Each
+unconfirmed bullet is asked to the BA during authoring. Write "None" when the
+story rests on no assumption.
+-->
+
 ## Notes & Risks
 <!-- gate: no-ambiguous-wording / nonfunctional-stated / design-reference -->
 {{notes_and_risks_bullets}}

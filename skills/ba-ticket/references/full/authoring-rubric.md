@@ -1,6 +1,6 @@
 # Authoring rubric (Steps 2-3)
 
-Score the draft against the **same 12 gates** `ba-story-verify` uses, so a
+Score the draft against the **same 13 gates** `ba-story-verify` uses, so a
 ticket this skill authors would pass the verify it later faces. The difference is
 what a failure *does*: in verify a failing blocker becomes a comment on the
 ticket; here it becomes a **question to the BA in-session**, and the draft cannot
@@ -28,11 +28,12 @@ gates read at epic altitude — the mapping column says how.
 | `data-validation-rules` | blocker | Every new input has type/limits/format/default | n-a at epic level (belongs to the children) |
 | `scope-boundaries` | blocker | In-scope vs out-of-scope distinguishable | `### Out of scope for this epic` is present and concrete |
 | `dependencies-identified` | blocker | Upstream/downstream/APIs/flags named, or "none" | `## Critical path` names what gates what |
+| `invest-sizing` | blocker | One-sprint vertical slice | The child breakdown is INVEST-sized (see epic-breakdown.md) |
 | `no-ambiguous-wording` | blocker | No `TBD`/`???`/"etc."/undefined terms | Same — placeholders in the draft are gaps to ask about |
 | `story-format` | advisory | Role + capability + benefit shape | n-a (epics are not `As a…`) |
 | `design-reference` | advisory | UI story links a design, or "no UI change" | `**Design doc:**` slot is a link or "none" |
+| `assumptions-confirmed` | advisory | Every assumption in `## Assumptions` is confirmed, or the section says none | Same — assumptions the epic rests on are confirmed by the BA |
 | `nonfunctional-stated` | advisory | Perf/security/a11y/i18n stated when relevant | Relevant when the epic carries money/PII/auth/bulk data |
-| `invest-sizing` | advisory | One-sprint vertical slice | The child breakdown is INVEST-sized (see epic-breakdown.md) |
 
 ## Scoring rules
 

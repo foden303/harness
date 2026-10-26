@@ -1,18 +1,18 @@
-# ba-ticket --full: the 12-gate authoring flow
+# ba-ticket --full: the 13-gate authoring flow
 
 Loaded when `ba-ticket` runs with `--full`. The long template
 (`templates/ticket-authoring/{epic,story}.md`) is scored against the **same 12
 gates** `ba-story-verify` uses, so a story written here passes the verify it
 later faces. The draft is kept as a `story-draft.v1` record, so a run can resume.
 
-> **Rough intent → fill the template → score the 12 gates → ask the BA only the
+> **Rough intent → fill the template → score the 13 gates → ask the BA only the
 > gap questions → (Epic) propose child stories → operator approves → create in
 > JIRA → link children to the epic.**
 
 | | short (default) | `--full` |
 |---|---|---|
 | Template | `templates/ba-ticket/` — one screen | `templates/ticket-authoring/` — AC table, scenarios, contract tables |
-| Quality check | 9-point ready check | 12-gate rubric, readiness derived by `story-author-record.sh` |
+| Quality check | 9-point ready check | 13-gate rubric, readiness derived by `story-author-record.sh` |
 | State | markdown under `.claude/state/ba-ticket/<slug>/` | `draft.json` under `.claude/state/story-author/<draft-id>/` |
 | Epic sizing | Stories table with teams + dependencies | Child table with role group + story points |
 | Template override | `--template <path>` | `--template <path>` or `--template-confluence <url>` |
@@ -80,7 +80,7 @@ and schema-validates). `<draft-id>` is a slug of the title
   v
 [Step 2] Draft            Reference: references/full/authoring-rubric.md
   Fill every template slot you can from the intent/brief. Leave un-fillable slots
-  marked. Score the draft against the rubric (same 12 gate ids as verify).
+  marked. Score the draft against the rubric (same 13 gate ids as verify).
   Persist via story-author-record.sh (it derives readiness=needs-input while gaps remain).
   |
   v

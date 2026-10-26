@@ -84,6 +84,15 @@ such surprises. Table shape:
 | --- | --- | --- |
 | {{assumption}} | {{reality}} | {{consequence}} |
 
+## Assumptions
+<!-- gate: assumptions-confirmed -->
+{{assumptions_bullets_or_none}}
+<!--
+What the epic takes as true but nobody has confirmed yet (a partner API exists,
+the data is already collected, legal has signed off), one bullet each, marked
+"— confirmed by <BA>" once settled. Write "None" when there are none.
+-->
+
 ## Open questions
 <!-- gate: no-ambiguous-wording -->
 <!--

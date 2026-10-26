@@ -1,8 +1,8 @@
 ---
 name: ba-ticket
-description: "Write a JIRA story or Epic in the BA's voice that FE, BE, Data, AI and QA can build from without a meeting. Default (short) mode fills a one-screen template titled [Area] [Team] ... (Why / Scope / Acceptance criteria / Fields with required-optional rules / Edge cases / Notes per team / Open questions); --full mode fills the long template and scores it against the same 12 gates ba-story-verify uses, with a resumable draft record. Either way it asks the BA only what is missing, proposes an Epic's stories, and creates the issues in JIRA only after the operator approves. Given an existing issue key it rewrites that ticket into the short format and updates it in place on approval. Trigger: write a ticket, author a ticket, rewrite this ticket, shorten this ticket, BA ticket, write a story, draft a story, write a user story, write an epic, create an epic, gen a ticket, break this into stories, short ticket, full ticket, ticket for FE/BE/QA, /ba-ticket. Do NOT load for: verifying an existing ticket (use ba-story-verify / ba-epic-verify), implementing a ticket (use harness-flow), or bug triage (use harness-bugfix)."
+description: "Write a JIRA story or Epic in the BA's voice that FE, BE, Data, AI and QA can build from without a meeting. Default (short) mode fills a one-screen template titled [Area] [Team] ... (Why / Scope / Acceptance criteria / Fields with required-optional rules / Edge cases / Notes per team / Open questions); --full mode fills the long template and scores it against the same 13 gates ba-story-verify uses, with a resumable draft record. Either way it asks the BA only what is missing, proposes an Epic's stories, and creates the issues in JIRA only after the operator approves. Given an existing issue key it rewrites that ticket into the short format and updates it in place on approval. Trigger: write a ticket, author a ticket, rewrite this ticket, shorten this ticket, BA ticket, write a story, draft a story, write a user story, write an epic, create an epic, gen a ticket, break this into stories, short ticket, full ticket, ticket for FE/BE/QA, /ba-ticket. Do NOT load for: verifying an existing ticket (use ba-story-verify / ba-epic-verify), implementing a ticket (use harness-flow), or bug triage (use harness-bugfix)."
 kind: workflow
-purpose: "Rough idea -> BA-voice story/epic (one-screen, or --full 12-gate) -> ask only the gaps -> (epic) propose stories -> operator approves -> createJiraIssue"
+purpose: "Rough idea -> BA-voice story/epic (one-screen, or --full 13-gate) -> ask only the gaps -> (epic) propose stories -> operator approves -> createJiraIssue"
 trigger: "write a ticket, author a ticket, BA ticket, write a story, write an epic, create an epic, short ticket, full ticket"
 shape: delegate
 role: orchestrator
@@ -53,7 +53,7 @@ it is done, and what their own team has to know. Nothing more.
 | Mode | When | Flow |
 |------|------|------|
 | **short** (default) | The ticket must be quick to read for every team | The flow below |
-| **`--full`** | You want the 12-gate rubric, detailed contract tables, story points, or a Confluence template | [full/flow.md](${CLAUDE_SKILL_DIR}/references/full/flow.md) — load it and follow it instead of the flow below |
+| **`--full`** | You want the 13-gate rubric, detailed contract tables, story points, or a Confluence template | [full/flow.md](${CLAUDE_SKILL_DIR}/references/full/flow.md) — load it and follow it instead of the flow below |
 
 Pick the mode from the flag only; never switch to `--full` on your own. The
 Rules above apply to both modes. Rewriting an existing key is short mode only.
@@ -68,7 +68,7 @@ Rules above apply to both modes. Rewriting an existing key is short mode only.
 | `/ba-ticket DPD-1573` | Rewrite an existing ticket into the short format, update it on approval |
 | `/ba-ticket "..." --draft-only` | Write the markdown only, never call JIRA |
 | `/ba-ticket "..." --template ./our-story.md` | Use the team's own template |
-| `/ba-ticket "..." --full` | Long template + 12-gate rubric, resumable draft record |
+| `/ba-ticket "..." --full` | Long template + 13-gate rubric, resumable draft record |
 | `/ba-ticket brief.md --full --epic --project DPD` | Full Epic with child stories and story points |
 | `/ba-ticket "..." --full --template-confluence https://<site>/wiki/.../id` | Use a Confluence page as the template |
 | `/ba-ticket "..." --full --dry-run` | Walk the full flow, write no state, never call JIRA |
