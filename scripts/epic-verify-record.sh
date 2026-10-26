@@ -149,6 +149,28 @@ for check in data["checks"]:
     if check.get("result") == "n-a" and not check.get("note"):
         raise SystemExit(f"gate {check.get('id')} is n-a without a note explaining why")
 
+# Each gate's severity is fixed by the rubric
+# (skills/ba-epic-verify/references/epic-rubric.md). A record that downgrades
+# a blocker to advisory would let a failing gate pass silently.
+GATE_SEVERITY = {
+    "epic-goal-value": "blocker",
+    "epic-dod-observable": "blocker",
+    "epic-scope-boundaries": "blocker",
+    "epic-team-split": "blocker",
+    "epic-children-coverage": "blocker",
+    "epic-critical-path": "blocker",
+    "epic-dependencies-external": "blocker",
+    "epic-no-ambiguous-wording": "blocker",
+    "epic-design-reference": "advisory",
+    "epic-nonfunctional": "advisory",
+    "epic-rollout-backout": "advisory",
+    "epic-success-metrics": "advisory",
+}
+for check in data["checks"]:
+    expected = GATE_SEVERITY.get(check.get("id"))
+    if expected and check.get("severity") != expected:
+        raise SystemExit(f"gate {check.get('id')} must be severity={expected}, got {check.get('severity')}")
+
 # Every question must trace to a gate that actually failed, so the BA is never
 # asked about something the Epic already answers.
 failed = {c.get("id") for c in data["checks"] if c.get("result") == "fail"}

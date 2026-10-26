@@ -120,6 +120,21 @@ else
   pass "a question citing a non-failing gate is rejected"
 fi
 
+# --- gate severity is pinned by the rubric: a blocker cannot be downgraded ---
+jq '.checks[1].severity = "advisory"' "${TMP}/lying.json" > "${TMP}/downgrade.json"
+if bash "${RECORD}" --in "${TMP}/downgrade.json" --out "${TMP}/out-downgrade.json" >/dev/null 2>&1; then
+  die "a failing blocker gate recorded as advisory was accepted (would pass as clear)"
+else
+  pass "a blocker gate downgraded to advisory is rejected"
+fi
+
+jq '.checks[2].severity = "blocker"' "${TMP}/clear.json" > "${TMP}/upgrade.json"
+if bash "${RECORD}" --in "${TMP}/upgrade.json" --out "${TMP}/out-upgrade.json" >/dev/null 2>&1; then
+  die "an advisory gate recorded as blocker was accepted"
+else
+  pass "an advisory gate upgraded to blocker is rejected"
+fi
+
 # --- lens enum on questions ---
 jq '.questions[0].lens = "qa"' "${TMP}/lying.json" > "${TMP}/bad-lens.json"
 if bash "${RECORD}" --in "${TMP}/bad-lens.json" --out "${TMP}/out-lens.json" >/dev/null 2>&1; then
@@ -244,6 +259,24 @@ if [ "$(printf '%s' "${M}" | jq -r .matched)" = "false" ] \
   pass "an unavailable --prefer is a skip, never a silent substitution"
 else
   die "--prefer fell through to a different status: ${M}"
+fi
+
+# --prefer is exact: "Review" must not be satisfied by "Code Review".
+printf '{"transitions":[{"id":"9","name":"Code Review","to":{"name":"Code Review"}}]}\n' > "${TMP}/code-review.json"
+M="$(bash "${MATCH}" --transitions "${TMP}/code-review.json" --prefer "Review")"
+if [ "$(printf '%s' "${M}" | jq -r .matched)" = "false" ]; then
+  pass "--prefer Review does not move a ticket to Code Review"
+else
+  die "--prefer Review was substituted with Code Review: ${M}"
+fi
+
+# A transition whose destination carries no name must not crash the matcher.
+printf '{"transitions":[{"id":"5","name":"Ask BA","to":{"id":"77"}}]}\n' > "${TMP}/nameless-to.json"
+if M="$(bash "${MATCH}" --transitions "${TMP}/nameless-to.json")" \
+  && [ "$(printf '%s' "${M}" | jq -r .matched)" = "false" ]; then
+  pass "a destination without a name is tolerated (no jq crash)"
+else
+  die "a nameless destination crashed or mis-matched: ${M:-<crash>}"
 fi
 
 M="$(bash "${MATCH}" --transitions "${TMP}/transitions.json" --current-status "Waiting for BA")"

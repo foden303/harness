@@ -106,5 +106,5 @@ available: In Progress, Done)."*
   guesses at ticket content.
 - `jq` and `python3` for the record helper.
 
-State lives in `.claude/state/epic-verify/<epic-key>/epic.json`
+State lives in `.claude/state/epic-verify/<epic-id>/epic.json`
 (`epic-verification.v1`), so a re-run resumes instead of re-asking.
