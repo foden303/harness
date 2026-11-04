@@ -20,7 +20,7 @@ do not hand-write it:
 ## The gates
 
 The section names in parentheses are the default Epic template
-(`templates/ticket-authoring/epic.md`) written by `ba-ticket --full`. A
+(`templates/ticket-authoring/epic.md`) written by `ba-ticket` in its default mode. A
 project using its own format still gets scored — match on meaning, not heading
 text.
 

@@ -6,6 +6,55 @@ Change history for harness.
 
 ## [Unreleased]
 
+### Changed
+
+#### `ba-ticket` — the 13-gate template is now the default; the one-screen format moves to `--draft`
+
+**Before**: `/ba-ticket "<idea>"` wrote the short one-screen ticket, and you had
+to remember `--full` every time you wanted the long template scored against the
+13 gates. Teams that always wanted the full rubric typed the flag on every run.
+
+**After**: `/ba-ticket "<idea>"` fills the long template and scores it against
+the same 13 gates `ba-story-verify` uses. Pass `--draft` for the one-screen
+format. `--draft-only` is unchanged: it writes markdown and never calls JIRA,
+in either mode. An existing key (`/ba-ticket DPD-1573`) still rewrites the
+ticket into the one-screen format, because the full flow does not rewrite.
+
+| Before | After |
+|--------|-------|
+| `/ba-ticket "..."` | `/ba-ticket "..." --draft` |
+| `/ba-ticket "..." --full` | `/ba-ticket "..."` |
+| `/ba-ticket "..." --full --epic --project DPD` | `/ba-ticket "..." --epic --project DPD` |
+
+#### `ba-ticket` full story template — numbered AC, Scope In/Out, Notes per team, and a 5-point cap
+
+**Before**: the long template had an Acceptance Criteria Table with no row
+number, so scenarios, test cases and the UAT checklist could only point at a
+row by its Scenario name. Scope lived inside a free-text Summary paragraph.
+There was no Notes per team section, so FE, BE, Data, AI and QA notes had
+nowhere to go except Notes & Risks. Story points had no ceiling: a 13-point
+child could be proposed and marked ready.
+
+**After**: the AC table starts with a `#` column (AC-1, AC-2 ...). `## Summary`
+is replaced by `## Scope` with In / Out bullets, each Out item saying where it
+goes instead. The header is `Epic · Teams · Points` (lead team first, no
+separate Owner) and a new `## Notes per team` section
+holds one line per listed team, the only place code names may appear. The design
+link lives only on its FE line, a dependency only under Scope > Dependencies
+(the header no longer carries `Depends on:`; `## Assumptions` now sits right
+below Scope), and an
+unresolved item only as an "Open —" bullet in Notes & Risks, which records
+decisions rather than their history. A story
+or child story is at most 5 points: the template, both rubrics and the draft
+record helper enforce it, so a bigger story is split before it can be proposed.
+
+| Before | After |
+|--------|-------|
+| `Scenario \| Given \| When \| Then` | `# \| Scenario \| Given \| When \| Then` |
+| `## Summary` paragraph, `Depends on:` in the header | `## Scope` with **In:** / **Out:** / **Dependencies:** bullets, `## Assumptions` directly below |
+| No per-team notes in the full template | `## Notes per team` (FE / BE / Data / AI / QA) |
+| Points unbounded | Points ≤ 5, enforced by `story-author-record.sh` |
+
 ## [1.1.0] - 2026-10-26
 
 ### Added

@@ -59,8 +59,9 @@ the same. If a story needs more, it is probably two stories.
 - **Edge & error cases** — missing required field, invalid format, duplicate
   value, no permission, empty data, outage/timeout, limits. Expected result as
   behaviour the user sees. `None — <why>` if truly none.
-- **Notes per team** — only the teams in the header. What that team needs from
-  the BA:
+- **Notes per team** — only the teams in the header. What that one team needs
+  from the BA. Say each thing once: the design link only on the FE line, a
+  dependency only in the header, a question only in Open questions:
 
   | Team | Write |
   |------|-------|

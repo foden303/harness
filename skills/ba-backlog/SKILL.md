@@ -148,5 +148,5 @@ the 9 tickets with no AC before Thursday's refinement."
 
 - `ba-story-verify` — deep 13-gate check of the tickets this scan flags
 - `ba-epic-verify` — check an Epic that has thin or orphaned children
-- `ba-ticket` — rewrite a thin or oversized ticket into the short format
+- `ba-ticket` — rewrite a thin or oversized ticket into the one-screen draft format
 - `harness-flow` — build a ticket once it is clear

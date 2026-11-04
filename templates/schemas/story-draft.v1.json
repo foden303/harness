@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://harness.local/schemas/story-draft.v1.json",
   "title": "story-draft.v1",
-  "description": "A ticket/epic draft authored by ba-ticket --full. Read-only until the operator approves creation; created_key/created_url are set only after the approved createJiraIssue call.",
+  "description": "A ticket/epic draft authored by ba-ticket in its default (full) mode. Read-only until the operator approves creation; created_key/created_url are set only after the approved createJiraIssue call.",
   "type": "object",
   "required": [
     "schema_version",
@@ -27,6 +27,12 @@
     "cloud_id": { "type": "string" },
     "issue_type": { "type": "string", "minLength": 1 },
     "title": { "type": "string", "minLength": 1 },
+    "points": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 5,
+      "description": "Story points (story mode). Capped at 5: a bigger story fails invest-sizing and is split."
+    },
     "template_ref": {
       "type": "string",
       "description": "default | an override file path | a Confluence URL — which template shaped this draft."
@@ -110,8 +116,8 @@
         "properties": {
           "local_id": { "type": "string", "description": "Stable within-draft id (e.g. c1) used before a real key exists." },
           "title": { "type": "string", "minLength": 1 },
-          "role_group": { "type": "string", "description": "Owning role, e.g. Backend Engineer." },
-          "points": { "type": "number" },
+          "role_group": { "type": "string", "description": "Lead team of the child (first entry of its Teams line), e.g. BE." },
+          "points": { "type": "number", "minimum": 0, "maximum": 5, "description": "Capped at 5; a bigger child is split before it can be proposed." },
           "body_markdown": { "type": "string", "minLength": 1 },
           "checks": { "type": "array", "items": { "type": "object" } },
           "open_questions": { "type": "array", "items": { "type": "object" } },

@@ -1,27 +1,48 @@
 # ba-ticket
 
-Turn a rough idea into a **short, clear JIRA story or Epic**, written from the
-BA's point of view, that FE, BE, Data, AI and QA can build and test from without
-a follow-up meeting.
+Turn a rough idea into a **clear JIRA story or Epic**, written from the BA's
+point of view, that FE, BE, Data, AI and QA can build and test from without a
+follow-up meeting.
+
+Two modes. The **default** fills the long template
+(`templates/ticket-authoring/{epic,story}.md`) and scores it against the same
+13 gates `ba-story-verify` uses. **`--draft`** writes a one-screen ticket
+instead. Both ask you only what is missing and create in JIRA only on approval.
 
 ## Quick start
 
 ```bash
-# One story
+# One story, long template + 13-gate rubric
 /ba-ticket "Let finance export the filtered transaction list to CSV" --project DPD
 
-# An epic with its stories
+# An epic with child stories and story points
 /ba-ticket brief.md --epic --project DPD
 
 # A story under an existing epic
 /ba-ticket "..." --epic-key DPD-832
 
-# Rewrite an existing long ticket into this format (updates it on approval)
+# Use a Confluence page as the template
+/ba-ticket "..." --template-confluence https://<site>/wiki/.../pageId
+
+# Walk the whole flow without writing state or calling JIRA
+/ba-ticket "..." --dry-run
+
+# One-screen story instead of the long template
+/ba-ticket "..." --draft --project DPD
+
+# Rewrite an existing long ticket into the one-screen format (updates it on approval)
 /ba-ticket DPD-1573
 
-# Markdown only, never touch JIRA
+# Markdown only, never touch JIRA (either mode)
 /ba-ticket "..." --draft-only
 ```
+
+## Draft mode (`--draft`)
+
+Add `--draft` when the ticket must be quick to read for every team: one screen
+per story (Why / Scope / Acceptance criteria / Fields / Edge cases / Notes per
+team), one screen per epic, checked against a 9-point ready check. An existing
+issue key always takes this mode, because the full flow does not rewrite.
 
 Titles follow `[Area] [Team] ...` for a one-team story, e.g.
 `[Admin Portal] [BE] Export audit log API`. When BE and FE deliver one feature
@@ -32,7 +53,7 @@ Split per team only when each part can ship on its own.
 The skill writes a draft, asks you only what is missing (pick an option or type
 your own), shows the final ticket, and creates it in JIRA only when you say so.
 
-## What a story looks like
+## What a `--draft` story looks like
 
 ```markdown
 # [Transactions] [BE] Export the filtered list to CSV
@@ -83,7 +104,7 @@ Today support runs this report by hand, about 40 requests a month.
 - **QA:** Test with 0, 1, 50,000 and 50,001 rows; check Vietnamese characters in names.
 ```
 
-## What an epic looks like
+## What a `--draft` epic looks like
 
 ```markdown
 # [Transactions] Self-serve reporting
@@ -117,29 +138,22 @@ to 2 days. After this epic, finance pulls the data themselves in under a minute.
 | 3 | [Transactions] [Data] Record every export in the audit log | Data, QA | 1 |
 ```
 
-## Full mode (`--full`)
+## Default mode (full)
 
-Add `--full` when you want the long template and the 13-gate rubric instead of
-one screen. It fills `templates/ticket-authoring/{epic,story}.md` (AC table,
-positive + negative scenarios, contract table, notes & risks), scores the draft
-against the **same 13 gates** `ba-story-verify` uses, and keeps a resumable
-draft record under `.claude/state/story-author/<draft-id>/`.
+Without `--draft` the skill fills `templates/ticket-authoring/{epic,story}.md`
+(AC table, positive + negative scenarios, contract table, notes & risks), scores
+the draft against the **same 13 gates** `ba-story-verify` uses, and keeps a
+resumable draft record under `.claude/state/story-author/<draft-id>/`.
 
 ```bash
 # A single story with the full rubric
-/ba-ticket "let users export the transaction list to CSV" --full
+/ba-ticket "let users export the transaction list to CSV"
 
 # An Epic with child stories and story points
-/ba-ticket "move detection from OpenSearch to a Flink stream job" --full --epic --project DPD
-
-# Use a Confluence page as the template
-/ba-ticket "..." --full --template-confluence https://<site>/wiki/.../pageId
-
-# Walk the whole flow without writing state or calling JIRA
-/ba-ticket "..." --full --dry-run
+/ba-ticket "move detection from OpenSearch to a Flink stream job" --epic --project DPD
 ```
 
-| | short (default) | `--full` |
+| | `--draft` | default (full) |
 |---|---|---|
 | Template | One screen: Why / Scope / AC / Fields / Edge cases / Notes per team | Long, table-heavy (AC table, scenarios, contract table, notes & risks) |
 | Audience | Every team that touches the story, including QA, Data, AI | Engineer planning the build |
@@ -148,15 +162,16 @@ draft record under `.claude/state/story-author/<draft-id>/`.
 | Epic sizing | Stories table with teams and dependencies; teams size it | Story points per child |
 | Rewrite an existing key | Yes | No |
 
-Use the short mode when the ticket must be quick to read; use `--full` when you
+Use `--draft` when the ticket must be quick to read; use the default when you
 want the full rubric and detailed contract tables. Details:
 [references/full/flow.md](references/full/flow.md).
 
-In full mode a `<!-- gate: <id> -->` comment in your template ties a section to
+In the default mode a `<!-- gate: <id> -->` comment in your template ties a section to
 a quality gate the skill will ask about; a section without one is filled
 best-effort and never blocks.
 
 ## Your own template
 
-Copy `templates/ba-ticket/story.md` (or `epic.md`), change the sections, and pass
+Copy `templates/ticket-authoring/story.md` (or `epic.md`; for `--draft`,
+`templates/ba-ticket/story.md`), change the sections, and pass
 `--template <path>`. Every `## Heading` in your copy becomes a section to fill.

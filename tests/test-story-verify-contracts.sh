@@ -254,7 +254,7 @@ else
   pass "an advisory gate recorded with severity=blocker is rejected"
 fi
 
-# The authoring helper pins the same severities, so a --full draft cannot be
+# The authoring helper pins the same severities, so a full-mode draft cannot be
 # marked ready with a downgraded blocker.
 AUTHOR="${ROOT}/scripts/story-author-record.sh"
 author_draft() {
@@ -277,6 +277,34 @@ if [ "$(jq -r .readiness "${TMP}/out-author-ok.json")" = "needs-input" ]; then
   pass "story-author-record derives needs-input from a failing invest-sizing blocker"
 else
   die "story-author-record did not hold a draft with a failing invest-sizing"
+fi
+
+# Story points are capped at 5; a bigger story or child is rejected, 5 is accepted.
+sized_draft() {
+  jq -n --argjson pts "$1" --argjson cpts "$2" '{
+    schema_version: "story-draft.v1", mode: "epic", project_key: "PROJ",
+    issue_type: "Epic", title: "Reporting", body_markdown: "# Reporting",
+    readiness: "ready", authored_at: "2026-10-23T00:00:00Z", points: $pts,
+    children: [{local_id: "c1", title: "Export", body_markdown: "# Export", readiness: "ready", points: $cpts}]
+  }'
+}
+sized_draft 8 3 > "${TMP}/pts-story-big.json"
+if bash "${AUTHOR}" --in "${TMP}/pts-story-big.json" --out "${TMP}/out-pts-story-big.json" >/dev/null 2>&1; then
+  die "story-author-record accepted a story with 8 points"
+else
+  pass "story-author-record rejects a story above 5 points"
+fi
+sized_draft 3 13 > "${TMP}/pts-child-big.json"
+if bash "${AUTHOR}" --in "${TMP}/pts-child-big.json" --out "${TMP}/out-pts-child-big.json" >/dev/null 2>&1; then
+  die "story-author-record accepted a child with 13 points"
+else
+  pass "story-author-record rejects a child story above 5 points"
+fi
+sized_draft 5 5 > "${TMP}/pts-ok.json"
+if bash "${AUTHOR}" --in "${TMP}/pts-ok.json" --out "${TMP}/out-pts-ok.json" >/dev/null 2>&1; then
+  pass "story-author-record accepts 5 points on the story and on a child"
+else
+  die "story-author-record rejected a 5-point draft"
 fi
 
 # --- batch: init ---

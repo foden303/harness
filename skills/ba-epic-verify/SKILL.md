@@ -186,6 +186,6 @@ naming the verdict, the per-lens state, and the next action.
 ## Related skills
 
 - `ba-story-verify` — verify the child stories once the Epic is clear
-- `ba-ticket` — the inverse: author an Epic (`--full` for the long template)
+- `ba-ticket` — the inverse: author an Epic (`--draft` for the one-screen format)
 - `harness-flow` — build a ticket once it is verified clear
 - `harness-plan` — turn verified stories into Plans.md tasks

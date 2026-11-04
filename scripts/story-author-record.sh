@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # story-author-record.sh — validate and persist a story-draft.v1 record.
 #
-# ba-ticket --full drafts the ticket/epic in-context (fills the template,
+# ba-ticket (default full mode) drafts the ticket/epic in-context (fills the template,
 # scores the authoring rubric, records the BA's answers), then hands the JSON
 # here. This helper is the only writer: it stamps authored_at, derives the
 # readiness from the gates + open questions so a hand-written readiness can never
@@ -122,6 +122,16 @@ else:
             raise SystemExit(f"invalid severity: {check.get('severity')}")
         if check.get("result") not in {"pass", "fail", "n-a"}:
             raise SystemExit(f"invalid result: {check.get('result')}")
+
+# Story points are capped at 5 (invest-sizing): a bigger story is split, never
+# recorded. Checked here so the cap holds even when jsonschema is absent.
+MAX_POINTS = 5
+sized = [("story", data.get("points"))] + [
+    (f"child {c.get('local_id', '?')}", c.get("points")) for c in data.get("children", [])
+]
+for who, pts in sized:
+    if isinstance(pts, (int, float)) and pts > MAX_POINTS:
+        raise SystemExit(f"{who}: {pts} points exceeds the cap of {MAX_POINTS}; split it (invest-sizing)")
 
 # A gate marked n-a without a reason is a silent skip — reject it.
 for check in data.get("checks", []):
