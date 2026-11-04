@@ -6,6 +6,8 @@ Change history for harness.
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-11-04
+
 ### Changed
 
 #### `ba-ticket` — the 13-gate template is now the default; the one-screen format moves to `--draft`
@@ -546,6 +548,7 @@ deleted, and matrix wording that never existed. They are fixed and wired in.
 
 Generated with [Claude Code](https://claude.com/claude-code)
 
-[Unreleased]: https://github.com/foden303/harness/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/foden303/harness/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/foden303/harness/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/foden303/harness/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/foden303/harness/releases/tag/v1.0.0
