@@ -1,7 +1,7 @@
 # ba-ticket (default): the 13-gate authoring flow
 
 Loaded when `ba-ticket` runs without `--draft`, which is the default. The long template
-(`templates/ticket-authoring/{epic,story}.md`) is scored against the **same 12
+(`templates/ticket-authoring/{epic,story}.md`) is scored against the **same 13
 gates** `ba-story-verify` uses, so a story written here passes the verify it
 later faces. The draft is kept as a `story-draft.v1` record, so a run can resume.
 

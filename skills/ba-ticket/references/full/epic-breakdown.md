@@ -43,10 +43,10 @@ Store children in the epic's draft record under `children[]`:
   "title": "[Stream Detection] Rule Flow & OCSF Transition",
   "children": [
     {"local_id": "c1", "title": "Accept `stream` as a conversion backend",
-     "role_group": "Backend Engineer", "points": 2,
+     "role_group": "BE", "points": 2,
      "body_markdown": "## Story\n…", "checks": [ … ], "readiness": "ready"},
     {"local_id": "c2", "title": "Sigma to OCSF matcher AST",
-     "role_group": "Data Engineer", "points": 5,
+     "role_group": "Data", "points": 5,
      "body_markdown": "## Story\n…", "open_questions": [ … ], "readiness": "needs-input"}
   ]
 }

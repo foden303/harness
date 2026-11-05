@@ -62,6 +62,7 @@ Pick the mode from the flag only; never switch to `--draft` on your own. The
 Rules above apply to both modes. An existing issue key always takes the draft
 flow (the full flow does not rewrite), so `--draft` is implied there.
 `--draft` picks the format; `--draft-only` stops before JIRA. They combine.
+`--full` (the v1.1.0 flag) is still accepted as a no-op alias for the default.
 
 ## Quick Reference
 

@@ -28,6 +28,9 @@ ticket into the one-screen format, because the full flow does not rewrite.
 | `/ba-ticket "..." --full` | `/ba-ticket "..."` |
 | `/ba-ticket "..." --full --epic --project DPD` | `/ba-ticket "..." --epic --project DPD` |
 
+`--full` is still accepted as a no-op alias for the default, so existing
+commands keep working.
+
 #### `ba-ticket` full story template — numbered AC, Scope In/Out, Notes per team, and a 5-point cap
 
 **Before**: the long template had an Acceptance Criteria Table with no row
