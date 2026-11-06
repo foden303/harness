@@ -22,10 +22,10 @@ The verdict is **derived from the gates by
 | `data-validation-rules` | blocker | Fields, types, required/optional, limits, formats, and default values are stated for every input the story introduces | A new input exists with no rule stated ("enter an amount" with no bounds/currency/precision) |
 | `scope-boundaries` | blocker | In-scope and out-of-scope are distinguishable; non-goals stated where the story could sprawl | Scope is open-ended, or the title implies more than the description covers |
 | `dependencies-identified` | blocker | Upstream/downstream tickets, APIs, services, teams, migrations, and feature flags are named — or "none" is stated | The story clearly needs another team's endpoint/data and it is unmentioned |
-| `invest-sizing` | blocker | A vertical slice deliverable in one sprint, independently valuable | Multiple unrelated deliverables in one ticket, or an obvious multi-sprint lump. Ask how to split it, offering the slices you see |
+| `invest-sizing` | blocker | A vertical slice deliverable in one sprint, independently valuable, at most 5 story points | Multiple unrelated deliverables in one ticket, an obvious multi-sprint lump, or more than 5 points. Ask how to split it, offering the slices you see |
 | `no-ambiguous-wording` | blocker | No blocking placeholders or undefined terms | `TBD`, `???`, "etc.", "and so on", "similar to the old one", "as discussed", contradictions between description and AC |
 | `story-format` | advisory | States the role, the capability, and the benefit (the `As a … I want … so that …` shape or an equivalent) | Purely technical phrasing with no user or benefit named |
-| `design-reference` | advisory | UI-facing story links a mockup/design, or explicitly says there is no UI change | A UI story with no design reference and no wording for the visible copy |
+| `design-reference` | advisory | UI-facing story links a mockup/design (in the full format: on the FE line of Notes per team), or explicitly says there is no UI change | A UI story with no design reference and no wording for the visible copy |
 | `assumptions-confirmed` | advisory | Every stated assumption is confirmed by the BA (in the ticket or a comment), or the ticket states none | An assumption is listed but nobody has confirmed it. Ask the BA to confirm or correct each one |
 | `nonfunctional-stated` | advisory | Relevant performance, security/permission, accessibility, i18n, and analytics expectations are stated | The story obviously carries one (money, PII, auth, bulk data) and it is unmentioned |
 

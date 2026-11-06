@@ -99,8 +99,8 @@ mirror). State lives under the host project's `.claude/state/ba-uat/`.
     Keys / URLs -> getJiraIssue each. Epic -> its child stories
     (searchJiraIssuesUsingJql "parent = <EPIC>"). --jql -> the result set.
     Spec / pasted text -> split into SPEC-<n> items.
-    Parse AC, Fields, Edge cases from the ba-ticket short format, the --full
-    format, or free text. Existing state + no --refresh -> reload, do not redo.
+    Parse AC, Fields, Edge cases from the ba-ticket --draft format, the default
+    full format, or free text. Existing state + no --refresh -> reload, do not redo.
     Report the list (n in scope / n skipped and why) before generating.
     |
 [2] Testability check                         -> references/case-rules.md (Testable)

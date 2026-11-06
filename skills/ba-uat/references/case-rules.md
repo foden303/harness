@@ -9,17 +9,18 @@ Read each ticket with `getJiraIssue` (summary, description, acceptance-criteria
 custom field if the site has one, issue type, status, labels, parent, roles
 named anywhere). Find the three inputs by section heading, in this order:
 
-| Input | ba-ticket short format | ba-ticket `--full` format | Free text / other template |
-|-------|-----------------------|---------------------------|----------------------------|
-| AC rows | `## Acceptance criteria` table (`# / Given / When / Then`) | `## Acceptance Criteria Table` (`Scenario / Given / When / Then`) + `## Positive Scenarios` | Any Given/When/Then lines, "AC:" bullets, numbered "should" statements |
+| Input | ba-ticket `--draft` format | ba-ticket default (full) format | Free text / other template |
+|-------|---------------------------|---------------------------------|----------------------------|
+| AC rows | `## Acceptance criteria` table (`# / Given / When / Then`) | `## Acceptance Criteria Table` (`# / Scenario / Given / When / Then`) + `## Positive Scenarios` | Any Given/When/Then lines, "AC:" bullets, numbered "should" statements |
 | Field rules | `## Fields` table (`Field / Required / Rules / Default`) | `## Contract & Schema Requirements` rows whose Type is Field or Constraint | Sentences stating a limit, format, required/optional |
 | Edge & error | `## Edge & error cases` table (`# / Case / Expected`) | `## Negative Scenarios` (runtime rows only; skip "Wrong —" / "Defect —" planning rows) | "If ... then ..." error sentences |
-| Roles | `## Notes per team`, Fields "who can see it", AC Given rows | AC / Contract rows naming a role | Any named role (Admin, Viewer, Finance) |
+| Roles | `## Notes per team`, Fields "who can see it", AC Given rows | `## Notes per team`, AC / Contract rows naming a role | Any named role (Admin, Viewer, Finance) |
 
 Number what you parsed so it can be traced:
 
-- AC rows keep the ticket's own number (`AC-1`, `AC-2`); a `--full` row uses its
-  Scenario name as the label (`AC-"Export happy path"`), numbered in order.
+- AC rows keep the ticket's own number (`AC-1`, `AC-2`) in both formats; a
+  full-format row with no `#` (older ticket) uses its Scenario name as the
+  label (`AC-"Export happy path"`), numbered in order.
 - Field rows are `F-<field name>`; Edge rows keep their number (`E-1`, `E-2`).
 - A spec or pasted text with no keys: each story-sized item is `SPEC-<n>`, and
   its rows are numbered in reading order.

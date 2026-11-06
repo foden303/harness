@@ -1,7 +1,7 @@
 <!--
-ba-ticket --full :: default EPIC template
+ba-ticket (default mode) :: default EPIC template
 ================================================
-This is the DEFAULT format ba-ticket --full fills in when authoring an Epic.
+This is the DEFAULT format ba-ticket fills in (without --draft) when authoring an Epic.
 It is modelled on a real, well-shaped epic (secuw.atlassian.net/browse/DPD-832).
 
 How the skill uses this file:
@@ -14,7 +14,7 @@ How the skill uses this file:
     description is written to JIRA.
 
 To use YOUR OWN format instead of this one, copy this file, edit the sections,
-and run: /ba-ticket "<intent>" --full --template <path-to-your-copy.md>
+and run: /ba-ticket "<intent>" --template <path-to-your-copy.md>
 The skill treats whatever `## Headings` your copy contains as the required
 sections — this file is only the default, never a hard-coded schema.
 -->
@@ -47,13 +47,14 @@ Avoid "works well" / "is fast" — those are not decidable.
 ## Team split
 <!-- gate: invest-sizing / scope-boundaries -->
 <!--
-The breakdown into child stories, grouped by the role that owns them. The skill
+The breakdown into child stories, grouped by the lead team (the first team
+in each story's `Teams:` line: FE / BE / Data / AI). The skill
 proposes this table from the epic (see references/epic-breakdown.md); the BA
 approves/edits before any child is created. Points are a rough size, not a
-commitment. After creation the Key column is backfilled with the real JIRA keys.
+commitment, and at most 5 per child; a bigger child is split. After creation the Key column is backfilled with the real JIRA keys.
 -->
 
-### {{role_group_1}}
+### {{lead_team_1}}
 
 | Key | Title | Points |
 | --- | --- | --- |

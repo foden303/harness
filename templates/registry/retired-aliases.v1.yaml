@@ -187,7 +187,7 @@ entries:
     kind: skill
     pattern: "harness-story-author"
     removed_in: "Unreleased"
-    reason: "Merged into ba-ticket as its --full mode, so one skill writes tickets in either the short or the 12-gate format"
+    reason: "Merged into ba-ticket as its default (full) mode, so one skill writes tickets in either the 13-gate or the --draft one-screen format"
     allowlist:
       - "CHANGELOG.md"
       - ".claude/memory/archive/"

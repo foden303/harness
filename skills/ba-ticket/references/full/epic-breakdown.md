@@ -8,21 +8,23 @@ edits, or drops children **before** anything is created.
 
 Slice the epic into **INVEST** child stories — each an independently valuable,
 one-sprint vertical slice, not a horizontal layer ("the backend part"). Group
-them by the role that owns them, mirroring the default epic template:
+them by the lead team (the first team on each story's `Teams:` line), mirroring the default epic template:
 
 | Key | Title | Points |
 | --- | --- | --- |
 | (blank until created) | Accept `stream` as a conversion backend | 2 |
 
-- **Points** are a rough size (Fibonacci-ish), a hint not a commitment.
+- **Points** are a rough size (1, 2, 3, 5), a hint not a commitment, and **never
+  above 5**: a child that needs more is two children. The record helper refuses
+  a draft with a bigger number.
 - **Key** stays blank in the draft; it is backfilled with the real JIRA key after
   creation (Step 5) via `editJiraIssue` on the epic.
 - Derive dependencies into the epic's `## Critical path` (A → B → C), and surface
   genuinely unresolved cross-team decisions in `## Open questions` — do not invent
   a lean the BA never stated.
 
-Size discipline: if a proposed child is obviously multi-sprint or bundles
-unrelated deliverables, split it. If two children are trivially coupled, merge
+Size discipline: if a proposed child is obviously multi-sprint, bundles
+unrelated deliverables, or sizes above 5 points, split it. If two children are trivially coupled, merge
 them. Aim for children that would each pass `ba-story-verify` on their own.
 
 ## Drafting each child
@@ -41,10 +43,10 @@ Store children in the epic's draft record under `children[]`:
   "title": "[Stream Detection] Rule Flow & OCSF Transition",
   "children": [
     {"local_id": "c1", "title": "Accept `stream` as a conversion backend",
-     "role_group": "Backend Engineer", "points": 2,
+     "role_group": "BE", "points": 2,
      "body_markdown": "## Story\n…", "checks": [ … ], "readiness": "ready"},
     {"local_id": "c2", "title": "Sigma to OCSF matcher AST",
-     "role_group": "Data Engineer", "points": 13,
+     "role_group": "Data", "points": 5,
      "body_markdown": "## Story\n…", "open_questions": [ … ], "readiness": "needs-input"}
   ]
 }
@@ -59,7 +61,7 @@ Before Step 5, present the whole plan compactly so the operator can judge it as 
 unit:
 
 - the epic title + one-line goal + DoD;
-- the child table (role group | title | points | readiness);
+- the child table (lead team | title | points | readiness);
 - any child still `needs-input`, flagged.
 
 Then the Step 5 approval prompt (`create-jira.md`) offers: create the epic + all

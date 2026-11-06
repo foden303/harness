@@ -117,7 +117,7 @@ State lives in the host project under `.claude/state/ba-change/<slug>/`.
 [4] Draft updates                          -> references/draft-updates.md
     Per ticket: AC / field diff (before/after), marked notice comment
     <!-- ba-change:notice change=<slug> key=<KEY> nonce=<uuid> -->, follow-up
-    tickets in ba-ticket short format, spec diff. Flag estimate risk.
+    tickets in ba-ticket `--draft` format, spec diff. Flag estimate risk.
 
 [5] Impact report                          -> references/impact-report.md
     Save report.md. --draft-only / --dry-run stop here.

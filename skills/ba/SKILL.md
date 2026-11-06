@@ -42,7 +42,7 @@ effort: low
 |---|---|---|
 | Meeting notes, a call transcript, client emails | `ba-discovery` | `/ba-discovery <file\|folder\|"pasted text">` |
 | A discovery brief for a large feature that needs a spec / PRD | `ba-spec` | `/ba-spec <brief.md\|idea>` |
-| An idea for one story or an Epic | `ba-ticket` | `/ba-ticket "<idea>"` (add `--epic`, or `--full` for the 13-gate template) |
+| An idea for one story or an Epic | `ba-ticket` | `/ba-ticket "<idea>"` (add `--epic`, or `--draft` for the one-screen format) |
 | A long, messy ticket to shorten | `ba-ticket` | `/ba-ticket <ISSUE-KEY>` |
 | A written story (or list) to check before refinement | `ba-story-verify` | `/ba-story-verify <KEY ...>` |
 | A written Epic to check before splitting it | `ba-epic-verify` | `/ba-epic-verify <EPIC-KEY>` |

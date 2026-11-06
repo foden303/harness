@@ -1,7 +1,7 @@
-# ba-ticket --full: the 13-gate authoring flow
+# ba-ticket (default): the 13-gate authoring flow
 
-Loaded when `ba-ticket` runs with `--full`. The long template
-(`templates/ticket-authoring/{epic,story}.md`) is scored against the **same 12
+Loaded when `ba-ticket` runs without `--draft`, which is the default. The long template
+(`templates/ticket-authoring/{epic,story}.md`) is scored against the **same 13
 gates** `ba-story-verify` uses, so a story written here passes the verify it
 later faces. The draft is kept as a `story-draft.v1` record, so a run can resume.
 
@@ -9,14 +9,14 @@ later faces. The draft is kept as a `story-draft.v1` record, so a run can resume
 > gap questions → (Epic) propose child stories → operator approves → create in
 > JIRA → link children to the epic.**
 
-| | short (default) | `--full` |
+| | `--draft` | default (full) |
 |---|---|---|
 | Template | `templates/ba-ticket/` — one screen | `templates/ticket-authoring/` — AC table, scenarios, contract tables |
 | Quality check | 9-point ready check | 13-gate rubric, readiness derived by `story-author-record.sh` |
 | State | markdown under `.claude/state/ba-ticket/<slug>/` | `draft.json` under `.claude/state/story-author/<draft-id>/` |
-| Epic sizing | Stories table with teams + dependencies | Child table with role group + story points |
+| Epic sizing | Stories table with teams + dependencies | Child table grouped by lead team, with story points |
 | Template override | `--template <path>` | `--template <path>` or `--template-confluence <url>` |
-| Rewrite an existing key | yes | no — use the short mode |
+| Rewrite an existing key | yes | no — an existing key takes the draft flow |
 
 ## Core contract (read first)
 
@@ -92,7 +92,7 @@ and schema-validates). `<draft-id>` is a slug of the title
   |
   v
 [Step 4] (Epic) Breakdown  Reference: references/full/epic-breakdown.md
-  epic mode only: propose the child-story table (role group | title | points),
+  epic mode only: propose the child-story table (lead team | title | points),
   draft each child to the story template, score each. Show the set; the operator
   keeps / edits / drops children before anything is created.
   |

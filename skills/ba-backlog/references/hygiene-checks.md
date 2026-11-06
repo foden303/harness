@@ -84,5 +84,5 @@ question ("which AC are missing, how to split it") belongs to:
 | Finding set | Hand to |
 |-------------|---------|
 | `missing-ac`, `oversized` | `/ba-story-verify <keys>` |
-| `thin-description` | `/ba-ticket <KEY>` (rewrite into the short format, on approval) |
+| `thin-description` | `/ba-ticket <KEY>` (rewrite into the one-screen draft format, on approval) |
 | Many `no-epic` stories that name the same Epic, or an Epic whose children are mostly flagged | `/ba-epic-verify <EPIC>` |

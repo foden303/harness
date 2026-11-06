@@ -27,11 +27,11 @@ gates read at epic altitude — the mapping column says how.
 | `edge-error-states` | blocker | Failure/empty/loading/permission stated or out-of-scope | n-a at epic level unless the epic hinges on a failure mode |
 | `data-validation-rules` | blocker | Every new input has type/limits/format/default | n-a at epic level (belongs to the children) |
 | `scope-boundaries` | blocker | In-scope vs out-of-scope distinguishable | `### Out of scope for this epic` is present and concrete |
-| `dependencies-identified` | blocker | Upstream/downstream/APIs/flags named, or "none" | `## Critical path` names what gates what |
-| `invest-sizing` | blocker | One-sprint vertical slice | The child breakdown is INVEST-sized (see epic-breakdown.md) |
+| `dependencies-identified` | blocker | `## Scope` > Dependencies names upstream tickets, APIs, data, flags, pending decisions or designs — or "none" | `## Critical path` names what gates what |
+| `invest-sizing` | blocker | One-sprint vertical slice, **at most 5 points**; bigger is split | Every child is INVEST-sized and ≤ 5 points (see epic-breakdown.md) |
 | `no-ambiguous-wording` | blocker | No `TBD`/`???`/"etc."/undefined terms | Same — placeholders in the draft are gaps to ask about |
 | `story-format` | advisory | Role + capability + benefit shape | n-a (epics are not `As a…`) |
-| `design-reference` | advisory | UI story links a design, or "no UI change" | `**Design doc:**` slot is a link or "none" |
+| `design-reference` | advisory | The FE line in `## Notes per team` carries a design link, "mockup needed", or "no UI change"; the link appears nowhere else | `**Design doc:**` slot is a link or "none" |
 | `assumptions-confirmed` | advisory | Every assumption in `## Assumptions` is confirmed, or the section says none | Same — assumptions the epic rests on are confirmed by the BA |
 | `nonfunctional-stated` | advisory | Perf/security/a11y/i18n stated when relevant | Relevant when the epic carries money/PII/auth/bulk data |
 
@@ -88,7 +88,7 @@ derives `readiness`, and schema-validates):
   "issue_type": "Story",
   "title": "Export the transaction list to CSV",
   "template_ref": "default",
-  "body_markdown": "## User Story\n**As a** finance analyst, **I want to** …\n\n## Acceptance Criteria Table\n| Scenario | Given (Context) | When (Action) | Then (Expected Outcome / Requirement) |\n| --- | --- | --- | --- |\n| … | … | … | … |",
+  "body_markdown": "## User Story\n**As a** finance analyst, **I want to** …\n\n## Acceptance Criteria Table\n| # | Scenario | Given (Context) | When (Action) | Then (Expected Outcome / Requirement) |\n| --- | --- | --- | --- | --- |\n| 1 | … | … | … | … |",
   "fields": { "labels": ["export"], "priority": "Medium" },
   "checks": [
     {"id": "goal-value-clear", "severity": "blocker", "result": "pass"},
